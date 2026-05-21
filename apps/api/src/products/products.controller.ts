@@ -16,6 +16,12 @@ export class ProductsController {
     return this.productsService.findAll({ status, categoryId, search })
   }
 
+  @Get('slug/:slug')
+  @Public()
+  findBySlug(@Param('slug') slug: string) {
+    return this.productsService.findBySlug(slug)
+  }
+
   @Get(':id')
   @Public()
   findOne(@Param('id') id: string) {

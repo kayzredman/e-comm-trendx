@@ -79,6 +79,7 @@ export const productsApi = {
     return apiFetch(`/products${qs}`)
   },
   get: (id: string): Promise<Product> => apiFetch(`/products/${id}`),
+  getBySlug: (slug: string): Promise<Product> => apiFetch(`/products/slug/${slug}`),
   create: (data: ProductInput, token: string): Promise<Product> =>
     apiFetch('/products', { method: 'POST', body: JSON.stringify(data), token }),
   update: (id: string, data: Partial<ProductInput>, token: string): Promise<Product> =>
@@ -165,4 +166,21 @@ export const deliveryApi = {
     apiFetch('/delivery/zones', { method: 'POST', body: JSON.stringify(data), token }),
   delete: (id: string, token: string) =>
     apiFetch(`/delivery/zones/${id}`, { method: 'DELETE', token }),
+}
+
+// ─── Analytics ────────────────────────────────────────────────────────────────
+
+export type DashboardStats = {
+  totalOrders: number
+  totalCustomers: number
+  totalProducts: number
+  revenue30d: string
+  revenueAll: string
+  recentOrders: Order[]
+  lowStockProducts: Product[]
+  ordersByStatus: Partial<Record<string, number>>
+}
+
+export const analyticsApi = {
+  dashboard: (token: string): Promise<DashboardStats> => apiFetch('/analytics/dashboard', { token }),
 }
