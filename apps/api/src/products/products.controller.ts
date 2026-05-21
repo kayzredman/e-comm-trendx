@@ -10,15 +10,14 @@ import { Public } from '../auth/public.decorator'
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  // Public — storefront can also use StorefrontController but this handles CMS
   @Get()
-  @ApiBearerAuth()
+  @Public()
   findAll(@Query('status') status?: string, @Query('categoryId') categoryId?: string, @Query('search') search?: string) {
     return this.productsService.findAll({ status, categoryId, search })
   }
 
   @Get(':id')
-  @ApiBearerAuth()
+  @Public()
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(id)
   }
