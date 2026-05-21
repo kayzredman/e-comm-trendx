@@ -41,8 +41,10 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, doc)
   }
 
-  await app.listen(env.API_PORT, '0.0.0.0')
-  console.log(`🚀 API running on port ${env.API_PORT}`)
+  // Railway injects PORT; fallback to API_PORT for local dev
+  const port = parseInt(process.env.PORT ?? String(env.API_PORT))
+  await app.listen(port, '0.0.0.0')
+  console.log(`🚀 API running on port ${port}`)
 }
 
 bootstrap()
