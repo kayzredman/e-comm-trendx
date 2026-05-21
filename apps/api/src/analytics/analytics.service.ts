@@ -46,6 +46,17 @@ export class AnalyticsService {
 
     const ordersByStatus = Object.fromEntries(statusCounts.map(r => [r.status, r.count]))
 
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    const revenueByDay = await db
+      .select({
+        date: sql<string>`DATE(${orders.createdAt})`,
+        revenue: sql<string>`COALESCE(SUM(${orders.total}::numeric), 0)::text`,
+      })
+      .from(orders)
+      .where(gte(orders.createdAt, fourteenDaysAgo))
+      .groupBy(sql`DATE(${orders.createdAt})`)
+      .orderBy(sql`DATE(${orders.createdAt})`)
+
     return {
       totalOrders: totalOrders.count,
       totalCustomers: totalCustomers.count,
@@ -55,6 +66,7 @@ export class AnalyticsService {
       recentOrders,
       lowStockProducts,
       ordersByStatus,
+      revenueByDay,
     }
   }
 }

@@ -16,7 +16,7 @@ const navItems = [
   { label: 'Orders', href: '/cms/orders', icon: ShoppingCart },
   { label: 'Customers', href: '/cms/customers', icon: Users },
   { label: 'Delivery', href: '/cms/delivery', icon: Truck },
-  { label: 'Content', href: '/cms/content', icon: FileText, soon: true },
+  { label: 'Content', href: '/cms/content', icon: FileText },
 ]
 
 export default function Sidebar() {

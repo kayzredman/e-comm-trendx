@@ -181,10 +181,34 @@ export type DashboardStats = {
   recentOrders: Order[]
   lowStockProducts: Product[]
   ordersByStatus: Partial<Record<string, number>>
+  revenueByDay: Array<{ date: string; revenue: string }>
 }
 
 export const analyticsApi = {
   dashboard: (token: string): Promise<DashboardStats> => apiFetch('/analytics/dashboard', { token }),
+}
+
+// ─── CMS Sections ─────────────────────────────────────────────────────────────
+
+export type SectionType = 'HERO' | 'FEATURED' | 'BANNER' | 'ANNOUNCEMENT'
+export type SectionPage = 'HOME' | 'SHOP'
+
+export type CmsSection = {
+  id: string
+  page: SectionPage
+  type: SectionType
+  data: Record<string, unknown>
+  order: number
+  isActive: boolean
+}
+
+export const cmsApi = {
+  getSections: (page: SectionPage, token: string): Promise<CmsSection[]> =>
+    apiFetch(`/cms/sections?page=${page}`, { token }),
+  upsertSection: (data: Partial<CmsSection> & { page: SectionPage; type: SectionType }, token: string): Promise<CmsSection> =>
+    apiFetch('/cms/sections', { method: 'POST', body: JSON.stringify(data), token }),
+  deleteSection: (id: string, token: string): Promise<void> =>
+    apiFetch(`/cms/sections/${id}`, { method: 'DELETE', token }),
 }
 
 // ─── Storefront (public v1 endpoints) ─────────────────────────────────────────

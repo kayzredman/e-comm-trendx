@@ -3,6 +3,7 @@ import { analyticsApi, type DashboardStats } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 import { Package, ShoppingCart, Users, TrendingUp, AlertTriangle } from 'lucide-react'
+import RevenueChart from './RevenueChart'
 
 export const dynamic = 'force-dynamic'
 
@@ -88,21 +89,24 @@ export default async function DashboardHome() {
         ))}
       </div>
 
-      {/* All-time revenue */}
-      {stats && (
-        <div
-          className="rounded-xl border p-5 mb-6 flex items-center gap-4"
-          style={{ background: 'var(--color-primary-light)', borderColor: '#BFDBFE' }}
-        >
-          <TrendingUp size={24} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+      {/* Revenue chart */}
+      <div
+        className="rounded-xl border p-5 mb-6"
+        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+      >
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>All-time revenue</p>
-            <p className="text-3xl font-bold mt-0.5" style={{ color: 'var(--color-primary)' }}>
-              GH₵ {Number(stats.revenueAll).toFixed(2)}
-            </p>
+            <h2 className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>Revenue — last 14 days</h2>
+            {stats && (
+              <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                All-time: <strong style={{ color: 'var(--color-text)' }}>GH₵ {Number(stats.revenueAll).toFixed(2)}</strong>
+              </p>
+            )}
           </div>
+          <TrendingUp size={18} style={{ color: 'var(--color-primary)', marginTop: 2 }} />
         </div>
-      )}
+        <RevenueChart data={stats?.revenueByDay ?? []} />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Recent orders */}
