@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* TrendMarga Design Tokens — mobile-first */
+@theme inline {
+  /* Brand colors */
+  --color-primary: #2563EB;
+  --color-primary-dark: #1D4ED8;
+  --color-primary-light: #EFF6FF;
+
+  /* Page & surface */
+  --color-page: #E8EDF3;
+  --color-surface: #ffffff;
+  --color-surface-muted: #F8FAFC;
+
+  /* Text */
+  --color-text: #111827;
+  --color-text-muted: #6B7280;
+  --color-text-subtle: #9CA3AF;
+
+  /* Borders */
+  --color-border: #E5E7EB;
+
+  /* Status */
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-error: #DC2626;
+
+  /* Font */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+}
+
+:root {
+  --background: var(--color-page);
+  --foreground: var(--color-text);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrendMarga — CMS Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#F1F5F9;color:#1E293B;display:flex;height:100vh;overflow:hidden;font-size:14px;}
+
+    /* ── Sidebar ── */
+    .sidebar{width:230px;background:#0F172A;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
+    .sidebar-logo{padding:18px 16px 14px;border-bottom:1px solid #1E293B;}
+    .logo-mark{display:flex;align-items:center;gap:8px;}
+    .logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#3B82F6,#8B5CF6);border-radius:7px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:13px;}
+    .logo-text{color:#F1F5F9;font-size:15px;font-weight:700;letter-spacing:-0.3px;}
+    .logo-badge{display:inline-block;background:#1E293B;color:#64748B;font-size:10px;padding:2px 6px;border-radius:4px;margin-top:4px;}
+    .nav-section{padding:14px 16px 4px;font-size:10px;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.08em;}
+    .nav-item{display:flex;align-items:center;gap:9px;padding:8px 12px;cursor:pointer;color:#94A3B8;font-size:13px;margin:1px 8px;border-radius:7px;transition:all 0.15s;}
+    .nav-item:hover{background:#1E293B;color:#E2E8F0;}
+    .nav-item.active{background:#1D4ED8;color:#fff;}
+    .nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+    .sidebar-footer{padding:12px 16px;border-top:1px solid #1E293B;margin-top:auto;}
+    .user-row{display:flex;align-items:center;gap:9px;}
+    .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#3B82F6,#06B6D4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;}
+    .user-name{color:#E2E8F0;font-size:12.5px;font-weight:600;}
+    .user-role{color:#64748B;font-size:11px;}
+
+    /* ── Main ── */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+    .topbar{height:56px;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;}
+    .topbar-left{display:flex;align-items:center;gap:8px;}
+    .topbar-title{font-size:15px;font-weight:700;color:#0F172A;}
+    .topbar-crumb{font-size:13px;color:#94A3B8;}
+    .topbar-right{display:flex;align-items:center;gap:10px;}
+    .tb-chip{background:#F1F5F9;border:1px solid #E2E8F0;border-radius:6px;padding:5px 11px;font-size:12.5px;color:#64748B;cursor:pointer;}
+    .tb-chip:hover{background:#E2E8F0;}
+    .notif{position:relative;cursor:pointer;font-size:18px;color:#64748B;}
+    .notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:#EF4444;border-radius:50%;border:2px solid #fff;}
+
+    /* ── Content ── */
+    .content{flex:1;overflow-y:auto;padding:24px;}
+    .screen{display:none;}
+    .screen.active{display:block;}
+
+    /* ── Page header ── */
+    .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+    .page-title{font-size:20px;font-weight:700;color:#0F172A;}
+    .page-sub{font-size:13px;color:#64748B;margin-top:3px;}
+    .header-actions{display:flex;gap:8px;align-items:center;}
+
+    /* ── Buttons ── */
+    .btn{padding:7px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;display:inline-flex;align-items:center;gap:5px;}
+    .btn-primary{background:#2563EB;color:#fff;}
+    .btn-primary:hover{background:#1D4ED8;}
+    .btn-secondary{background:#fff;color:#374151;border:1px solid #D1D5DB;}
+    .btn-secondary:hover{background:#F9FAFB;}
+    .btn-danger{background:#EF4444;color:#fff;}
+    .btn-danger:hover{background:#DC2626;}
+    .btn-ghost{background:transparent;color:#6B7280;border:1px solid #E5E7EB;}
+    .btn-ghost:hover{background:#F9FAFB;}
+    .btn-sm{padding:5px 10px;font-size:12px;}
+    .btn-xs{padding:3px 8px;font-size:11px;border-radius:5px;}
+
+    /* ── Stats grid ── */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+    .stat-card{background:#fff;border-radius:10px;padding:18px;border:1px solid #E2E8F0;}
+    .stat-icon{font-size:20px;margin-bottom:10px;}
+    .stat-label{font-size:11.5px;color:#64748B;font-weight:500;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;}
+    .stat-value{font-size:24px;font-weight:700;color:#0F172A;margin-bottom:4px;}
+    .stat-change{font-size:12px;display:flex;align-items:center;gap:3px;}
+    .up{color:#10B981;}
+    .down{color:#EF4444;}
+
+    /* ── Card ── */
+    .card{background:#fff;border-radius:10px;border:1px solid #E2E8F0;padding:20px;margin-bottom:18px;}
+    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+    .card-title{font-size:14px;font-weight:600;color:#0F172A;}
+    .card-sub{font-size:12px;color:#94A3B8;margin-top:2px;}
+
+    /* ── Grid layouts ── */
+    .two-col{display:grid;grid-template-columns:1fr 320px;gap:18px;}
+    .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+
+    /* ── Chart ── */
+    .chart-wrap{height:180px;display:flex;align-items:flex-end;gap:6px;padding:0 4px;}
+    .chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+    .chart-bar{width:100%;background:linear-gradient(180deg,#3B82F6,#60A5FA);border-radius:4px 4px 0 0;transition:opacity 0.15s;min-width:20px;}
+    .chart-bar:hover{opacity:0.8;}
+    .chart-label{font-size:10px;color:#94A3B8;}
+    .chart-tabs{display:flex;gap:4px;margin-bottom:12px;}
+    .chart-tab{padding:4px 10px;border-radius:5px;font-size:12px;cursor:pointer;color:#64748B;border:1px solid transparent;}
+    .chart-tab.active{background:#EFF6FF;color:#2563EB;border-color:#BFDBFE;}
+
+    /* ── Table ── */
+    .table-wrap{overflow-x:auto;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    th{text-align:left;padding:9px 14px;background:#F8FAFC;color:#64748B;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;border-bottom:1px solid #E2E8F0;}
+    td{padding:11px 14px;border-bottom:1px solid #F1F5F9;color:#374151;vertical-align:middle;}
+    tr:last-child td{border-bottom:none;}
+    tr:hover td{background:#FAFAFA;}
+    .td-bold{font-weight:600;color:#0F172A;}
+    .td-link{color:#2563EB;cursor:pointer;font-weight:500;}
+    .td-link:hover{text-decoration:underline;}
+
+    /* ── Badges ── */
+    .badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+    .bg-green{background:#D1FAE5;color:#065F46;}
+    .bg-blue{background:#DBEAFE;color:#1E40AF;}
+    .bg-yellow{background:#FEF3C7;color:#92400E;}
+    .bg-red{background:#FEE2E2;color:#991B1B;}
+    .bg-gray{background:#F1F5F9;color:#475569;}
+    .bg-purple{background:#EDE9FE;color:#5B21B6;}
+    .bg-orange{background:#FFEDD5;color:#9A3412;}
+    .bg-cyan{background:#CFFAFE;color:#155E75;}
+
+    /* ── Product image ── */
+    .prod-img{width:36px;height:36px;border-radius:7px;object-fit:cover;flex-shrink:0;}
+    .prod-img-placeholder{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+    .prod-row{display:flex;align-items:center;gap:10px;}
+
+    /* ── Search/toolbar ── */
+    .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+    .search-group{display:flex;align-items:center;gap:8px;}
+    .search-input-wrap{position:relative;}
+    .search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:13px;color:#9CA3AF;}
+    .search-input{padding:7px 10px 7px 28px;border:1px solid #D1D5DB;border-radius:7px;font-size:13px;width:230px;outline:none;background:#fff;}
+    .search-input:focus{border-color:#3B82F6;box-shadow:0 0 0 3px rgba(59,130,246,0.1);}
+    .filter-select{padding:7px 10px;border:1px solid #D1D5DB;border-radius:7px;font-size:13px;background:#fff;color:#374151;outline:none;cursor:pointer;}
+    .filter-select:focus{border-color:#3B82F6;}
+
+    /* ── Form ── */
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .form-group{margin-bottom:0;}
+    .form-group.full{grid-column:1/-1;}
+    label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;}
+    .label-hint{font-weight:400;color:#9CA3AF;}
+    input[type=text],input[type=number],input[type=email],input[type=tel],select,textarea{width:100%;padding:8px 11px;border:1px solid #D1D5DB;border-radius:7px;font-size:13px;color:#111827;background:#fff;outline:none;transition:border-color 0.15s;}
+    input:focus,select:focus,textarea:focus{border-color:#3B82F6;box-shadow:0 0 0 3px rgba(59,130,246,0.1);}
+    textarea{min-height:90px;resize:vertical;font-family:inherit;}
+    .input-prefix{display:flex;align-items:center;border:1px solid #D1D5DB;border-radius:7px;overflow:hidden;}
+    .input-prefix span{padding:8px 10px;background:#F9FAFB;border-right:1px solid #D1D5DB;font-size:13px;color:#6B7280;}
+    .input-prefix input{border:none;border-radius:0;flex:1;}
+    .input-prefix input:focus{box-shadow:none;}
+
+    /* ── Image upload ── */
+    .upload-zone{border:2px dashed #CBD5E1;border-radius:9px;padding:28px;text-align:center;cursor:pointer;background:#F8FAFC;transition:all 0.15s;}
+    .upload-zone:hover{border-color:#3B82F6;background:#EFF6FF;}
+    .upload-icon{font-size:28px;margin-bottom:8px;}
+    .upload-text{font-size:13px;font-weight:500;color:#374151;}
+    .upload-hint{font-size:11px;color:#94A3B8;margin-top:3px;}
+    .image-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+    .img-thumb{width:64px;height:64px;border-radius:7px;object-fit:cover;border:2px solid #E2E8F0;display:flex;align-items:center;justify-content:center;font-size:22px;}
+
+    /* ── Toggle ── */
+    .toggle{position:relative;display:inline-block;width:38px;height:21px;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#CBD5E1;border-radius:21px;transition:.25s;}
+    .toggle-slider:before{position:absolute;content:'';height:15px;width:15px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s;}
+    .toggle input:checked+.toggle-slider{background:#3B82F6;}
+    .toggle input:checked+.toggle-slider:before{transform:translateX(17px);}
+    .toggle-row{display:flex;align-items:center;gap:10px;}
+    .toggle-label{font-size:13px;font-weight:500;color:#374151;}
+
+    /* ── Timeline ── */
+    .timeline{display:flex;flex-direction:column;gap:0;}
+    .tl-item{display:flex;gap:12px;padding-bottom:18px;position:relative;}
+    .tl-item:last-child{padding-bottom:0;}
+    .tl-item:not(:last-child)::before{content:'';position:absolute;left:13px;top:26px;bottom:0;width:2px;background:#E2E8F0;}
+    .tl-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;border:2px solid;margin-top:1px;}
+    .tl-dot.done{background:#D1FAE5;border-color:#10B981;color:#065F46;}
+    .tl-dot.active{background:#DBEAFE;border-color:#3B82F6;color:#1E40AF;}
+    .tl-dot.pending{background:#F8FAFC;border-color:#CBD5E1;color:#94A3B8;}
+    .tl-content{flex:1;}
+    .tl-title{font-size:13px;font-weight:600;color:#0F172A;}
+    .tl-time{font-size:11.5px;color:#94A3B8;margin-top:1px;}
+
+    /* ── Order status steps ── */
+    .status-steps{display:flex;gap:0;margin-bottom:20px;align-items:center;}
+    .status-step{flex:1;text-align:center;position:relative;}
+    .status-step:not(:last-child)::after{content:'';position:absolute;top:13px;left:60%;right:-40%;height:2px;background:#E2E8F0;z-index:0;}
+    .status-step.done:not(:last-child)::after{background:#10B981;}
+    .step-dot{width:26px;height:26px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:11px;position:relative;z-index:1;border:2px solid #E2E8F0;background:#fff;color:#94A3B8;}
+    .status-step.done .step-dot{background:#10B981;border-color:#10B981;color:#fff;}
+    .status-step.active .step-dot{background:#3B82F6;border-color:#3B82F6;color:#fff;}
+    .step-name{font-size:10.5px;color:#64748B;}
+    .status-step.done .step-name,.status-step.active .step-name{color:#0F172A;font-weight:600;}
+
+    /* ── Section list ── */
+    .section-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1px solid #E2E8F0;border-radius:9px;margin-bottom:8px;cursor:pointer;transition:border-color 0.15s;}
+    .section-row:hover{border-color:#93C5FD;}
+    .drag-handle{color:#CBD5E1;font-size:16px;cursor:grab;}
+    .section-thumb{width:44px;height:32px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+    .section-info{flex:1;}
+    .section-name{font-size:13px;font-weight:600;color:#0F172A;}
+    .section-desc{font-size:11.5px;color:#94A3B8;margin-top:1px;}
+
+    /* ── Strategy cards ── */
+    .strategy-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+    .strategy-card{border:2px solid #E2E8F0;border-radius:9px;padding:14px;cursor:pointer;transition:all 0.15s;}
+    .strategy-card:hover{border-color:#93C5FD;}
+    .strategy-card.selected{border-color:#2563EB;background:#EFF6FF;}
+    .strategy-title{font-size:13px;font-weight:600;color:#0F172A;margin-bottom:3px;}
+    .strategy-desc{font-size:11.5px;color:#64748B;}
+    .strategy-icon{font-size:20px;margin-bottom:8px;}
+
+    /* ── Divider ── */
+    .divider{height:1px;background:#F1F5F9;margin:16px 0;}
+
+    /* ── Info row ── */
+    .info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F1F5F9;font-size:13px;}
+    .info-row:last-child{border-bottom:none;}
+    .info-label{color:#64748B;}
+    .info-value{font-weight:500;color:#0F172A;}
+
+    /* ── Category tree ── */
+    .cat-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:7px;transition:background 0.12s;}
+    .cat-item:hover{background:#F8FAFC;}
+    .cat-item.child{padding-left:32px;}
+    .cat-icon{font-size:16px;}
+    .cat-name{flex:1;font-size:13px;font-weight:500;color:#0F172A;}
+    .cat-count{font-size:11.5px;color:#94A3B8;}
+
+    /* ── Customer profile ── */
+    .profile-card{display:flex;align-items:center;gap:16px;padding:20px;background:#fff;border-radius:10px;border:1px solid #E2E8F0;margin-bottom:18px;}
+    .profile-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#3B82F6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;flex-shrink:0;}
+    .profile-name{font-size:16px;font-weight:700;color:#0F172A;}
+    .profile-meta{font-size:12.5px;color:#64748B;margin-top:2px;}
+    .profile-stats{display:flex;gap:24px;margin-left:auto;}
+    .profile-stat{text-align:center;}
+    .profile-stat-value{font-size:18px;font-weight:700;color:#0F172A;}
+    .profile-stat-label{font-size:11px;color:#64748B;}
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar{width:4px;height:4px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:4px;}
+    ::-webkit-scrollbar-thumb:hover{background:#94A3B8;}
+
+    /* ── Zone detail inputs ── */
+    .zone-fields{display:none;}
+    .zone-fields.visible{display:block;}
+
+    /* ── Back button ── */
+    .back-btn{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:#64748B;cursor:pointer;margin-bottom:16px;padding:4px 0;}
+    .back-btn:hover{color:#0F172A;}
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">TM</div>
+      <div>
+        <div class="logo-text">TrendMarga</div>
+      </div>
+    </div>
+    <div class="logo-badge">CMS · Admin</div>
+  </div>
+
+  <div style="padding:8px 0;">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" data-screen="dashboard">
+      <span class="nav-icon"><i data-lucide="layout-dashboard" style="width:16px;height:16px"></i></span> Dashboard
+    </div>
+
+    <div class="nav-section">Store</div>
+    <div class="nav-item" data-screen="products">
+      <span class="nav-icon"><i data-lucide="package" style="width:16px;height:16px"></i></span> Products
+    </div>
+    <div class="nav-item" data-screen="categories">
+      <span class="nav-icon"><i data-lucide="folder" style="width:16px;height:16px"></i></span> Categories
+    </div>
+    <div class="nav-item" data-screen="orders">
+      <span class="nav-icon"><i data-lucide="shopping-cart" style="width:16px;height:16px"></i></span> Orders
+    </div>
+    <div class="nav-item" data-screen="customers">
+      <span class="nav-icon"><i data-lucide="users" style="width:16px;height:16px"></i></span> Customers
+    </div>
+
+    <div class="nav-section">Content</div>
+    <div class="nav-item" data-screen="content">
+      <span class="nav-icon"><i data-lucide="image" style="width:16px;height:16px"></i></span> Homepage Content
+    </div>
+
+    <div class="nav-section">Settings</div>
+    <div class="nav-item" data-screen="delivery">
+      <span class="nav-icon"><i data-lucide="truck" style="width:16px;height:16px"></i></span> Delivery Zones
+    </div>
+    <div class="nav-item" data-screen="settings">
+      <span class="nav-icon"><i data-lucide="settings" style="width:16px;height:16px"></i></span> Settings
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-row">
+      <div class="avatar">KA</div>
+      <div>
+        <div class="user-name">Kweku Admin</div>
+        <div class="user-role">Owner</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<div class="main">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="tb-chip">🌐 View Store</div>
+      <div class="tb-chip">May 21, 2026</div>
+      <div class="notif">🔔<span class="notif-dot"></span></div>
+      <div class="avatar" style="width:32px;height:32px;font-size:12px;">KA</div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ══ D1: DASHBOARD ══ -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Good morning, Kweku 👋</div>
+          <div class="page-sub">Here's what's happening with your store today.</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary">⬇ Export</button>
+          <button class="btn btn-primary">+ New Product</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon"><i data-lucide="banknote" style="width:22px;height:22px"></i></div>
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-value">GH₵ 28,450</div>
+          <div class="stat-change up">↑ 12.4% from last month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i data-lucide="shopping-cart" style="width:22px;height:22px"></i></div>
+          <div class="stat-label">Total Orders</div>
+          <div class="stat-value">247</div>
+          <div class="stat-change up">↑ 8.1% from last month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i data-lucide="package" style="width:22px;height:22px"></i></div>
+          <div class="stat-label">Products</div>
+          <div class="stat-value">86</div>
+          <div class="stat-change" style="color:#94A3B8;">14 low stock</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i data-lucide="users" style="width:22px;height:22px"></i></div>
+          <div class="stat-label">Customers</div>
+          <div class="stat-value">183</div>
+          <div class="stat-change up">↑ 23 new this month</div>
+        </div>
+      </div>
+
+      <div class="two-col" style="grid-template-columns:1fr 280px;">
+        <!-- Revenue Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Revenue Overview</div>
+              <div class="card-sub">Weekly breakdown</div>
+            </div>
+            <div class="chart-tabs">
+              <span class="chart-tab active">Week</span>
+              <span class="chart-tab">Month</span>
+              <span class="chart-tab">Year</span>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:42%"></div><div class="chart-label">Mon</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:63%"></div><div class="chart-label">Tue</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:51%"></div><div class="chart-label">Wed</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:78%"></div><div class="chart-label">Thu</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:67%"></div><div class="chart-label">Fri</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:92%"></div><div class="chart-label">Sat</div></div>
+            <div class="chart-bar-wrap"><div class="chart-bar" style="height:59%;opacity:0.5;"></div><div class="chart-label">Sun</div></div>
+          </div>
+        </div>
+
+        <!-- Order status donut placeholder -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Orders by Status</div></div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="info-row"><span class="info-label">🟢 Delivered</span><span class="info-value">124</span></div>
+            <div class="info-row"><span class="info-label">🔵 Processing</span><span class="info-value">38</span></div>
+            <div class="info-row"><span class="info-label">🟡 Confirmed</span><span class="info-value">51</span></div>
+            <div class="info-row"><span class="info-label">⚪ Pending</span><span class="info-value">22</span></div>
+            <div class="info-row"><span class="info-label">🔴 Cancelled</span><span class="info-value">12</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Orders</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('orders')">View all →</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Order</th><th>Customer</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0247</td><td>Abena Asante</td><td>Today, 9:14am</td><td>3 items</td><td class="td-bold">GH₵ 340</td><td><span class="badge bg-yellow">Pending</span></td></tr>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0246</td><td>Kofi Mensah</td><td>Today, 8:02am</td><td>1 item</td><td class="td-bold">GH₵ 120</td><td><span class="badge bg-blue">Confirmed</span></td></tr>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0245</td><td>Fatima Al-Hassan</td><td>Yesterday</td><td>2 items</td><td class="td-bold">GH₵ 560</td><td><span class="badge bg-cyan">Processing</span></td></tr>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0244</td><td>Yaw Darko</td><td>Yesterday</td><td>4 items</td><td class="td-bold">GH₵ 218</td><td><span class="badge bg-green">Delivered</span></td></tr>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0243</td><td>Ama Owusu</td><td>May 20</td><td>1 item</td><td class="td-bold">GH₵ 95</td><td><span class="badge bg-red">Cancelled</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top products -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Top Products This Week</div>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('products')">View all →</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Product</th><th>Category</th><th>Units Sold</th><th>Revenue</th><th>Stock</th></tr></thead>
+            <tbody>
+              <tr><td><div class="prod-row"><div class="prod-img-placeholder" style="background:#FEF3C7;">👟</div><span class="td-bold">Classic White Sneakers</span></div></td><td>Footwear</td><td>34</td><td>GH₵ 5,440</td><td><span class="badge bg-green">In Stock (42)</span></td></tr>
+              <tr><td><div class="prod-row"><div class="prod-img-placeholder" style="background:#FCE7F3;">👗</div><span class="td-bold">Ankara Print Dress</span></div></td><td>Women's</td><td>28</td><td>GH₵ 3,920</td><td><span class="badge bg-yellow">Low Stock (6)</span></td></tr>
+              <tr><td><div class="prod-row"><div class="prod-img-placeholder" style="background:#D1FAE5;">👜</div><span class="td-bold">Leather Crossbody Bag</span></div></td><td>Accessories</td><td>19</td><td>GH₵ 3,040</td><td><span class="badge bg-green">In Stock (15)</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ P1: PRODUCTS LIST ══ -->
+    <div class="screen" id="screen-products">
+      <div class="page-header">
+        <div><div class="page-title">Products</div><div class="page-sub">86 products total · 14 low stock</div></div>
+        <div class="header-actions">
+          <button class="btn btn-secondary">⬇ Import CSV</button>
+          <button class="btn btn-primary" onclick="navigate('add-product')">+ Add Product</button>
+        </div>
+      </div>
+      <div class="card" style="padding:14px 20px;">
+        <div class="toolbar">
+          <div class="search-group">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input class="search-input" type="text" placeholder="Search products..." />
+            </div>
+            <select class="filter-select"><option>All Categories</option><option>Clothing</option><option>Footwear</option><option>Accessories</option></select>
+            <select class="filter-select"><option>All Status</option><option>Active</option><option>Draft</option><option>Archived</option></select>
+          </div>
+          <div style="font-size:12.5px;color:#94A3B8;">Showing 1–20 of 86</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:40px;"><input type="checkbox" /></th><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td><div class="prod-row"><div class="prod-img-placeholder" style="background:#FEF3C7;">👟</div><div><div class="td-bold">Classic White Sneakers</div><div style="font-size:11px;color:#94A3B8;">SKU: SNK-001</div></div></div></td>
+                <td>Footwear</td><td>GH₵ 160</td><td><span class="badge bg-green">42 in stock</span></td><td><span class="badge bg-green">Active</span></td>
+                <td><button class="btn btn-ghost btn-xs" onclick="navigate('add-product')">Edit</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td><div class="prod-row"><div class="prod-img-placeholder" style="background:#FCE7F3;">👗</div><div><div class="td-bold">Ankara Print Dress</div><div style="font-size:11px;color:#94A3B8;">SKU: DRS-042</div></div></div></td>
+                <td>Women's</td><td>GH₵ 140</td><td><span class="badge bg-yellow">6 in stock</span></td><td><span class="badge bg-green">Active</span></td>
+                <td><button class="btn btn-ghost btn-xs" onclick="navigate('add-product')">Edit</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td><div class="prod-row"><div class="prod-img-placeholder" style="background:#D1FAE5;">👜</div><div><div class="td-bold">Leather Crossbody Bag</div><div style="font-size:11px;color:#94A3B8;">SKU: BAG-018</div></div></div></td>
+                <td>Accessories</td><td>GH₵ 160</td><td><span class="badge bg-green">15 in stock</span></td><td><span class="badge bg-green">Active</span></td>
+                <td><button class="btn btn-ghost btn-xs" onclick="navigate('add-product')">Edit</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td><div class="prod-row"><div class="prod-img-placeholder" style="background:#EDE9FE;">👔</div><div><div class="td-bold">Men's Slim Chinos</div><div style="font-size:11px;color:#94A3B8;">SKU: CHN-007</div></div></div></td>
+                <td>Men's</td><td>GH₵ 95</td><td><span class="badge bg-red">0 — Out of stock</span></td><td><span class="badge bg-gray">Draft</span></td>
+                <td><button class="btn btn-ghost btn-xs" onclick="navigate('add-product')">Edit</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td><div class="prod-row"><div class="prod-img-placeholder" style="background:#CFFAFE;">💍</div><div><div class="td-bold">Gold Hoop Earrings</div><div style="font-size:11px;color:#94A3B8;">SKU: JWL-033</div></div></div></td>
+                <td>Jewelry</td><td>GH₵ 65</td><td><span class="badge bg-green">30 in stock</span></td><td><span class="badge bg-green">Active</span></td>
+                <td><button class="btn btn-ghost btn-xs" onclick="navigate('add-product')">Edit</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" /></td>
+                <td><div class="prod-row"><div class="prod-img-placeholder" style="background:#FFEDD5;">🧥</div><div><div class="td-bold">Printed Bomber Jacket</div><div style="font-size:11px;color:#94A3B8;">SKU: JKT-011</div></div></div></td>
+                <td>Men's</td><td>GH₵ 220</td><td><span class="badge bg-yellow">3 in stock</span></td><td><span class="badge bg-green">Active</span></td>
+                <td><button class="btn btn-ghost btn-xs" onclick="navigate('add-product')">Edit</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ P2: ADD / EDIT PRODUCT ══ -->
+    <div class="screen" id="screen-add-product">
+      <div class="back-btn" onclick="navigate('products')">← Back to Products</div>
+      <div class="page-header">
+        <div><div class="page-title">Edit Product</div><div class="page-sub">Classic White Sneakers · SKU: SNK-001</div></div>
+        <div class="header-actions">
+          <button class="btn btn-secondary">Save Draft</button>
+          <button class="btn btn-primary">Publish Changes</button>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- Left -->
+        <div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:16px;">Product Information</div>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label>Product Name</label>
+                <input type="text" value="Classic White Sneakers" />
+              </div>
+              <div class="form-group full">
+                <label>Description</label>
+                <textarea>Premium quality white sneakers crafted from genuine leather. Comfortable sole for all-day wear. Available in multiple sizes.</textarea>
+              </div>
+              <div class="form-group">
+                <label>Category</label>
+                <select><option selected>Footwear</option><option>Men's</option><option>Women's</option><option>Accessories</option></select>
+              </div>
+              <div class="form-group">
+                <label>SKU</label>
+                <input type="text" value="SNK-001" />
+              </div>
+              <div class="form-group">
+                <label>Price <span class="label-hint">(GH₵)</span></label>
+                <div class="input-prefix"><span>GH₵</span><input type="number" value="160" /></div>
+              </div>
+              <div class="form-group">
+                <label>Compare-at Price <span class="label-hint">(optional)</span></label>
+                <div class="input-prefix"><span>GH₵</span><input type="number" value="200" /></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:16px;">Product Images</div>
+            <div class="image-thumbs">
+              <div class="img-thumb" style="background:#FEF3C7;">👟</div>
+              <div class="img-thumb" style="background:#F1F5F9;">👟</div>
+              <div class="img-thumb" style="background:#E2E8F0;">👟</div>
+            </div>
+            <div class="upload-zone" style="margin-top:12px;">
+              <div class="upload-icon">📎</div>
+              <div class="upload-text">Drop images here or click to upload</div>
+              <div class="upload-hint">PNG, JPG up to 5MB · Max 10 images</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right -->
+        <div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Status &amp; Visibility</div>
+            <div class="form-group">
+              <label>Status</label>
+              <select><option selected>Active</option><option>Draft</option><option>Archived</option></select>
+            </div>
+            <div class="divider"></div>
+            <div class="toggle-row"><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label><span class="toggle-label">Visible in storefront</span></div>
+            <div class="toggle-row" style="margin-top:10px;"><label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label><span class="toggle-label">Feature on homepage</span></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Inventory</div>
+            <div class="form-group">
+              <label>Stock Quantity</label>
+              <input type="number" value="42" />
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+              <label>Low stock alert at</label>
+              <input type="number" value="5" />
+            </div>
+            <div class="toggle-row" style="margin-top:12px;"><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label><span class="toggle-label">Track inventory</span></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Danger Zone</div>
+            <button class="btn btn-danger btn-sm" style="width:100%;">Delete Product</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ P3: CATEGORIES ══ -->
+    <div class="screen" id="screen-categories">
+      <div class="page-header">
+        <div><div class="page-title">Categories</div><div class="page-sub">Organise your product catalogue</div></div>
+        <button class="btn btn-primary">+ Add Category</button>
+      </div>
+      <div class="two-col" style="grid-template-columns:1fr 320px;">
+        <div class="card">
+          <div class="cat-item"><span class="cat-icon">👗</span><span class="cat-name" style="font-weight:700;">Clothing</span><span class="cat-count">48 products</span><button class="btn btn-ghost btn-xs" style="margin-left:8px;">Edit</button></div>
+          <div class="cat-item child"><span class="cat-icon">👔</span><span class="cat-name">Men's</span><span class="cat-count">21 products</span><button class="btn btn-ghost btn-xs" style="margin-left:8px;">Edit</button></div>
+          <div class="cat-item child"><span class="cat-icon">👗</span><span class="cat-name">Women's</span><span class="cat-count">27 products</span><button class="btn btn-ghost btn-xs" style="margin-left:8px;">Edit</button></div>
+          <div class="divider"></div>
+          <div class="cat-item"><span class="cat-icon">👜</span><span class="cat-name" style="font-weight:700;">Accessories</span><span class="cat-count">22 products</span><button class="btn btn-ghost btn-xs" style="margin-left:8px;">Edit</button></div>
+          <div class="cat-item child"><span class="cat-icon">👜</span><span class="cat-name">Bags</span><span class="cat-count">12 products</span><button class="btn btn-ghost btn-xs" style="margin-left:8px;">Edit</button></div>
+          <div class="cat-item child"><span class="cat-icon">💍</span><span class="cat-name">Jewelry</span><span class="cat-count">10 products</span><button class="btn btn-ghost btn-xs" style="margin-left:8px;">Edit</button></div>
+          <div class="divider"></div>
+          <div class="cat-item"><span class="cat-icon">👟</span><span class="cat-name" style="font-weight:700;">Footwear</span><span class="cat-count">16 products</span><button class="btn btn-ghost btn-xs" style="margin-left:8px;">Edit</button></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px;">Edit Category</div>
+          <div class="form-group"><label>Name</label><input type="text" value="Women's" /></div>
+          <div class="form-group" style="margin-top:12px;"><label>Slug</label><input type="text" value="womens" /></div>
+          <div class="form-group" style="margin-top:12px;"><label>Parent Category</label><select><option>Clothing (parent)</option><option>None (top-level)</option></select></div>
+          <div class="upload-zone" style="margin-top:12px;padding:14px;"><div class="upload-icon"><i data-lucide="image" style="width:22px;height:22px"></i></div><div class="upload-text" style="font-size:12px;">Category image</div></div>
+          <div style="display:flex;gap:8px;margin-top:14px;">
+            <button class="btn btn-secondary" style="flex:1;">Cancel</button>
+            <button class="btn btn-primary" style="flex:1;">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ O1: ORDERS LIST ══ -->
+    <div class="screen" id="screen-orders">
+      <div class="page-header">
+        <div><div class="page-title">Orders</div><div class="page-sub">247 orders total · 22 pending action</div></div>
+        <button class="btn btn-secondary">⬇ Export</button>
+      </div>
+      <div class="card" style="padding:14px 20px;">
+        <div class="toolbar">
+          <div class="search-group">
+            <div class="search-input-wrap"><span class="search-icon">🔍</span><input class="search-input" type="text" placeholder="Search order # or customer..." /></div>
+            <select class="filter-select"><option>All Statuses</option><option>Pending</option><option>Confirmed</option><option>Processing</option><option>Out for Delivery</option><option>Delivered</option><option>Cancelled</option></select>
+            <select class="filter-select"><option>All Time</option><option>Today</option><option>Last 7 days</option><option>Last 30 days</option></select>
+          </div>
+          <div style="font-size:12.5px;color:#94A3B8;">Showing 1–20 of 247</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Order #</th><th>Customer</th><th>Date</th><th>Items</th><th>Delivery Zone</th><th>Total</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0247</td><td>Abena Asante</td><td>May 21, 9:14am</td><td>3</td><td>Accra Central</td><td class="td-bold">GH₵ 340</td><td><span class="badge bg-yellow">Pending</span></td><td><button class="btn btn-primary btn-xs" onclick="navigate('order-detail')">View</button></td></tr>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0246</td><td>Kofi Mensah</td><td>May 21, 8:02am</td><td>1</td><td>Tema</td><td class="td-bold">GH₵ 120</td><td><span class="badge bg-blue">Confirmed</span></td><td><button class="btn btn-ghost btn-xs" onclick="navigate('order-detail')">View</button></td></tr>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0245</td><td>Fatima Al-Hassan</td><td>May 20, 4:45pm</td><td>2</td><td>East Legon</td><td class="td-bold">GH₵ 560</td><td><span class="badge bg-cyan">Processing</span></td><td><button class="btn btn-ghost btn-xs" onclick="navigate('order-detail')">View</button></td></tr>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0244</td><td>Yaw Darko</td><td>May 20, 1:30pm</td><td>4</td><td>Kumasi</td><td class="td-bold">GH₵ 218</td><td><span class="badge bg-green">Delivered</span></td><td><button class="btn btn-ghost btn-xs" onclick="navigate('order-detail')">View</button></td></tr>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0243</td><td>Ama Owusu</td><td>May 20, 11:00am</td><td>1</td><td>Accra Central</td><td class="td-bold">GH₵ 95</td><td><span class="badge bg-red">Cancelled</span></td><td><button class="btn btn-ghost btn-xs" onclick="navigate('order-detail')">View</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ O2: ORDER DETAIL ══ -->
+    <div class="screen" id="screen-order-detail">
+      <div class="back-btn" onclick="navigate('orders')">← Back to Orders</div>
+      <div class="page-header">
+        <div><div class="page-title">#ORD-0247</div><div class="page-sub">Placed May 21, 2026 at 9:14am · Cash on Delivery</div></div>
+        <div class="header-actions">
+          <button class="btn btn-secondary">Print Invoice</button>
+          <select class="filter-select" style="font-weight:600;border-color:#2563EB;color:#2563EB;"><option>Update Status ▾</option><option>Confirm Order</option><option>Mark Processing</option><option>Out for Delivery</option><option>Mark Delivered</option><option>Cancel Order</option></select>
+        </div>
+      </div>
+
+      <!-- Status Steps -->
+      <div class="card" style="padding:20px 28px;">
+        <div class="status-steps">
+          <div class="status-step done"><div class="step-dot">✓</div><div class="step-name">Pending</div></div>
+          <div class="status-step active"><div class="step-dot">•</div><div class="step-name">Confirmed</div></div>
+          <div class="status-step"><div class="step-dot">3</div><div class="step-name">Processing</div></div>
+          <div class="status-step"><div class="step-dot">4</div><div class="step-name">Out for Delivery</div></div>
+          <div class="status-step"><div class="step-dot">5</div><div class="step-name">Delivered</div></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- Order Items -->
+        <div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Order Items</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr></thead>
+                <tbody>
+                  <tr><td><div class="prod-row"><div class="prod-img-placeholder" style="background:#FEF3C7;">👟</div>Classic White Sneakers <span style="color:#94A3B8;font-size:11px;">Size 42</span></div></td><td>1</td><td>GH₵ 160</td><td class="td-bold">GH₵ 160</td></tr>
+                  <tr><td><div class="prod-row"><div class="prod-img-placeholder" style="background:#FCE7F3;">👗</div>Ankara Print Dress</div></td><td>1</td><td>GH₵ 140</td><td class="td-bold">GH₵ 140</td></tr>
+                  <tr><td><div class="prod-row"><div class="prod-img-placeholder" style="background:#CFFAFE;">💍</div>Gold Hoop Earrings</div></td><td>1</td><td>GH₵ 65</td><td class="td-bold">GH₵ 65</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="divider"></div>
+            <div class="info-row"><span class="info-label">Subtotal</span><span class="info-value">GH₵ 365</span></div>
+            <div class="info-row"><span class="info-label">Delivery Fee (Accra Central)</span><span class="info-value">GH₵ 25</span></div>
+            <div class="info-row"><span class="info-label" style="font-weight:700;color:#0F172A;">Total</span><span class="info-value" style="font-size:16px;font-weight:700;">GH₵ 390</span></div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom:16px;">Order Timeline</div>
+            <div class="timeline">
+              <div class="tl-item"><div class="tl-dot done">✓</div><div class="tl-content"><div class="tl-title">Order placed</div><div class="tl-time">May 21, 9:14am — Customer submitted order</div></div></div>
+              <div class="tl-item"><div class="tl-dot active">•</div><div class="tl-content"><div class="tl-title">Order confirmed</div><div class="tl-time">May 21, 9:32am — Confirmed by Kweku</div></div></div>
+              <div class="tl-item"><div class="tl-dot pending">3</div><div class="tl-content"><div class="tl-title">Processing</div><div class="tl-time">Waiting</div></div></div>
+              <div class="tl-item"><div class="tl-dot pending">4</div><div class="tl-content"><div class="tl-title">Out for delivery</div><div class="tl-time">Waiting</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer & Delivery -->
+        <div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Customer</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <div class="profile-avatar" style="width:38px;height:38px;font-size:14px;">AA</div>
+              <div><div class="td-bold">Abena Asante</div><div style="font-size:12px;color:#64748B;">abena@email.com</div></div>
+            </div>
+            <div class="info-row"><span class="info-label">Phone</span><span class="info-value">+233 24 123 4567</span></div>
+            <div class="info-row"><span class="info-label">Total Orders</span><span class="info-value">7 orders</span></div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px;width:100%;" onclick="navigate('customer-detail')">View Customer →</button>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Delivery Address</div>
+            <div style="font-size:13px;color:#374151;line-height:1.7;">14 Ringway Estates,<br>Osu, Accra<br>Accra Central Zone<br>Ghana</div>
+            <div class="info-row" style="margin-top:10px;"><span class="info-label">Est. Delivery</span><span class="info-value badge bg-blue">May 22–23</span></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:10px;">Order Notes</div>
+            <textarea style="font-size:12.5px;" placeholder="Add internal note...">Please call before delivery.</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ C1: CUSTOMERS ══ -->
+    <div class="screen" id="screen-customers">
+      <div class="page-header">
+        <div><div class="page-title">Customers</div><div class="page-sub">183 total · 23 new this month</div></div>
+        <button class="btn btn-secondary">⬇ Export</button>
+      </div>
+      <div class="card" style="padding:14px 20px;">
+        <div class="toolbar">
+          <div class="search-input-wrap"><span class="search-icon">🔍</span><input class="search-input" type="text" placeholder="Search by name, email or phone..." /></div>
+          <div style="font-size:12.5px;color:#94A3B8;">Showing 1–20 of 183</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Customer</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Last Order</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><div class="prod-row"><div class="profile-avatar" style="width:30px;height:30px;font-size:11px;">AA</div><div><div class="td-bold">Abena Asante</div><div style="font-size:11px;color:#94A3B8;">abena@email.com</div></div></div></td><td>+233 24 123 4567</td><td>7</td><td>GH₵ 1,240</td><td>Today</td><td><button class="btn btn-ghost btn-xs" onclick="navigate('customer-detail')">View</button></td></tr>
+              <tr><td><div class="prod-row"><div class="profile-avatar" style="width:30px;height:30px;font-size:11px;background:linear-gradient(135deg,#10B981,#06B6D4);">KM</div><div><div class="td-bold">Kofi Mensah</div><div style="font-size:11px;color:#94A3B8;">kofi@email.com</div></div></div></td><td>+233 20 987 6543</td><td>12</td><td>GH₵ 2,880</td><td>Today</td><td><button class="btn btn-ghost btn-xs" onclick="navigate('customer-detail')">View</button></td></tr>
+              <tr><td><div class="prod-row"><div class="profile-avatar" style="width:30px;height:30px;font-size:11px;background:linear-gradient(135deg,#F97316,#EF4444);">FA</div><div><div class="td-bold">Fatima Al-Hassan</div><div style="font-size:11px;color:#94A3B8;">fatima@email.com</div></div></div></td><td>+233 26 456 7890</td><td>4</td><td>GH₵ 890</td><td>Yesterday</td><td><button class="btn btn-ghost btn-xs" onclick="navigate('customer-detail')">View</button></td></tr>
+              <tr><td><div class="prod-row"><div class="profile-avatar" style="width:30px;height:30px;font-size:11px;background:linear-gradient(135deg,#8B5CF6,#EC4899);">YD</div><div><div class="td-bold">Yaw Darko</div><div style="font-size:11px;color:#94A3B8;">yaw@email.com</div></div></div></td><td>+233 27 321 0987</td><td>9</td><td>GH₵ 1,540</td><td>Yesterday</td><td><button class="btn btn-ghost btn-xs" onclick="navigate('customer-detail')">View</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ C2: CUSTOMER DETAIL ══ -->
+    <div class="screen" id="screen-customer-detail">
+      <div class="back-btn" onclick="navigate('customers')">← Back to Customers</div>
+      <div class="profile-card">
+        <div class="profile-avatar" style="width:52px;height:52px;font-size:18px;">AA</div>
+        <div>
+          <div class="profile-name">Abena Asante</div>
+          <div class="profile-meta">abena@email.com · +233 24 123 4567 · Customer since Jan 2026</div>
+        </div>
+        <div class="profile-stats">
+          <div class="profile-stat"><div class="profile-stat-value">7</div><div class="profile-stat-label">Orders</div></div>
+          <div class="profile-stat"><div class="profile-stat-value">GH₵ 1,240</div><div class="profile-stat-label">Total Spent</div></div>
+          <div class="profile-stat"><div class="profile-stat-value">GH₵ 177</div><div class="profile-stat-label">Avg. Order</div></div>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px;">Order History</div>
+          <table>
+            <thead><tr><th>Order</th><th>Date</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="td-link" onclick="navigate('order-detail')">#ORD-0247</td><td>May 21, 2026</td><td>3</td><td>GH₵ 390</td><td><span class="badge bg-yellow">Pending</span></td></tr>
+              <tr><td class="td-link">#ORD-0231</td><td>May 14, 2026</td><td>2</td><td>GH₵ 205</td><td><span class="badge bg-green">Delivered</span></td></tr>
+              <tr><td class="td-link">#ORD-0218</td><td>May 8, 2026</td><td>1</td><td>GH₵ 160</td><td><span class="badge bg-green">Delivered</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Default Address</div>
+            <div style="font-size:13px;color:#374151;line-height:1.7;">14 Ringway Estates<br>Osu, Accra<br>Ghana</div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Notes</div>
+            <textarea style="font-size:12.5px;" placeholder="Internal notes about customer...">VIP customer — regular buyer.</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CT1: CONTENT SECTIONS ══ -->
+    <div class="screen" id="screen-content">
+      <div class="page-header">
+        <div><div class="page-title">Homepage Content</div><div class="page-sub">Drag to reorder · Toggle to show/hide sections</div></div>
+        <button class="btn btn-primary" onclick="navigate('edit-section')">+ Add Section</button>
+      </div>
+      <div style="max-width:720px;">
+        <div class="section-row">
+          <span class="drag-handle">⠿</span>
+          <div class="section-thumb" style="background:#DBEAFE;">🦸</div>
+          <div class="section-info"><div class="section-name">Hero Banner</div><div class="section-desc">Main hero with CTA — "New Collection is Here"</div></div>
+          <span class="badge bg-purple">HERO</span>
+          <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          <button class="btn btn-ghost btn-xs" onclick="navigate('edit-section')">Edit</button>
+        </div>
+        <div class="section-row">
+          <span class="drag-handle">⠿</span>
+          <div class="section-thumb" style="background:#D1FAE5;">📢</div>
+          <div class="section-info"><div class="section-name">Announcement Bar</div><div class="section-desc">Free delivery on orders above GH₵ 200</div></div>
+          <span class="badge bg-orange">ANNOUNCEMENT</span>
+          <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          <button class="btn btn-ghost btn-xs" onclick="navigate('edit-section')">Edit</button>
+        </div>
+        <div class="section-row">
+          <span class="drag-handle">⠿</span>
+          <div class="section-thumb" style="background:#FEF3C7;">⭐</div>
+          <div class="section-info"><div class="section-name">Featured Products</div><div class="section-desc">Showing 6 products — Classic Sneakers, Ankara Dress +4</div></div>
+          <span class="badge bg-blue">FEATURED</span>
+          <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          <button class="btn btn-ghost btn-xs" onclick="navigate('edit-section')">Edit</button>
+        </div>
+        <div class="section-row">
+          <span class="drag-handle">⠿</span>
+          <div class="section-thumb" style="background:#EDE9FE;"><i data-lucide="image" style="width:18px;height:18px;color:#7C3AED"></i></div>
+          <div class="section-info"><div class="section-name">Promo Banner</div><div class="section-desc">Summer Sale — Up to 30% off selected items</div></div>
+          <span class="badge bg-purple">BANNER</span>
+          <label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label>
+          <button class="btn btn-ghost btn-xs" onclick="navigate('edit-section')">Edit</button>
+        </div>
+        <div class="section-row">
+          <span class="drag-handle">⠿</span>
+          <div class="section-thumb" style="background:#FFEDD5;">💬</div>
+          <div class="section-info"><div class="section-name">Testimonials</div><div class="section-desc">3 customer reviews displayed</div></div>
+          <span class="badge bg-orange">TESTIMONIALS</span>
+          <label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label>
+          <button class="btn btn-ghost btn-xs" onclick="navigate('edit-section')">Edit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CT2: EDIT SECTION ══ -->
+    <div class="screen" id="screen-edit-section">
+      <div class="back-btn" onclick="navigate('content')">← Back to Homepage Content</div>
+      <div class="page-header">
+        <div><div class="page-title">Edit Section</div><div class="page-sub">Featured Products</div></div>
+        <div class="header-actions"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Save Section</button></div>
+      </div>
+
+      <!-- Section type selector -->
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-title" style="margin-bottom:12px;">Section Type</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid #E2E8F0;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">
+            <input type="radio" name="sectype" value="hero" style="accent-color:#2563EB"> Hero Banner
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid #2563EB;background:#EFF6FF;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:#2563EB;">
+            <input type="radio" name="sectype" value="featured" checked style="accent-color:#2563EB"> Featured Products
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;padding:9px 14px;border:1.5px solid #E2E8F0;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;">
+            <input type="radio" name="sectype" value="promo" style="accent-color:#2563EB"> Promo Banner
+          </label>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px;">Section Settings</div>
+          <div class="form-grid">
+            <div class="form-group full"><label>Section Title</label><input type="text" value="Featured Products" /></div>
+            <div class="form-group full"><label>Subtitle</label><input type="text" value="Handpicked styles for you" /></div>
+            <div class="form-group"><label>Display Order</label><input type="number" value="2" /></div>
+            <div class="form-group"><label>Max items shown</label><input type="number" value="6" /></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:14px;">Display Options</div>
+          <div class="toggle-row" style="margin-bottom:10px;"><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label><span class="toggle-label">Section visible</span></div>
+          <div class="toggle-row" style="margin-bottom:10px;"><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label><span class="toggle-label">Show as carousel</span></div>
+          <div class="toggle-row"><label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label><span class="toggle-label">Show "See all" link</span></div>
+        </div>
+      </div>
+
+      <!-- FEATURED PRODUCTS PICKER -->
+      <div class="card" style="margin-top:18px;">
+        <div class="card-header">
+          <div class="card-title">Select Featured Products</div>
+          <span style="font-size:12px;color:#64748B;">4 of 6 selected &middot; drag to reorder</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;">
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #2563EB;background:#EFF6FF;border-radius:9px;cursor:pointer;">
+            <input type="checkbox" checked style="accent-color:#2563EB;flex-shrink:0;">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&q=70&fit=crop" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;"/>
+            <div style="min-width:0;">
+              <div style="font-size:12px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Air Foam Runners</div>
+              <div style="font-size:10px;color:#64748B;">Footwear &middot; GH&#8373;350</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #2563EB;background:#EFF6FF;border-radius:9px;cursor:pointer;">
+            <input type="checkbox" checked style="accent-color:#2563EB;flex-shrink:0;">
+            <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=120&q=70&fit=crop" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;"/>
+            <div style="min-width:0;">
+              <div style="font-size:12px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Floral Wrap Dress</div>
+              <div style="font-size:10px;color:#64748B;">Women &middot; GH&#8373;280</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #2563EB;background:#EFF6FF;border-radius:9px;cursor:pointer;">
+            <input type="checkbox" checked style="accent-color:#2563EB;flex-shrink:0;">
+            <img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=120&q=70&fit=crop" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;"/>
+            <div style="min-width:0;">
+              <div style="font-size:12px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Leather Tote Bag</div>
+              <div style="font-size:10px;color:#64748B;">Bags &middot; GH&#8373;420</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #2563EB;background:#EFF6FF;border-radius:9px;cursor:pointer;">
+            <input type="checkbox" checked style="accent-color:#2563EB;flex-shrink:0;">
+            <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=120&q=70&fit=crop" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;"/>
+            <div style="min-width:0;">
+              <div style="font-size:12px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Gold Drop Earrings</div>
+              <div style="font-size:10px;color:#64748B;">Jewelry &middot; GH&#8373;95</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #E2E8F0;background:#fff;border-radius:9px;cursor:pointer;">
+            <input type="checkbox" style="accent-color:#2563EB;flex-shrink:0;">
+            <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=120&q=70&fit=crop" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;"/>
+            <div style="min-width:0;">
+              <div style="font-size:12px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Bomber Jacket</div>
+              <div style="font-size:10px;color:#64748B;">Men &middot; GH&#8373;590</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid #E2E8F0;background:#fff;border-radius:9px;cursor:pointer;">
+            <input type="checkbox" style="accent-color:#2563EB;flex-shrink:0;">
+            <img src="https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=120&q=70&fit=crop" style="width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0;"/>
+            <div style="min-width:0;">
+              <div style="font-size:12px;font-weight:600;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Slim Fit Chinos</div>
+              <div style="font-size:10px;color:#64748B;">Men &middot; GH&#8373;220</div>
+            </div>
+          </label>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #E2E8F0;display:flex;align-items:center;gap:8px;">
+          <i data-lucide="info" style="width:13px;height:13px;color:#64748B"></i>
+          <span style="font-size:12px;color:#64748B;">Selected products appear in the storefront carousel in the order shown. Drag to reorder.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DL1: DELIVERY ZONES ══ -->
+    <div class="screen" id="screen-delivery">
+      <div class="page-header">
+        <div><div class="page-title">Delivery Zones</div><div class="page-sub">Configure fees and strategies per zone</div></div>
+        <button class="btn btn-primary" onclick="navigate('add-zone')">+ Add Zone</button>
+      </div>
+
+      <!-- Global settings card -->
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-header"><div class="card-title">Global Delivery Settings</div></div>
+        <div class="three-col">
+          <div class="form-group"><label>Estimated Delivery (min days)</label><input type="number" value="1" /></div>
+          <div class="form-group"><label>Estimated Delivery (max days)</label><input type="number" value="3" /></div>
+          <div class="form-group"><label>Free Delivery Threshold (GH₵)</label><input type="number" value="200" /></div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:14px 20px;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Zone Name</th><th>Coverage</th><th>Strategy</th><th>Base Fee</th><th>Active</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="td-bold">Accra Central</td><td>Osu, Labone, Ridge, Airport Res.</td><td><span class="badge bg-blue">Flat Fee</span></td><td>GH₵ 20</td><td><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label></td><td><button class="btn btn-ghost btn-xs" onclick="navigate('add-zone')">Edit</button></td></tr>
+              <tr><td class="td-bold">Tema</td><td>Community 1–25</td><td><span class="badge bg-purple">Flat Fee</span></td><td>GH₵ 35</td><td><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label></td><td><button class="btn btn-ghost btn-xs" onclick="navigate('add-zone')">Edit</button></td></tr>
+              <tr><td class="td-bold">East Legon</td><td>East Legon, Adjiringanor</td><td><span class="badge bg-orange">Distance</span></td><td>GH₵ 5/km</td><td><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label></td><td><button class="btn btn-ghost btn-xs" onclick="navigate('add-zone')">Edit</button></td></tr>
+              <tr><td class="td-bold">Kumasi</td><td>Greater Kumasi</td><td><span class="badge bg-cyan">Combined</span></td><td>GH₵ 50 + distance</td><td><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label></td><td><button class="btn btn-ghost btn-xs" onclick="navigate('add-zone')">Edit</button></td></tr>
+              <tr><td class="td-bold">Takoradi</td><td>Sekondi-Takoradi Metro</td><td><span class="badge bg-gray">Free Threshold</span></td><td>Free above GH₵ 300</td><td><label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label></td><td><button class="btn btn-ghost btn-xs" onclick="navigate('add-zone')">Edit</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DL2: ADD / EDIT ZONE ══ -->
+    <div class="screen" id="screen-add-zone">
+      <div class="back-btn" onclick="navigate('delivery')">← Back to Delivery Zones</div>
+      <div class="page-header">
+        <div><div class="page-title">Edit Delivery Zone</div><div class="page-sub">East Legon</div></div>
+        <div class="header-actions"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Save Zone</button></div>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Zone Details</div>
+            <div class="form-group" style="margin-bottom:12px;"><label>Zone Name</label><input type="text" value="East Legon" /></div>
+            <div class="form-group"><label>Coverage Areas <span class="label-hint">(comma separated)</span></label><textarea style="min-height:64px;">East Legon, Adjiringanor, Dzorwulu</textarea></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Fee Strategy</div>
+            <div class="strategy-grid">
+              <div class="strategy-card"><div class="strategy-icon">📌</div><div class="strategy-title">Flat Fee</div><div class="strategy-desc">Fixed charge regardless of distance</div></div>
+              <div class="strategy-card selected"><div class="strategy-icon">📍</div><div class="strategy-title">Distance-Based</div><div class="strategy-desc">Fee calculated per km via Google Maps</div></div>
+              <div class="strategy-card"><div class="strategy-icon">🎁</div><div class="strategy-title">Free Threshold</div><div class="strategy-desc">Free delivery above a minimum order</div></div>
+              <div class="strategy-card"><div class="strategy-icon">⚡</div><div class="strategy-title">Combined</div><div class="strategy-desc">Flat base + distance top-up + threshold</div></div>
+            </div>
+            <!-- Distance fields (visible because selected) -->
+            <div class="form-grid">
+              <div class="form-group"><label>Base Fee (GH₵)</label><input type="number" value="10" /></div>
+              <div class="form-group"><label>Fee per km (GH₵)</label><input type="number" value="5" /></div>
+              <div class="form-group full"><label>Free delivery above (GH₵) <span class="label-hint">0 = disabled</span></label><input type="number" value="0" /></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Estimated Delivery Time</div>
+            <div class="form-group" style="margin-bottom:12px;"><label>Min days</label><input type="number" value="1" /></div>
+            <div class="form-group"><label>Max days</label><input type="number" value="2" /></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;">Status</div>
+            <div class="toggle-row"><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label><span class="toggle-label">Zone active</span></div>
+          </div>
+          <div class="card" style="background:#FEF3C7;border-color:#FCD34D;">
+            <div style="font-size:13px;font-weight:600;color:#92400E;margin-bottom:4px;">⚠️ Distance-Based Note</div>
+            <div style="font-size:12px;color:#92400E;">Requires Google Maps Distance Matrix API key in Settings. Fees are calculated at checkout based on the customer's delivery address.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ST1: SETTINGS ══ -->
+    <div class="screen" id="screen-settings">
+      <div class="page-header">
+        <div><div class="page-title">Settings</div><div class="page-sub">Store configuration, integrations &amp; branding</div></div>
+        <button class="btn btn-primary">Save All Changes</button>
+      </div>
+
+      <!-- Store Information -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">🏪 Store Information</div></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Store Name</label><input type="text" value="TrendMarga" /></div>
+          <div class="form-group"><label>Tagline</label><input type="text" value="Style That Speaks Volumes." /></div>
+          <div class="form-group"><label>Contact Email</label><input type="email" value="hello@trendmarga.com" /></div>
+          <div class="form-group"><label>Contact Phone</label><input type="tel" value="+233 XX XXX XXXX" /></div>
+          <div class="form-group full"><label>Business Address</label><input type="text" value="Accra, Ghana" /></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <!-- Social Links -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">📱 Social &amp; Storefront Links</div></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>Instagram URL</label><input type="text" placeholder="https://instagram.com/trendmarga" /></div>
+            <div class="form-group" style="margin-bottom:12px;"><label>Facebook URL</label><input type="text" placeholder="https://facebook.com/trendmarga" /></div>
+            <div class="form-group"><label>WhatsApp Number</label><input type="tel" value="+233 XX XXX XXXX" /></div>
+          </div>
+
+          <!-- Order Notifications -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">🔔 Order Notifications</div></div>
+            <div class="toggle-row" style="margin-bottom:12px;"><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label><span class="toggle-label">Email on new order</span></div>
+            <div class="toggle-row" style="margin-bottom:12px;"><label class="toggle"><input type="checkbox" checked /><span class="toggle-slider"></span></label><span class="toggle-label">Email when order is delivered</span></div>
+            <div class="toggle-row" style="margin-bottom:14px;"><label class="toggle"><input type="checkbox" /><span class="toggle-slider"></span></label><span class="toggle-label">Low stock alerts</span></div>
+            <div class="form-group"><label>Notification Email</label><input type="email" value="hello@trendmarga.com" /></div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="card" style="border-color:#FECACA;background:#FFF5F5;">
+            <div class="card-header"><div class="card-title" style="color:#991B1B;">⚠️ Danger Zone</div></div>
+            <div style="font-size:12.5px;color:#6B7280;margin-bottom:12px;">These actions cannot be undone. Use with caution.</div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost btn-sm">Clear Cache</button>
+              <button class="btn btn-danger btn-sm">Reset All Settings</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <!-- Integrations -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">⚙️ Integrations</div></div>
+            <div class="form-group" style="margin-bottom:4px;">
+              <label>Google Maps API Key <span class="label-hint">(distance-based delivery)</span></label>
+              <input type="password" value="AIzaSy••••••••••••••••••••" />
+              <div style="font-size:11.5px;color:#94A3B8;margin-top:4px;">Required for distance-based delivery zones. Enable the Distance Matrix API at console.cloud.google.com</div>
+            </div>
+            <div class="divider"></div>
+            <div style="font-size:12px;font-weight:600;color:#64748B;margin-bottom:8px;">Clerk Auth</div>
+            <div class="info-row"><span class="info-label">Auth Provider</span><span class="info-value"><span class="badge bg-blue">Clerk</span></span></div>
+            <div class="info-row"><span class="info-label">Admin Roles</span><span class="info-value">OWNER · STAFF</span></div>
+            <div style="font-size:11.5px;color:#94A3B8;margin-top:6px;">Clerk credentials are configured via environment variables — not editable here.</div>
+          </div>
+
+          <!-- Branding -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">🎨 Branding</div></div>
+            <div class="form-group" style="margin-bottom:14px;">
+              <label>Accent Colour</label>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <input type="color" value="#F97316" style="width:44px;height:36px;border-radius:7px;border:1px solid #D1D5DB;cursor:pointer;padding:2px;" />
+                <span style="font-size:12.5px;color:#374151;font-weight:600;">#F97316 — Orange</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Store Logo</label>
+              <div class="upload-zone" style="padding:16px;">
+                <div class="upload-icon">🖼</div>
+                <div class="upload-text" style="font-size:12.5px;">Upload logo</div>
+                <div class="upload-hint">SVG or PNG · transparent background recommended</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current Plan -->
+          <div class="card" style="background:#F0FDF4;border-color:#BBF7D0;">
+            <div class="card-header"><div class="card-title" style="color:#166534;">✅ Phase 1 — Active</div></div>
+            <div class="info-row"><span class="info-label">Storefront</span><span class="info-value badge bg-green">Live</span></div>
+            <div class="info-row"><span class="info-label">Payment</span><span class="info-value badge bg-yellow">Cash on Delivery</span></div>
+            <div class="info-row"><span class="info-label">Phase 2</span><span class="info-value" style="color:#94A3B8;font-size:12px;">Online pay · Mobile app</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
+<script>
+  const titles = {
+    dashboard: 'Dashboard',
+    products: 'Products',
+    'add-product': 'Products → Edit Product',
+    categories: 'Categories',
+    orders: 'Orders',
+    'order-detail': 'Orders → #ORD-0247',
+    customers: 'Customers',
+    'customer-detail': 'Customers → Abena Asante',
+    content: 'Homepage Content',
+    'edit-section': 'Homepage Content → Hero Banner',
+    delivery: 'Delivery Zones',
+    'add-zone': 'Delivery Zones → Edit Zone',
+    settings: 'Settings',
+  };
+
+  const navMap = {
+    dashboard: 'dashboard',
+    products: 'products',
+    'add-product': 'products',
+    categories: 'categories',
+    orders: 'orders',
+    'order-detail': 'orders',
+    customers: 'customers',
+    'customer-detail': 'customers',
+    content: 'content',
+    'edit-section': 'content',
+    delivery: 'delivery',
+    'add-zone': 'delivery',
+    settings: 'settings',
+  };
+
+  function navigate(id) {
+    if (id === '#') return;
+    // Hide all screens
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    // Show target
+    const target = document.getElementById('screen-' + id);
+    if (target) target.classList.add('active');
+    // Update topbar
+    const t = document.getElementById('topbar-title');
+    if (t) t.textContent = titles[id] || id;
+    // Update nav active
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const activeNav = navMap[id];
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.dataset.screen === activeNav) n.classList.add('active');
+    });
+    // Scroll to top
+    document.querySelector('.content').scrollTop = 0;
+  }
+
+  // Wire nav items
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => navigate(item.dataset.screen));
+  });
+  lucide.createIcons();
+</script>
+</body>
+</html>

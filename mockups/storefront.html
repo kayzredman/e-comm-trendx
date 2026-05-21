@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TrendMarga – Storefront</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+/* ── RESET & BASE ── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#E8EDF3;color:#1E293B;font-size:14px;min-height:100vh}
+:root{
+  --primary:#2563EB;--primary-dark:#1D4ED8;--primary-light:#EFF6FF;
+  --dark:#0F172A;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;
+  --surface:#F8FAFC;--white:#fff;--green:#16A34A;--red:#EF4444
+}
+a{text-decoration:none;color:inherit}
+button{font-family:'Inter',sans-serif;cursor:pointer}
+img{display:block}
+
+/* ── DEMO SWITCHER ── */
+#demo-bar{background:#0F172A;padding:8px 24px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#demo-bar span{color:#64748B;font-size:11px;font-weight:600;margin-right:4px}
+#demo-bar button{padding:4px 11px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;background:#1E293B;color:#94A3B8;transition:.15s}
+#demo-bar button.active,#demo-bar button:hover{background:#2563EB;color:#fff}
+
+/* ── SCREEN SHELL ── */
+.screen{display:none}
+.screen.active{display:block}
+
+/* ════════════════════════════
+   TOP NAV
+════════════════════════════ */
+.topnav{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200}
+.nav-inner{max-width:1280px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;gap:20px}
+.brand{font-weight:900;font-size:20px;color:var(--dark);letter-spacing:-0.5px;white-space:nowrap;cursor:pointer}
+.brand span{color:var(--primary)}
+.nav-links{display:flex;gap:4px;margin:0 8px}
+.nav-link{padding:6px 12px;border-radius:7px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;border:none;background:none;transition:.15s}
+.nav-link:hover,.nav-link.active{color:var(--primary);background:var(--primary-light)}
+.nav-search{flex:1;max-width:340px;display:flex;align-items:center;background:#F1F5F9;border:1.5px solid var(--border);border-radius:9px;padding:0 12px;gap:8px;height:38px;transition:.2s}
+.nav-search:focus-within{border-color:var(--primary);background:#fff}
+.nav-search input{border:none;outline:none;background:none;flex:1;font-size:13px;font-family:'Inter',sans-serif;color:var(--text)}
+.nav-search input::placeholder{color:#94A3B8}
+.nav-actions{display:flex;align-items:center;gap:4px;margin-left:auto}
+.nav-btn{background:none;border:none;padding:8px;border-radius:8px;color:var(--muted);display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;position:relative;transition:.15s}
+.nav-btn:hover{background:var(--primary-light);color:var(--primary)}
+.nav-cart-badge{position:absolute;top:3px;right:3px;background:var(--primary);color:#fff;font-size:9px;font-weight:700;border-radius:99px;width:16px;height:16px;display:flex;align-items:center;justify-content:center}
+
+/* ════════════════════════════
+   BREADCRUMB
+════════════════════════════ */
+.breadcrumb{max-width:1280px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.breadcrumb a{color:var(--muted);cursor:pointer}
+.breadcrumb a:hover{color:var(--primary)}
+.breadcrumb .sep{color:#CBD5E1}
+
+/* ════════════════════════════
+   HERO CAROUSEL
+════════════════════════════ */
+.hero-wrap{background:#fff;border-bottom:1px solid var(--border)}
+.hero-inner{max-width:1280px;margin:0 auto;padding:0 24px}
+.hero-carousel{position:relative;height:320px;overflow:hidden;border-radius:16px;margin:16px 0}
+.hero-slide{position:absolute;inset:0;opacity:0;transition:opacity .7s ease}
+.hero-slide.active{opacity:1}
+.hero-slide img{width:100%;height:100%;object-fit:cover}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.2) 55%,transparent 100%)}
+.hero-content{position:absolute;left:48px;top:50%;transform:translateY(-50%);color:#fff;max-width:420px}
+.hero-tag{display:inline-block;background:var(--primary);color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:4px 12px;border-radius:6px;margin-bottom:12px}
+.hero-content h1{font-size:36px;font-weight:900;line-height:1.15;margin-bottom:10px}
+.hero-content p{font-size:14px;opacity:.9;margin-bottom:22px;line-height:1.5}
+.hero-cta{display:inline-flex;align-items:center;gap:8px;background:#fff;color:var(--primary);font-weight:700;font-size:14px;padding:11px 22px;border-radius:9px;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.hero-cta:hover{background:var(--primary);color:#fff}
+.hero-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.2);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.3);width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;transition:.2s}
+.hero-arrow:hover{background:rgba(255,255,255,.4)}
+.hero-arrow.left{left:16px}
+.hero-arrow.right{right:16px}
+.hero-dots{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px}
+.hero-dot{width:7px;height:7px;border-radius:99px;background:rgba(255,255,255,.45);cursor:pointer;transition:.3s}
+.hero-dot.active{width:24px;background:#fff}
+
+/* ════════════════════════════
+   FILTER / CATEGORY BAR
+════════════════════════════ */
+.filter-bar-wrap{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:60px;z-index:100}
+.filter-bar{max-width:1280px;margin:0 auto;padding:0 24px;height:52px;display:flex;align-items:center;gap:8px;overflow-x:auto;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-chip{padding:6px 14px;border-radius:99px;border:1.5px solid var(--border);background:#fff;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:.15s;flex-shrink:0}
+.filter-chip:hover{border-color:var(--primary);color:var(--primary)}
+.filter-chip.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.filter-chip .count{background:rgba(0,0,0,.1);border-radius:99px;padding:1px 6px;font-size:10px}
+.filter-chip.active .count{background:rgba(255,255,255,.25)}
+.filter-divider{width:1px;height:24px;background:var(--border);flex-shrink:0;margin:0 4px}
+.sort-select{margin-left:auto;padding:6px 28px 6px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;color:var(--muted);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;appearance:none;cursor:pointer;flex-shrink:0}
+
+/* ════════════════════════════
+   PAGE CONTAINER
+════════════════════════════ */
+.page-container{max-width:1280px;margin:0 auto;padding:28px 24px}
+.page-container.narrow{max-width:960px}
+
+/* ════════════════════════════
+   SECTION HEADER
+════════════════════════════ */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.section-head h2{font-size:20px;font-weight:800;color:var(--dark)}
+.section-head .see-all{font-size:13px;color:var(--primary);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;border:none;background:none}
+
+/* ════════════════════════════
+   PRODUCT GRID
+════════════════════════════ */
+.product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.product-grid.col3{grid-template-columns:repeat(3,1fr)}
+.product-card{background:#fff;border-radius:14px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:box-shadow .2s,transform .2s}
+.product-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.1);transform:translateY(-3px)}
+.product-img-wrap{height:200px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.product-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.product-card:hover .product-img-wrap img{transform:scale(1.05)}
+.product-badge{position:absolute;top:10px;left:10px;background:var(--primary);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;z-index:1}
+.product-badge.sale{background:var(--red)}
+.product-badge.hot{background:#F59E0B}
+.product-wishlist{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:.2s;z-index:1}
+.product-wishlist:hover{border-color:var(--red);color:var(--red)}
+.product-info{padding:14px}
+.product-info .name{font-size:13px;font-weight:600;color:var(--dark);margin-bottom:4px;line-height:1.4}
+.product-info .meta{font-size:11px;color:var(--muted);margin-bottom:8px}
+.product-info .stars{display:flex;align-items:center;gap:3px;margin-bottom:8px}
+.product-info .stars svg{width:12px;height:12px}
+.product-info .stars .count{font-size:11px;color:var(--muted);margin-left:2px}
+.price-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.price{font-size:15px;font-weight:800;color:var(--dark)}
+.orig{font-size:12px;color:var(--muted);text-decoration:line-through}
+.discount-tag{font-size:11px;font-weight:700;color:var(--green);background:#F0FDF4;padding:2px 7px;border-radius:5px}
+.add-cart-btn{width:100%;padding:9px;border-radius:9px;border:1.5px solid var(--primary);background:#fff;color:var(--primary);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:7px;transition:.2s}
+.add-cart-btn:hover{background:var(--primary);color:#fff}
+
+/* ════════════════════════════
+   CATEGORY CARDS (homepage)
+════════════════════════════ */
+.cat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.cat-card{border-radius:14px;overflow:hidden;cursor:pointer;position:relative;height:160px;border:1px solid var(--border)}
+.cat-card img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.cat-card:hover img{transform:scale(1.06)}
+.cat-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.6) 0%,transparent 60%);display:flex;align-items:flex-end;padding:14px}
+.cat-card-name{color:#fff;font-size:13px;font-weight:700}
+
+/* ════════════════════════════
+   FEATURED CAROUSEL (homepage)
+════════════════════════════ */
+.feat-section{background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:28px 0;margin:8px 0}
+.feat-inner{max-width:1280px;margin:0 auto;padding:0 24px}
+.feat-carousel-wrap{position:relative;overflow:hidden}
+.feat-track{display:flex;gap:20px;transition:transform .4s ease}
+.feat-card{min-width:220px;background:#fff;border-radius:14px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:.2s}
+.feat-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.09);transform:translateY(-2px)}
+.feat-card .product-img-wrap{height:180px}
+.feat-card .product-info{padding:12px}
+.feat-nav-btn{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:#fff;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.1);z-index:5;transition:.2s}
+.feat-nav-btn:hover{background:var(--primary);border-color:var(--primary);color:#fff}
+.feat-nav-btn.left{left:-18px}
+.feat-nav-btn.right{right:-18px}
+
+/* ════════════════════════════
+   PROMO BANNER
+════════════════════════════ */
+.promo-banner{border-radius:16px;overflow:hidden;position:relative;height:140px;cursor:pointer;margin:28px 0}
+.promo-banner img{width:100%;height:100%;object-fit:cover}
+.promo-banner .ov{position:absolute;inset:0;background:linear-gradient(to right,rgba(37,99,235,.88),rgba(29,78,216,.4),transparent)}
+.promo-banner .txt{position:absolute;left:48px;top:50%;transform:translateY(-50%);color:#fff}
+.promo-banner .txt h3{font-size:22px;font-weight:800;margin-bottom:4px}
+.promo-banner .txt p{font-size:13px;opacity:.9}
+.promo-banner .txt .badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);padding:3px 12px;border-radius:6px;font-size:11px;font-weight:700;margin-top:8px}
+
+/* ════════════════════════════
+   PRODUCT DETAIL
+════════════════════════════ */
+.detail-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.detail-img-col{}
+.detail-main-img{border-radius:16px;overflow:hidden;height:420px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.detail-main-img img{width:100%;height:100%;object-fit:cover}
+.detail-thumbs{display:flex;gap:10px}
+.detail-thumb{width:76px;height:90px;border-radius:10px;overflow:hidden;border:2px solid var(--border);cursor:pointer;background:#fff}
+.detail-thumb img{width:100%;height:100%;object-fit:cover}
+.detail-thumb.active{border-color:var(--primary)}
+.detail-info-col{}
+.detail-info-col .product-name{font-size:26px;font-weight:800;color:var(--dark);line-height:1.2;margin-bottom:6px}
+.detail-info-col .product-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+.detail-stars{display:flex;align-items:center;gap:6px;margin-bottom:16px}
+.detail-stars .star-val{font-size:13px;font-weight:700;color:var(--dark)}
+.detail-stars .review-count{font-size:12px;color:var(--muted)}
+.detail-price-wrap{margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.detail-price{font-size:32px;font-weight:900;color:var(--dark);margin-bottom:4px}
+.detail-price-orig{font-size:14px;color:var(--muted);text-decoration:line-through;display:inline;margin-right:8px}
+.detail-price-save{display:inline-block;background:#F0FDF4;color:var(--green);font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px}
+.detail-price-note{font-size:12px;color:var(--muted);margin-top:4px}
+.detail-option-label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.color-swatches{display:flex;gap:8px;margin-bottom:20px}
+.color-swatch{width:30px;height:30px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:.2s}
+.color-swatch.active{border-color:var(--primary);box-shadow:0 0 0 2px #fff,0 0 0 4px var(--primary)}
+.size-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.size-btn{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.size-btn:hover{border-color:var(--primary);color:var(--primary)}
+.size-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.qty-row{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.qty-ctrl{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:9px;overflow:hidden}
+.qty-ctrl button{width:38px;height:38px;border:none;background:#F8FAFC;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.qty-ctrl button:hover{background:var(--primary-light);color:var(--primary)}
+.qty-ctrl span{width:48px;text-align:center;font-size:15px;font-weight:700;color:var(--dark);border-left:1px solid var(--border);border-right:1px solid var(--border)}
+.stock-info{font-size:12px;font-weight:600;color:var(--green);display:flex;align-items:center;gap:5px}
+.detail-cta-row{display:flex;gap:12px;margin-bottom:24px}
+.btn-buy-now{flex:1;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
+.btn-buy-now:hover{background:var(--primary-dark)}
+.btn-add-cart{flex:1;padding:13px;background:#fff;color:var(--primary);border:1.5px solid var(--primary);border-radius:10px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
+.btn-add-cart:hover{background:var(--primary-light)}
+.btn-wishlist{width:48px;height:48px;border-radius:10px;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s}
+.btn-wishlist:hover{border-color:var(--red);color:var(--red)}
+.delivery-info{display:flex;flex-direction:column;gap:10px}
+.delivery-row{display:flex;align-items:flex-start;gap:10px;padding:12px;background:#F8FAFC;border-radius:10px;border:1px solid var(--border)}
+.delivery-row svg{flex-shrink:0;color:var(--primary);margin-top:1px}
+.delivery-row .di-title{font-size:13px;font-weight:600;color:var(--dark)}
+.delivery-row .di-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ════════════════════════════
+   CART
+════════════════════════════ */
+.cart-layout{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start}
+.cart-table-card{background:#fff;border-radius:14px;border:1px solid var(--border);overflow:hidden}
+.cart-table-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 40px;gap:16px;padding:14px 20px;border-bottom:1px solid var(--border);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.cart-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 40px;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border);align-items:center}
+.cart-row:last-child{border-bottom:none}
+.cart-product-info{display:flex;align-items:center;gap:14px}
+.cart-product-info img{width:72px;height:72px;border-radius:10px;object-fit:cover;border:1px solid var(--border)}
+.cart-product-info .cpi-name{font-size:13px;font-weight:600;color:var(--dark)}
+.cart-product-info .cpi-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.cart-price{font-size:14px;font-weight:700;color:var(--dark)}
+.cart-qty{display:flex;align-items:center;gap:8px}
+.cart-qty button{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.cart-qty button:hover{background:var(--primary-light);border-color:var(--primary);color:var(--primary)}
+.cart-qty span{font-size:14px;font-weight:700;width:24px;text-align:center}
+.cart-total{font-size:14px;font-weight:800;color:var(--primary)}
+.cart-del{background:none;border:none;color:#CBD5E1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.cart-del:hover{color:var(--red)}
+
+/* ORDER SUMMARY CARD */
+.summary-card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:24px;position:sticky;top:80px}
+.summary-card h3{font-size:16px;font-weight:800;color:var(--dark);margin-bottom:20px}
+.promo-input-row{display:flex;gap:8px;margin-bottom:20px}
+.promo-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Inter',sans-serif;outline:none;color:var(--text)}
+.promo-input:focus{border-color:var(--primary)}
+.promo-apply-btn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700}
+.sum-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:7px 0;border-bottom:1px dashed var(--border)}
+.sum-row:last-of-type{border-bottom:none;padding-top:12px;margin-top:4px;font-size:15px;font-weight:800;color:var(--dark)}
+.sum-row .sum-val.green{color:var(--green)}
+.checkout-btn{width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;cursor:pointer;transition:.2s}
+.checkout-btn:hover{background:var(--primary-dark)}
+
+/* ════════════════════════════
+   CHECKOUT
+════════════════════════════ */
+.checkout-layout{display:grid;grid-template-columns:1fr 400px;gap:28px;align-items:start}
+.checkout-steps{display:flex;align-items:center;gap:0;margin-bottom:24px}
+.step-item{display:flex;flex-direction:column;align-items:center;flex:1;position:relative}
+.step-item:not(:last-child)::after{content:'';position:absolute;left:50%;right:-50%;height:2px;background:var(--border);top:14px;z-index:0}
+.step-item.done:not(:last-child)::after,.step-item.active:not(:last-child)::after{background:var(--primary)}
+.step-circle{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);background:#fff;z-index:1;position:relative}
+.step-item.done .step-circle{border-color:var(--primary);background:var(--primary);color:#fff}
+.step-item.active .step-circle{border-color:var(--primary);color:var(--primary);background:var(--primary-light)}
+.step-label{font-size:11px;font-weight:600;margin-top:5px;color:var(--muted)}
+.step-item.active .step-label,.step-item.done .step-label{color:var(--primary)}
+.form-card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:24px;margin-bottom:16px}
+.form-card h3{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;display:block}
+.form-label .req{color:var(--red)}
+.form-input{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:var(--text);transition:.2s}
+.form-input:focus{border-color:var(--primary)}
+.form-select{width:100%;border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;font-size:14px;font-family:'Inter',sans-serif;outline:none;color:var(--text);background:#fff;cursor:pointer}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-row.col3{grid-template-columns:1fr 1fr 1fr}
+.pay-option{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;margin-bottom:8px;transition:.2s}
+.pay-option.active{border-color:var(--primary);background:var(--primary-light)}
+.pay-option input[type=radio]{accent-color:var(--primary)}
+.pay-option .pay-label{font-size:13px;font-weight:600;color:var(--dark)}
+.pay-icons{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.pay-icon{height:28px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted)}
+.order-review-item{display:flex;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}
+.order-review-item:last-of-type{border-bottom:none}
+.order-review-item img{width:64px;height:64px;border-radius:9px;object-fit:cover;border:1px solid var(--border)}
+.order-review-item .ri-name{font-size:13px;font-weight:600;color:var(--dark)}
+.order-review-item .ri-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.order-review-item .ri-price{font-size:14px;font-weight:800;color:var(--dark);margin-left:auto}
+
+/* ════════════════════════════
+   CONFIRMATION
+════════════════════════════ */
+.confirm-wrap{max-width:640px;margin:40px auto;text-align:center}
+.confirm-icon{width:80px;height:80px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--primary)}
+.confirm-wrap h1{font-size:26px;font-weight:800;color:var(--dark);margin-bottom:8px}
+.confirm-wrap p{font-size:14px;color:var(--muted);margin-bottom:24px}
+.order-no-badge{display:inline-block;background:#F8FAFC;border:2px dashed var(--primary);border-radius:10px;padding:10px 28px;margin-bottom:28px}
+.order-no-badge .on-label{font-size:11px;color:var(--muted)}
+.order-no-badge .on-val{font-size:22px;font-weight:900;color:var(--primary);letter-spacing:1px}
+.confirm-items{background:#fff;border-radius:14px;border:1px solid var(--border);padding:20px;text-align:left;margin-bottom:20px}
+.confirm-items h3{font-size:14px;font-weight:700;color:var(--dark);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.confirm-actions{display:flex;gap:12px;justify-content:center}
+.confirm-actions button{padding:11px 28px;border-radius:10px;font-size:14px;font-weight:700}
+
+/* ════════════════════════════
+   TRACKING
+════════════════════════════ */
+.tracking-layout{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:start}
+.track-status-card{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border-radius:14px;padding:24px;margin-bottom:16px}
+.track-steps{padding:24px;background:#fff;border-radius:14px;border:1px solid var(--border)}
+.track-step{display:flex;gap:16px;padding-bottom:28px;position:relative}
+.track-step::before{content:'';position:absolute;left:19px;top:40px;width:2px;height:calc(100% - 16px);background:var(--border)}
+.track-step:last-child{padding-bottom:0}
+.track-step:last-child::before{display:none}
+.step-icon{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;background:#fff;flex-shrink:0;color:var(--muted)}
+.step-icon.done{border-color:var(--primary);background:var(--primary-light);color:var(--primary)}
+.step-icon.current{border-color:var(--primary);background:var(--primary);color:#fff}
+.step-info .sl{font-size:14px;font-weight:600;color:var(--dark)}
+.step-info .st{font-size:12px;color:var(--muted);margin-top:3px}
+
+/* ════════════════════════════
+   SEARCH
+════════════════════════════ */
+.search-hero{background:#fff;border-bottom:1px solid var(--border);padding:24px}
+.search-hero-inner{max-width:1280px;margin:0 auto;padding:0 24px}
+.search-bar-lg{display:flex;align-items:center;background:#F8FAFC;border:2px solid var(--border);border-radius:12px;padding:0 16px;gap:10px;height:52px;max-width:680px;transition:.2s}
+.search-bar-lg:focus-within{border-color:var(--primary);background:#fff}
+.search-bar-lg input{border:none;outline:none;background:none;flex:1;font-size:15px;font-family:'Inter',sans-serif;color:var(--text)}
+.search-bar-lg input::placeholder{color:#94A3B8}
+.search-result-meta{font-size:13px;color:var(--muted);margin-bottom:20px}
+.search-result-meta span{color:var(--dark);font-weight:700}
+
+/* ════════════════════════════
+   MISC UTILITIES
+════════════════════════════ */
+.tag-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600}
+.tag-pill.blue{background:var(--primary-light);color:var(--primary)}
+.tag-pill.green{background:#F0FDF4;color:var(--green)}
+.tag-pill.red{background:#FEF2F2;color:var(--red)}
+.tag-pill.orange{background:#FFF7ED;color:#EA580C}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.card-section-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+
+/* ════════════════════════════
+   FOOTER
+════════════════════════════ */
+.footer{background:#0F172A;color:#94A3B8;padding:16px 24px;text-align:center;font-size:12px;margin-top:auto}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ DEMO NAV BAR ═══════════════ -->
+<div id="demo-bar">
+  <span>SCREEN:</span>
+  <button class="active" data-s="homepage" onclick="showScreen('homepage')">Home</button>
+  <button data-s="listing" onclick="showScreen('listing')">Listing</button>
+  <button data-s="detail" onclick="showScreen('detail')">Detail</button>
+  <button data-s="cart" onclick="showScreen('cart')">Cart</button>
+  <button data-s="checkout" onclick="showScreen('checkout')">Checkout</button>
+  <button data-s="confirmation" onclick="showScreen('confirmation')">Confirmation</button>
+  <button data-s="tracking" onclick="showScreen('tracking')">Tracking</button>
+  <button data-s="search" onclick="showScreen('search')">Search</button>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SHARED TOP NAV
+═══════════════════════════════════════ -->
+<nav class="topnav" id="topnav">
+  <div class="nav-inner">
+    <div class="brand" onclick="showScreen('homepage')">Trend<span>Marga</span></div>
+    <div class="nav-links">
+      <button class="nav-link active" onclick="showScreen('listing')">Women</button>
+      <button class="nav-link" onclick="showScreen('listing')">Men</button>
+      <button class="nav-link" onclick="showScreen('listing')">Deals</button>
+      <button class="nav-link" onclick="showScreen('listing')">What's New</button>
+      <button class="nav-link">Delivery</button>
+    </div>
+    <div class="nav-search">
+      <i data-lucide="search" style="width:15px;height:15px;color:#94A3B8;flex-shrink:0"></i>
+      <input type="text" placeholder="Search products, brands..." onfocus="showScreen('search')"/>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-btn"><i data-lucide="user" style="width:18px;height:18px"></i><span>Account</span></button>
+      <button class="nav-btn" onclick="showScreen('cart')" style="position:relative">
+        <i data-lucide="shopping-cart" style="width:18px;height:18px"></i><span>Cart</span>
+        <span class="nav-cart-badge">3</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════════════
+  S1: HOMEPAGE
+════════════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-homepage">
+  <!-- HERO -->
+  <div class="hero-wrap">
+    <div class="hero-inner">
+      <div class="hero-carousel" id="heroCarousel">
+        <div class="hero-slide active">
+          <img src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1400&q=85&fit=crop" alt=""/>
+          <div class="hero-overlay"></div>
+          <div class="hero-content">
+            <div class="hero-tag">New Arrivals</div>
+            <h1>Summer Collection<br/>2025</h1>
+            <p>Explore the latest trends in women's fashion — bold colours, premium fabrics.</p>
+            <button class="hero-cta" onclick="showScreen('listing')">Shop Now <i data-lucide="arrow-right" style="width:15px;height:15px"></i></button>
+          </div>
+        </div>
+        <div class="hero-slide">
+          <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1400&q=85&fit=crop" alt=""/>
+          <div class="hero-overlay"></div>
+          <div class="hero-content">
+            <div class="hero-tag">Trending Now</div>
+            <h1>Fashion Week<br/>Picks</h1>
+            <p>Runway-inspired looks for everyday wear. Curated by our style team.</p>
+            <button class="hero-cta" onclick="showScreen('listing')">View Collection <i data-lucide="arrow-right" style="width:15px;height:15px"></i></button>
+          </div>
+        </div>
+        <div class="hero-slide">
+          <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1400&q=85&fit=crop" alt=""/>
+          <div class="hero-overlay"></div>
+          <div class="hero-content">
+            <div class="hero-tag" style="background:#EF4444">Up to 40% Off</div>
+            <h1>End of Season<br/>Sale</h1>
+            <p>Limited time only — grab your favourites before they're gone.</p>
+            <button class="hero-cta" onclick="showScreen('listing')">Shop Sale <i data-lucide="arrow-right" style="width:15px;height:15px"></i></button>
+          </div>
+        </div>
+        <button class="hero-arrow left" onclick="heroSlide(-1)"><i data-lucide="chevron-left" style="width:18px;height:18px"></i></button>
+        <button class="hero-arrow right" onclick="heroSlide(1)"><i data-lucide="chevron-right" style="width:18px;height:18px"></i></button>
+        <div class="hero-dots">
+          <div class="hero-dot active" id="dot-0" onclick="goSlide(0)"></div>
+          <div class="hero-dot" id="dot-1" onclick="goSlide(1)"></div>
+          <div class="hero-dot" id="dot-2" onclick="goSlide(2)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORY CHIPS -->
+  <div class="filter-bar-wrap">
+    <div class="filter-bar">
+      <div class="filter-chip active" onclick="showScreen('listing')">All</div>
+      <div class="filter-chip" onclick="showScreen('listing')">Women</div>
+      <div class="filter-chip" onclick="showScreen('listing')">Men</div>
+      <div class="filter-chip" onclick="showScreen('listing')">Bags <span class="count">12</span></div>
+      <div class="filter-chip" onclick="showScreen('listing')">Jewelry</div>
+      <div class="filter-chip" onclick="showScreen('listing')">Footwear</div>
+      <div class="filter-chip" onclick="showScreen('listing')">Sale <span class="count">48</span></div>
+    </div>
+  </div>
+
+  <div class="page-container">
+    <!-- CATEGORY CARDS -->
+    <div class="section-head">
+      <h2>Shop by Category</h2>
+    </div>
+    <div class="cat-grid" style="margin-bottom:36px">
+      <div class="cat-card" onclick="showScreen('listing')">
+        <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80&fit=crop" alt="Women"/>
+        <div class="cat-card-overlay"><div class="cat-card-name">Women</div></div>
+      </div>
+      <div class="cat-card" onclick="showScreen('listing')">
+        <img src="https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6?w=400&q=80&fit=crop" alt="Men"/>
+        <div class="cat-card-overlay"><div class="cat-card-name">Men</div></div>
+      </div>
+      <div class="cat-card" onclick="showScreen('listing')">
+        <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&q=80&fit=crop" alt="Bags"/>
+        <div class="cat-card-overlay"><div class="cat-card-name">Bags</div></div>
+      </div>
+      <div class="cat-card" onclick="showScreen('listing')">
+        <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&q=80&fit=crop" alt="Jewelry"/>
+        <div class="cat-card-overlay"><div class="cat-card-name">Jewelry</div></div>
+      </div>
+      <div class="cat-card" onclick="showScreen('listing')">
+        <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80&fit=crop" alt="Footwear"/>
+        <div class="cat-card-overlay"><div class="cat-card-name">Footwear</div></div>
+      </div>
+    </div>
+
+    <!-- NEW ARRIVALS -->
+    <div class="section-head">
+      <h2>New Arrivals</h2>
+      <button class="see-all" onclick="showScreen('listing')">See All <i data-lucide="arrow-right" style="width:14px;height:14px"></i></button>
+    </div>
+    <div class="product-grid" style="margin-bottom:36px">
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&q=80&fit=crop" alt="Dress"/><div class="product-badge sale">-20%</div><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info">
+          <div class="name">Floral Wrap Dress</div><div class="meta">Women's Collection</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><span class="count">(128)</span></div>
+          <div class="price-row"><span class="price">GH₵280</span><span class="orig">GH₵350</span><span class="discount-tag">20% off</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80&fit=crop" alt="Sneakers"/><div class="product-badge">New</div><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info">
+          <div class="name">Air Foam Runners</div><div class="meta">Footwear</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><span class="count">(64)</span></div>
+          <div class="price-row"><span class="price">GH₵350</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80&fit=crop" alt="Bag"/><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info">
+          <div class="name">Leather Tote Bag</div><div class="meta">Bags</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><span class="count">(42)</span></div>
+          <div class="price-row"><span class="price">GH₵420</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80&fit=crop" alt="Earrings"/><div class="product-badge hot">Hot</div><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info">
+          <div class="name">Gold Drop Earrings</div><div class="meta">Jewelry</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><span class="count">(89)</span></div>
+          <div class="price-row"><span class="price">GH₵95</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURED (CMS MANAGED) CAROUSEL -->
+  <div class="feat-section">
+    <div class="feat-inner">
+      <div class="section-head">
+        <h2>Featured Products <span style="background:#EFF6FF;color:#2563EB;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;border:1px dashed #2563EB;text-transform:uppercase;letter-spacing:.5px;vertical-align:middle;margin-left:8px">CMS Managed</span></h2>
+        <button class="see-all" onclick="showScreen('listing')">See All <i data-lucide="arrow-right" style="width:14px;height:14px"></i></button>
+      </div>
+      <div style="position:relative;padding:4px 0">
+        <div class="feat-carousel-wrap" id="featWrap">
+          <div class="feat-track" id="featTrack">
+            <div class="feat-card" onclick="showScreen('detail')">
+              <div class="product-img-wrap" style="height:180px"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80&fit=crop" alt=""/><div class="product-badge">New</div></div>
+              <div class="product-info"><div class="name">Air Foam Runners</div><div class="price-row"><span class="price">GH₵350</span></div><button class="add-cart-btn" style="padding:7px"><i data-lucide="shopping-cart" style="width:13px;height:13px"></i>Add</button></div>
+            </div>
+            <div class="feat-card" onclick="showScreen('detail')">
+              <div class="product-img-wrap" style="height:180px"><img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&q=80&fit=crop" alt=""/><div class="product-badge sale">-20%</div></div>
+              <div class="product-info"><div class="name">Floral Wrap Dress</div><div class="price-row"><span class="price">GH₵280</span><span class="orig">GH₵350</span></div><button class="add-cart-btn" style="padding:7px"><i data-lucide="shopping-cart" style="width:13px;height:13px"></i>Add</button></div>
+            </div>
+            <div class="feat-card" onclick="showScreen('detail')">
+              <div class="product-img-wrap" style="height:180px"><img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80&fit=crop" alt=""/></div>
+              <div class="product-info"><div class="name">Leather Tote Bag</div><div class="price-row"><span class="price">GH₵420</span></div><button class="add-cart-btn" style="padding:7px"><i data-lucide="shopping-cart" style="width:13px;height:13px"></i>Add</button></div>
+            </div>
+            <div class="feat-card" onclick="showScreen('detail')">
+              <div class="product-img-wrap" style="height:180px"><img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80&fit=crop" alt=""/></div>
+              <div class="product-info"><div class="name">Gold Drop Earrings</div><div class="price-row"><span class="price">GH₵95</span></div><button class="add-cart-btn" style="padding:7px"><i data-lucide="shopping-cart" style="width:13px;height:13px"></i>Add</button></div>
+            </div>
+            <div class="feat-card" onclick="showScreen('detail')">
+              <div class="product-img-wrap" style="height:180px"><img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80&fit=crop" alt=""/></div>
+              <div class="product-info"><div class="name">Bomber Jacket</div><div class="price-row"><span class="price">GH₵590</span></div><button class="add-cart-btn" style="padding:7px"><i data-lucide="shopping-cart" style="width:13px;height:13px"></i>Add</button></div>
+            </div>
+            <div class="feat-card" onclick="showScreen('detail')">
+              <div class="product-img-wrap" style="height:180px"><img src="https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80&fit=crop" alt=""/></div>
+              <div class="product-info"><div class="name">Slim Fit Chinos</div><div class="price-row"><span class="price">GH₵220</span></div><button class="add-cart-btn" style="padding:7px"><i data-lucide="shopping-cart" style="width:13px;height:13px"></i>Add</button></div>
+            </div>
+          </div>
+        </div>
+        <button class="feat-nav-btn left" id="featPrev" onclick="slideFeat(-1)"><i data-lucide="chevron-left" style="width:16px;height:16px"></i></button>
+        <button class="feat-nav-btn right" id="featNext" onclick="slideFeat(1)"><i data-lucide="chevron-right" style="width:16px;height:16px"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROMO BANNER -->
+  <div class="page-container">
+    <div class="promo-banner" onclick="showScreen('listing')">
+      <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1400&q=85&fit=crop" alt="Promo"/>
+      <div class="ov"></div>
+      <div class="txt">
+        <h3>New Arrivals Every Friday</h3>
+        <p>Fresh drops — be the first to shop</p>
+        <div class="badge">Shop Now →</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">© 2025 TrendMarga. All rights reserved.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+  S2: PRODUCT LISTING
+════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-listing">
+  <div class="filter-bar-wrap">
+    <div class="filter-bar">
+      <div class="filter-chip active">All</div>
+      <div class="filter-chip">Dresses</div>
+      <div class="filter-chip">Tops</div>
+      <div class="filter-chip">Bags</div>
+      <div class="filter-chip">Jewelry</div>
+      <div class="filter-chip">Footwear</div>
+      <div class="filter-divider"></div>
+      <div class="filter-chip"><i data-lucide="sliders-horizontal" style="width:12px;height:12px"></i> Price</div>
+      <div class="filter-chip"><i data-lucide="star" style="width:12px;height:12px"></i> Review</div>
+      <div class="filter-chip">Color</div>
+      <div class="filter-chip">All Filters <span class="count">2</span></div>
+      <select class="sort-select"><option>Sort by: Relevance</option><option>Price: Low to High</option><option>Price: High to Low</option><option>Newest First</option><option>Best Rated</option></select>
+    </div>
+  </div>
+
+  <div class="page-container">
+    <div class="breadcrumb" style="padding:16px 0 0">
+      <a onclick="showScreen('homepage')">Home</a><span class="sep">›</span>
+      <a>Women's Fashion</a>
+    </div>
+    <div class="section-head" style="margin-top:16px">
+      <h2>Women's Fashion <span style="font-size:14px;font-weight:400;color:var(--muted);margin-left:8px">— 48 products found</span></h2>
+    </div>
+
+    <div class="product-grid">
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&q=80&fit=crop" alt="Dress"/><div class="product-badge sale">-20%</div><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Floral Wrap Dress</div><div class="meta">Women</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><span class="count">(128)</span></div>
+          <div class="price-row"><span class="price">GH₵280</span><span class="orig">GH₵350</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80&fit=crop" alt="Sneakers"/><div class="product-badge">New</div><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Air Foam Runners</div><div class="meta">Footwear</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><span class="count">(64)</span></div>
+          <div class="price-row"><span class="price">GH₵350</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80&fit=crop" alt="Bag"/><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Leather Tote Bag</div><div class="meta">Bags</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><span class="count">(42)</span></div>
+          <div class="price-row"><span class="price">GH₵420</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80&fit=crop" alt="Earrings"/><div class="product-badge hot">Hot</div><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Gold Drop Earrings</div><div class="meta">Jewelry</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><span class="count">(89)</span></div>
+          <div class="price-row"><span class="price">GH₵95</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80&fit=crop" alt="Jacket"/><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Bomber Jacket</div><div class="meta">Men</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><span class="count">(33)</span></div>
+          <div class="price-row"><span class="price">GH₵590</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=600&q=80&fit=crop" alt="Chinos"/><div class="product-badge">New</div><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Slim Fit Chinos</div><div class="meta">Men</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><span class="count">(21)</span></div>
+          <div class="price-row"><span class="price">GH₵220</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=80&fit=crop" alt="Dress 2"/><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Floral Maxi Dress</div><div class="meta">Women</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><span class="count">(77)</span></div>
+          <div class="price-row"><span class="price">GH₵310</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80&fit=crop" alt="Fashion"/><div class="product-badge sale">-15%</div><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Summer Blouse</div><div class="meta">Women</div>
+          <div class="stars"><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><i data-lucide="star" style="width:12px;height:12px;fill:#E2E8F0;color:#E2E8F0"></i><span class="count">(15)</span></div>
+          <div class="price-row"><span class="price">GH₵170</span><span class="orig">GH₵200</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">© 2025 TrendMarga.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+  S3: PRODUCT DETAIL
+════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-detail">
+  <div class="page-container">
+    <div class="breadcrumb" style="padding:16px 0">
+      <a onclick="showScreen('homepage')">Home</a><span class="sep">›</span>
+      <a onclick="showScreen('listing')">Women</a><span class="sep">›</span>
+      <a onclick="showScreen('listing')">Dresses</a><span class="sep">›</span>
+      <span style="color:var(--dark);font-weight:500">Floral Wrap Dress</span>
+    </div>
+    <div class="detail-layout">
+      <!-- IMAGE COLUMN -->
+      <div class="detail-img-col">
+        <div class="detail-main-img" id="detailMainImg">
+          <img id="detailMainImgSrc" src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=900&q=85&fit=crop" alt="Dress"/>
+        </div>
+        <div class="detail-thumbs">
+          <div class="detail-thumb active" onclick="switchThumb(this,'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=900&q=85&fit=crop')"><img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200&q=75&fit=crop" alt=""/></div>
+          <div class="detail-thumb" onclick="switchThumb(this,'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=900&q=85&fit=crop')"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=200&q=75&fit=crop" alt=""/></div>
+          <div class="detail-thumb" onclick="switchThumb(this,'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=900&q=85&fit=crop')"><img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=200&q=75&fit=crop" alt=""/></div>
+          <div class="detail-thumb" onclick="switchThumb(this,'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=900&q=85&fit=crop')"><img src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=200&q=75&fit=crop" alt=""/></div>
+        </div>
+      </div>
+      <!-- INFO COLUMN -->
+      <div class="detail-info-col">
+        <div class="product-name">Floral Wrap Dress</div>
+        <div class="product-desc">A perfect balance of buttery-smooth fabric and the effortless elegance of florals.</div>
+        <div class="detail-stars">
+          <i data-lucide="star" style="width:14px;height:14px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:14px;height:14px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:14px;height:14px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:14px;height:14px;fill:#FBBF24;color:#FBBF24"></i><i data-lucide="star" style="width:14px;height:14px;fill:#E2E8F0;color:#E2E8F0"></i>
+          <span class="star-val">4.0</span><span class="review-count">(128 reviews)</span>
+        </div>
+
+        <div class="detail-price-wrap">
+          <div class="detail-price">GH₵280</div>
+          <span class="detail-price-orig">GH₵350</span><span class="detail-price-save">Save GH₵70</span>
+        </div>
+
+        <div class="detail-option-label">Choose a Color</div>
+        <div class="color-swatches" style="margin-bottom:20px">
+          <div class="color-swatch active" style="background:#E879A8" title="Pink"></div>
+          <div class="color-swatch" style="background:#1E293B" title="Black"></div>
+          <div class="color-swatch" style="background:#3B82F6" title="Blue"></div>
+          <div class="color-swatch" style="background:#86EFAC" title="Mint"></div>
+        </div>
+
+        <div class="detail-option-label">Select Size</div>
+        <div class="size-swatches">
+          <button class="size-btn">XS</button>
+          <button class="size-btn active">S</button>
+          <button class="size-btn">M</button>
+          <button class="size-btn">L</button>
+          <button class="size-btn">XL</button>
+        </div>
+
+        <div class="qty-row">
+          <div class="qty-ctrl">
+            <button><i data-lucide="minus" style="width:14px;height:14px"></i></button>
+            <span>1</span>
+            <button><i data-lucide="plus" style="width:14px;height:14px"></i></button>
+          </div>
+          <div class="stock-info"><i data-lucide="check-circle" style="width:14px;height:14px"></i> In Stock — Only 12 left!</div>
+        </div>
+
+        <div class="detail-cta-row">
+          <button class="btn-buy-now" onclick="showScreen('checkout')"><i data-lucide="zap" style="width:16px;height:16px"></i>Buy Now</button>
+          <button class="btn-add-cart" onclick="showScreen('cart')"><i data-lucide="shopping-cart" style="width:16px;height:16px"></i>Add to Cart</button>
+          <button class="btn-wishlist"><i data-lucide="heart" style="width:18px;height:18px"></i></button>
+        </div>
+
+        <div class="delivery-info">
+          <div class="delivery-row">
+            <i data-lucide="truck" style="width:18px;height:18px"></i>
+            <div><div class="di-title">Free Delivery</div><div class="di-sub">Enter your pincode for Delivery Availability</div></div>
+          </div>
+          <div class="delivery-row">
+            <i data-lucide="refresh-cw" style="width:18px;height:18px"></i>
+            <div><div class="di-title">Return Delivery</div><div class="di-sub">Free 30days Delivery Returns. Details</div></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7">
+          <div class="card-section-title" style="margin-bottom:8px">Product Details</div>
+          Made from lightweight chiffon with adjustable waist tie. Features V-neckline, flutter sleeves and an all-over floral print. Machine washable.
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+            <span class="tag-pill blue">Chiffon</span><span class="tag-pill blue">Machine Wash</span><span class="tag-pill blue">Imported</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">© 2025 TrendMarga.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+  S4: CART
+════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-cart">
+  <div class="page-container">
+    <div class="breadcrumb" style="padding:16px 0 20px">
+      <a onclick="showScreen('homepage')">Home</a><span class="sep">›</span><span style="color:var(--dark);font-weight:500">Shopping Cart</span>
+    </div>
+    <div class="section-head"><h2>My Cart <span style="font-size:14px;font-weight:400;color:var(--muted)">(3 items)</span></h2></div>
+    <div class="cart-layout">
+      <div>
+        <div class="cart-table-card">
+          <div class="cart-table-head">
+            <div>Product</div><div>Price</div><div>Quantity</div><div>Total</div><div></div>
+          </div>
+          <div class="cart-row">
+            <div class="cart-product-info"><img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200&q=80&fit=crop" alt="Dress"/><div><div class="cpi-name">Floral Wrap Dress</div><div class="cpi-meta">Size: S · Women's</div></div></div>
+            <div class="cart-price">GH₵280</div>
+            <div class="cart-qty"><button><i data-lucide="minus" style="width:12px;height:12px"></i></button><span>1</span><button><i data-lucide="plus" style="width:12px;height:12px"></i></button></div>
+            <div class="cart-total">GH₵280</div>
+            <button class="cart-del"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+          </div>
+          <div class="cart-row">
+            <div class="cart-product-info"><img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=80&fit=crop" alt="Sneakers"/><div><div class="cpi-name">Air Foam Runners</div><div class="cpi-meta">Size: 42 · Footwear</div></div></div>
+            <div class="cart-price">GH₵350</div>
+            <div class="cart-qty"><button><i data-lucide="minus" style="width:12px;height:12px"></i></button><span>1</span><button><i data-lucide="plus" style="width:12px;height:12px"></i></button></div>
+            <div class="cart-total">GH₵350</div>
+            <button class="cart-del"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+          </div>
+          <div class="cart-row">
+            <div class="cart-product-info"><img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=200&q=80&fit=crop" alt="Earrings"/><div><div class="cpi-name">Gold Drop Earrings</div><div class="cpi-meta">Jewelry</div></div></div>
+            <div class="cart-price">GH₵95</div>
+            <div class="cart-qty"><button><i data-lucide="minus" style="width:12px;height:12px"></i></button><span>2</span><button><i data-lucide="plus" style="width:12px;height:12px"></i></button></div>
+            <div class="cart-total">GH₵190</div>
+            <button class="cart-del"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:16px">
+          <button class="add-cart-btn" style="width:auto;padding:10px 20px" onclick="showScreen('listing')"><i data-lucide="arrow-left" style="width:14px;height:14px"></i> Continue Shopping</button>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>Order Summary</h3>
+        <div class="promo-input-row">
+          <input class="promo-input" type="text" placeholder="Enter coupon code"/>
+          <button class="promo-apply-btn">Apply</button>
+        </div>
+        <div class="sum-row"><span>Subtotal</span><span>GH₵820</span></div>
+        <div class="sum-row"><span>Delivery (Accra)</span><span>GH₵15</span></div>
+        <div class="sum-row"><span>Discount</span><span class="sum-val green">— GH₵0</span></div>
+        <div class="sum-row"><span>Total</span><span style="color:var(--primary)">GH₵835</span></div>
+        <button class="checkout-btn" onclick="showScreen('checkout')"><i data-lucide="lock" style="width:16px;height:16px"></i>Proceed to Checkout</button>
+      </div>
+    </div>
+  </div>
+  <div class="footer">© 2025 TrendMarga.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+  S5: CHECKOUT
+════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-checkout">
+  <div class="page-container">
+    <div class="breadcrumb" style="padding:16px 0 20px">
+      <a onclick="showScreen('homepage')">Home</a><span class="sep">›</span>
+      <a onclick="showScreen('cart')">Cart</a><span class="sep">›</span>
+      <span style="color:var(--dark);font-weight:500">Checkout</span>
+    </div>
+
+    <div class="checkout-steps" style="margin-bottom:28px;max-width:420px">
+      <div class="step-item done"><div class="step-circle"><i data-lucide="check" style="width:13px;height:13px"></i></div><div class="step-label">Cart</div></div>
+      <div class="step-item active"><div class="step-circle">2</div><div class="step-label">Delivery</div></div>
+      <div class="step-item"><div class="step-circle">3</div><div class="step-label">Payment</div></div>
+      <div class="step-item"><div class="step-circle">4</div><div class="step-label">Review</div></div>
+    </div>
+
+    <div class="checkout-layout">
+      <!-- LEFT: FORMS -->
+      <div>
+        <div class="form-card">
+          <h3><i data-lucide="package" style="width:16px;height:16px;color:var(--primary)"></i>Review Item &amp; Shipping</h3>
+          <div class="order-review-item">
+            <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200&q=80&fit=crop" alt="Dress"/>
+            <div><div class="ri-name">Floral Wrap Dress</div><div class="ri-meta">Color: Pink · Size: S · Qty: 1</div></div>
+            <div class="ri-price">GH₵280</div>
+          </div>
+          <div class="order-review-item">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=80&fit=crop" alt="Sneakers"/>
+            <div><div class="ri-name">Air Foam Runners</div><div class="ri-meta">Size: 42 · Qty: 1</div></div>
+            <div class="ri-price">GH₵350</div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)">
+            <i data-lucide="user" style="width:13px;height:13px"></i>Returning Customer? <a href="#" style="color:var(--primary);font-weight:600">Sign in</a>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3><i data-lucide="map-pin" style="width:16px;height:16px;color:var(--primary)"></i>Delivery Information</h3>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">First Name <span class="req">*</span></label><input class="form-input" type="text" placeholder="Type here..."/></div>
+            <div class="form-group"><label class="form-label">Last Name <span class="req">*</span></label><input class="form-input" type="text" placeholder="Type here..."/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Address <span class="req">*</span></label><input class="form-input" type="text" placeholder="Type here..."/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">City / Town <span class="req">*</span></label><input class="form-input" type="text" placeholder="Type here..."/></div>
+            <div class="form-group"><label class="form-label">Zip Code</label><input class="form-input" type="text" placeholder="Type here..."/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Mobile <span class="req">*</span></label><input class="form-input" type="tel" placeholder="Type here..."/></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="Type here..."/></div>
+          </div>
+          <button style="background:none;border:none;color:var(--primary);font-size:13px;font-weight:600;cursor:pointer;padding:0;display:flex;align-items:center;gap:5px">
+            <i data-lucide="save" style="width:13px;height:13px"></i> Save Information
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT: ORDER SUMMARY -->
+      <div class="summary-card">
+        <h3>Order Summary</h3>
+
+        <div class="promo-input-row">
+          <input class="promo-input" type="text" placeholder="Enter coupon code"/>
+          <button class="promo-apply-btn">Apply coupon</button>
+        </div>
+
+        <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:12px">Payment Details</div>
+        <div class="pay-option active">
+          <input type="radio" name="pay" checked/><span class="pay-label">Cash on Delivery</span>
+        </div>
+        <div class="pay-option">
+          <input type="radio" name="pay"/><span class="pay-label">TrendMarga Card</span>
+        </div>
+        <div class="pay-option">
+          <input type="radio" name="pay"/><span class="pay-label">Mobile Money (MTN / Vodafone)</span>
+        </div>
+        <div class="pay-option">
+          <input type="radio" name="pay"/><span class="pay-label">Credit or Debit Card</span>
+        </div>
+
+        <div style="margin-top:12px">
+          <label class="form-label">Email</label><input class="form-input" type="email" placeholder="Type here..." style="margin-bottom:10px"/>
+          <label class="form-label">Card Holder Name</label><input class="form-input" type="text" placeholder="Type here..." style="margin-bottom:10px"/>
+          <label class="form-label">Card Number</label><input class="form-input" type="text" placeholder="···· ···· ···· ····" style="margin-bottom:10px"/>
+          <div class="form-row">
+            <div><label class="form-label">Expiry</label><input class="form-input" type="text" placeholder="MM/YY"/></div>
+            <div><label class="form-label">CVC</label><input class="form-input" type="text" placeholder="···"/></div>
+          </div>
+        </div>
+
+        <div class="pay-icons">
+          <div class="pay-icon" style="font-weight:800;color:#F90;font-size:13px">amazon</div>
+          <div class="pay-icon"><i data-lucide="credit-card" style="width:16px;height:16px;color:#EB001B"></i></div>
+          <div class="pay-icon" style="font-weight:800;color:#1A1F71">VISA</div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sum-row"><span>Subtotal</span><span>GH₵820</span></div>
+        <div class="sum-row"><span>Delivery</span><span>GH₵15</span></div>
+        <div class="sum-row"><span>Total</span><span style="color:var(--primary)">GH₵835</span></div>
+        <button class="checkout-btn" onclick="showScreen('confirmation')"><i data-lucide="check-circle" style="width:16px;height:16px"></i>Place Order · GH₵835</button>
+      </div>
+    </div>
+  </div>
+  <div class="footer">© 2025 TrendMarga.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+  S6: CONFIRMATION
+════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-confirmation">
+  <div class="page-container" style="padding-top:40px">
+    <div class="confirm-wrap">
+      <div class="confirm-icon"><i data-lucide="check" style="width:40px;height:40px"></i></div>
+      <h1>Order Placed Successfully!</h1>
+      <p>Thank you for your purchase. Your order is confirmed and being processed.</p>
+      <div class="order-no-badge">
+        <div class="on-label">Order Number</div>
+        <div class="on-val">#TM-20041</div>
+      </div>
+
+      <div class="confirm-items">
+        <h3><i data-lucide="package" style="width:15px;height:15px;color:var(--primary)"></i> Order Summary</h3>
+        <div class="order-review-item">
+          <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200&q=80&fit=crop" alt="Dress"/>
+          <div><div class="ri-name">Floral Wrap Dress</div><div class="ri-meta">Size S · x1</div></div>
+          <div class="ri-price">GH₵280</div>
+        </div>
+        <div class="order-review-item">
+          <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&q=80&fit=crop" alt="Sneakers"/>
+          <div><div class="ri-name">Air Foam Runners</div><div class="ri-meta">Size 42 · x1</div></div>
+          <div class="ri-price">GH₵350</div>
+        </div>
+        <div style="padding-top:12px;margin-top:4px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-weight:700;font-size:14px">
+          <span>Total Paid</span><span style="color:var(--primary)">GH₵835</span>
+        </div>
+      </div>
+
+      <div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:12px;padding:16px;text-align:left;margin-bottom:24px;display:flex;align-items:center;gap:12px">
+        <i data-lucide="mail" style="width:20px;height:20px;color:var(--green);flex-shrink:0"></i>
+        <div><div style="font-size:13px;font-weight:600;color:var(--dark)">Confirmation email sent</div><div style="font-size:12px;color:var(--muted)">A receipt has been sent to your email address.</div></div>
+      </div>
+
+      <div class="confirm-actions">
+        <button class="btn-buy-now" style="flex:none;padding:11px 24px" onclick="showScreen('tracking')"><i data-lucide="map-pin" style="width:15px;height:15px"></i> Track My Order</button>
+        <button class="btn-add-cart" style="flex:none;padding:11px 24px" onclick="showScreen('homepage')"><i data-lucide="shopping-bag" style="width:15px;height:15px"></i> Continue Shopping</button>
+      </div>
+    </div>
+  </div>
+  <div class="footer">© 2025 TrendMarga.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+  S7: ORDER TRACKING
+════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-tracking">
+  <div class="page-container">
+    <div class="breadcrumb" style="padding:16px 0 20px">
+      <a onclick="showScreen('homepage')">Home</a><span class="sep">›</span>
+      <a onclick="showScreen('confirmation')">Orders</a><span class="sep">›</span>
+      <span style="color:var(--dark);font-weight:500">Track #TM-20041</span>
+    </div>
+    <div class="tracking-layout">
+      <div>
+        <div class="track-status-card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><div style="font-size:12px;opacity:.8;margin-bottom:4px">Current Status</div><div style="font-size:20px;font-weight:800">Out for Delivery</div></div>
+            <div style="text-align:right"><div style="font-size:12px;opacity:.8;margin-bottom:4px">Est. Arrival</div><div style="font-size:16px;font-weight:700">Today, 2 – 5pm</div></div>
+          </div>
+        </div>
+        <div class="track-steps">
+          <div class="track-step"><div class="step-icon done"><i data-lucide="check" style="width:16px;height:16px"></i></div><div class="step-info"><div class="sl">Order Placed</div><div class="st">24 Apr · 10:22 AM</div></div></div>
+          <div class="track-step"><div class="step-icon done"><i data-lucide="check" style="width:16px;height:16px"></i></div><div class="step-info"><div class="sl">Order Confirmed</div><div class="st">24 Apr · 10:45 AM</div></div></div>
+          <div class="track-step"><div class="step-icon done"><i data-lucide="check" style="width:16px;height:16px"></i></div><div class="step-info"><div class="sl">Packed &amp; Dispatched</div><div class="st">24 Apr · 2:00 PM</div></div></div>
+          <div class="track-step"><div class="step-icon current"><i data-lucide="truck" style="width:16px;height:16px"></i></div><div class="step-info"><div class="sl">Out for Delivery</div><div class="st">25 Apr · 9:15 AM · Rider: Kofi D.</div></div></div>
+          <div class="track-step"><div class="step-icon"><i data-lucide="home" style="width:16px;height:16px"></i></div><div class="step-info"><div class="sl">Delivered</div><div class="st">Pending</div></div></div>
+        </div>
+      </div>
+      <div class="summary-card">
+        <h3>Order #TM-20041</h3>
+        <div class="order-review-item" style="padding-top:0">
+          <img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=200&q=80&fit=crop" alt="Dress"/>
+          <div><div class="ri-name">Floral Wrap Dress</div><div class="ri-meta">Size S · x1</div></div>
+          <div class="ri-price">GH₵280</div>
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.8">
+          <div style="display:flex;justify-content:space-between"><span>Order Total</span><span style="font-weight:700;color:var(--dark)">GH₵835</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Payment</span><span style="font-weight:600;color:var(--dark)">Cash on Delivery</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Destination</span><span style="font-weight:600;color:var(--dark)">Accra Central</span></div>
+        </div>
+        <div class="divider"></div>
+        <button class="checkout-btn" style="background:#16A34A"><i data-lucide="phone" style="width:15px;height:15px"></i> Call Rider (Kofi D.)</button>
+        <button class="btn-add-cart" style="width:100%;padding:11px;margin-top:8px"><i data-lucide="message-circle" style="width:15px;height:15px"></i>WhatsApp Rider</button>
+      </div>
+    </div>
+  </div>
+  <div class="footer">© 2025 TrendMarga.</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+  S8: SEARCH
+════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-search">
+  <div class="search-hero">
+    <div class="search-hero-inner">
+      <div class="search-bar-lg">
+        <i data-lucide="search" style="width:18px;height:18px;color:#94A3B8;flex-shrink:0"></i>
+        <input type="text" placeholder="Search products, brands..." value="floral dress" autofocus/>
+        <button style="background:none;border:none;cursor:pointer;color:#94A3B8"><i data-lucide="x" style="width:16px;height:16px"></i></button>
+      </div>
+    </div>
+  </div>
+  <div class="filter-bar-wrap">
+    <div class="filter-bar">
+      <div class="filter-chip active">All</div>
+      <div class="filter-chip">Dresses</div>
+      <div class="filter-chip">Women</div>
+      <div class="filter-chip">Sale <span class="count">4</span></div>
+      <div class="filter-chip">Under GH₵300</div>
+      <div class="filter-divider"></div>
+      <select class="sort-select"><option>Sort by: Relevance</option><option>Price: Low–High</option><option>Newest</option></select>
+    </div>
+  </div>
+  <div class="page-container">
+    <div class="search-result-meta"><span>12</span> results for "floral dress"</div>
+    <div class="product-grid">
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&q=80&fit=crop" alt="Dress"/><div class="product-badge sale">-20%</div><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Floral Wrap Dress</div><div class="meta">Women</div>
+          <div class="price-row"><span class="price">GH₵280</span><span class="orig">GH₵350</span><span class="discount-tag">20% off</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=600&q=80&fit=crop" alt="Floral"/><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Floral Maxi Dress</div><div class="meta">Women</div>
+          <div class="price-row"><span class="price">GH₵310</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80&fit=crop" alt="Mini"/><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Floral Mini Dress</div><div class="meta">Women</div>
+          <div class="price-row"><span class="price">GH₵195</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+      <div class="product-card" onclick="showScreen('detail')">
+        <div class="product-img-wrap"><img src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&q=80&fit=crop" alt="Print"/><div class="product-badge">New</div><button class="product-wishlist"><i data-lucide="heart" style="width:13px;height:13px"></i></button></div>
+        <div class="product-info"><div class="name">Floral Print Skirt</div><div class="meta">Women</div>
+          <div class="price-row"><span class="price">GH₵165</span></div>
+          <button class="add-cart-btn"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i>Add to Cart</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">© 2025 TrendMarga.</div>
+</div>
+
+<script>
+const screens = ['homepage','listing','detail','cart','checkout','confirmation','tracking','search'];
+
+function showScreen(id) {
+  screens.forEach(s => {
+    const el = document.getElementById('screen-' + s);
+    if (el) el.classList.remove('active');
+  });
+  const t = document.getElementById('screen-' + id);
+  if (t) { t.classList.add('active'); window.scrollTo(0, 0); }
+  document.querySelectorAll('#demo-bar button').forEach(b => {
+    b.classList.toggle('active', b.dataset.s === id);
+  });
+}
+
+// ── HERO CAROUSEL ──
+let heroIdx = 0;
+const HERO_N = 3;
+function goSlide(n) {
+  document.getElementById('slide-' + heroIdx)?.classList.remove('active');
+  document.getElementById('dot-' + heroIdx)?.classList.remove('active');
+  heroIdx = (n + HERO_N) % HERO_N;
+  document.getElementById('slide-' + heroIdx)?.classList.add('active');
+  document.getElementById('dot-' + heroIdx)?.classList.add('active');
+}
+function heroSlide(d) { goSlide(heroIdx + d); }
+setInterval(() => heroSlide(1), 4500);
+
+// ── FEATURED CAROUSEL ──
+let featIdx = 0;
+const FEAT_CARD = 240; // min-width(220) + gap(20)
+const FEAT_MAX = 3;
+function slideFeat(d) {
+  featIdx = Math.max(0, Math.min(featIdx + d, FEAT_MAX));
+  document.getElementById('featTrack').style.transform = 'translateX(-' + (featIdx * FEAT_CARD) + 'px)';
+  document.getElementById('featPrev').style.opacity = featIdx === 0 ? '0.3' : '1';
+  document.getElementById('featNext').style.opacity = featIdx >= FEAT_MAX ? '0.3' : '1';
+}
+document.getElementById('featPrev').style.opacity = '0.3';
+
+// ── THUMBNAIL SWITCH (Detail) ──
+function switchThumb(el, src) {
+  document.querySelectorAll('.detail-thumb').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('detailMainImgSrc').src = src;
+}
+
+lucide.createIcons();
+</script>
+</body>
+</html>

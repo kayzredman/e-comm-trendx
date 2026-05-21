@@ -1,0 +1,24 @@
+{
+  "name": "trendmarga",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "turbo run db:generate --filter=@trendmarga/db",
+    "db:migrate": "turbo run db:migrate --filter=@trendmarga/db",
+    "db:studio": "turbo run db:studio --filter=@trendmarga/db"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.4.5",
+    "@types/node": "^20.14.0",
+    "prettier": "^3.3.2",
+    "eslint": "^8.57.0"
+  },
+  "packageManager": "pnpm@9.4.0",
+  "engines": {
+    "node": ">=20"
+  }
+}
