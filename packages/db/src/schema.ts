@@ -121,8 +121,8 @@ export const deliverySettings = pgTable('delivery_settings', {
 
 // ── Relations ─────────────────────────────────────────────────────────────────
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
-  parent: one(categories, { fields: [categories.parentId], references: [categories.id] }),
-  children: many(categories),
+  parent: one(categories, { fields: [categories.parentId], references: [categories.id], relationName: 'parentChildren' }),
+  children: many(categories, { relationName: 'parentChildren' }),
   products: many(products),
 }))
 

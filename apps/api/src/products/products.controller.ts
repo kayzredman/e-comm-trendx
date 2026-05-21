@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, NotFoundException } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { ProductsService } from './products.service'
 import { ClerkGuard } from '../auth/clerk.guard'
@@ -18,8 +18,10 @@ export class ProductsController {
 
   @Get('slug/:slug')
   @Public()
-  findBySlug(@Param('slug') slug: string) {
-    return this.productsService.findBySlug(slug)
+  async findBySlug(@Param('slug') slug: string) {
+    const product = await this.productsService.findBySlug(slug)
+    if (!product) throw new NotFoundException('Product not found')
+    return product
   }
 
   @Get(':id')

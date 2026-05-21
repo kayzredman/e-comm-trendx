@@ -6,7 +6,7 @@ const envSchema = z.object({
 
   // Clerk
   CLERK_SECRET_KEY: z.string().min(1),
-  CLERK_WEBHOOK_SECRET: z.string().min(1),
+  CLERK_WEBHOOK_SECRET: z.string().optional(),
 
   // App
   NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
