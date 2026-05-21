@@ -8,6 +8,13 @@
       "when": 1779375033499,
       "tag": "0000_aromatic_champions",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779392986936,
+      "tag": "0001_old_quasar",
+      "breakpoints": true
     }
   ]
 }

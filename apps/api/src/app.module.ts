@@ -10,12 +10,14 @@ import { CmsModule } from './cms/cms.module'
 import { DeliveryModule } from './delivery/delivery.module'
 import { StorefrontModule } from './storefront/storefront.module'
 import { AnalyticsModule } from './analytics/analytics.module'
+import { UsersModule } from './users/users.module'
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     DbModule,
     AuthModule,
+    UsersModule,
     ProductsModule,
     CategoriesModule,
     OrdersModule,

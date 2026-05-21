@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common'
 import { ClerkGuard } from './clerk.guard'
+import { RolesGuard } from './roles.guard'
+import { DbModule } from '../db/db.module'
 
 @Module({
-  providers: [ClerkGuard],
-  exports: [ClerkGuard],
+  imports: [DbModule],
+  providers: [ClerkGuard, RolesGuard],
+  exports: [ClerkGuard, RolesGuard],
 })
 export class AuthModule {}

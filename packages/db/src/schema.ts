@@ -3,7 +3,7 @@ import { relations } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
 
 // ── Enums ─────────────────────────────────────────────────────────────────────
-export const userRoleEnum = pgEnum('user_role', ['OWNER', 'STAFF'])
+export const userRoleEnum = pgEnum('user_role', ['OWNER', 'MANAGER', 'CONTENT_EDITOR', 'ORDER_MANAGER', 'VIEWER', 'STAFF'])
 export const productStatusEnum = pgEnum('product_status', ['ACTIVE', 'DRAFT', 'ARCHIVED'])
 export const orderStatusEnum = pgEnum('order_status', [
   'PENDING', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',

@@ -188,6 +188,35 @@ export const analyticsApi = {
   dashboard: (token: string): Promise<DashboardStats> => apiFetch('/analytics/dashboard', { token }),
 }
 
+// ─── Users / RBAC ─────────────────────────────────────────────────────────────
+
+export type UserRole = 'OWNER' | 'MANAGER' | 'CONTENT_EDITOR' | 'ORDER_MANAGER' | 'VIEWER' | 'STAFF'
+
+export type StaffUser = {
+  id: string
+  clerkId: string
+  email: string
+  name: string
+  role: UserRole
+  createdAt: string
+  updatedAt: string
+}
+
+export const usersApi = {
+  sync: (token: string): Promise<StaffUser> =>
+    apiFetch('/users/sync', { method: 'POST', body: JSON.stringify({}), token }),
+  me: (token: string): Promise<StaffUser> =>
+    apiFetch('/users/me', { token }),
+  list: (token: string): Promise<StaffUser[]> =>
+    apiFetch('/users', { token }),
+  invite: (email: string, role: UserRole, token: string) =>
+    apiFetch('/users/invite', { method: 'POST', body: JSON.stringify({ email, role }), token }),
+  updateRole: (id: string, role: UserRole, token: string): Promise<StaffUser> =>
+    apiFetch(`/users/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }), token }),
+  remove: (id: string, token: string): Promise<{ deleted: boolean }> =>
+    apiFetch(`/users/${id}`, { method: 'DELETE', token }),
+}
+
 // ─── CMS Sections ─────────────────────────────────────────────────────────────
 
 export type SectionType = 'HERO' | 'FEATURED' | 'BANNER' | 'ANNOUNCEMENT'
