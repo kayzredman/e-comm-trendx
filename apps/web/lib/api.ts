@@ -178,14 +178,46 @@ export type DashboardStats = {
   totalProducts: number
   revenue30d: string
   revenueAll: string
+  avgOrderValue: string
+  completionRate: number
   recentOrders: Order[]
   lowStockProducts: Product[]
   ordersByStatus: Partial<Record<string, number>>
   revenueByDay: Array<{ date: string; revenue: string }>
+  topProducts: Array<{ productId: string; productName: string; totalRevenue: string; unitsSold: number }>
 }
 
 export const analyticsApi = {
   dashboard: (token: string): Promise<DashboardStats> => apiFetch('/analytics/dashboard', { token }),
+}
+
+// ─── Health / Service Quality ─────────────────────────────────────────────────
+
+export type ServiceStatus = 'healthy' | 'degraded' | 'down'
+
+export interface ServiceCheck {
+  name: string
+  status: ServiceStatus
+  latencyMs: number | null
+  message: string
+  checkedAt: string
+}
+
+export interface HealthReport {
+  overall: ServiceStatus
+  services: ServiceCheck[]
+  serverUptimeSeconds: number
+  memoryMB: { used: number; total: number; percent: number }
+  checkedAt: string
+}
+
+export const healthApi = {
+  ping: (): Promise<{ status: string; ts: string }> =>
+    apiFetch('/health'),
+  services: (token: string): Promise<HealthReport> =>
+    apiFetch('/health/services', { token }),
+  reconnectDb: (token: string): Promise<{ triggered: boolean; result: ServiceCheck }> =>
+    apiFetch('/health/services/reconnect-db', { method: 'POST', body: '{}', token }),
 }
 
 // ─── Users / RBAC ─────────────────────────────────────────────────────────────

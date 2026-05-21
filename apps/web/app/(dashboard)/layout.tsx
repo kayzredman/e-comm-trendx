@@ -17,11 +17,12 @@ export default async function DashboardLayout({
     const { getToken } = await auth()
     const token = await getToken()
     if (token) {
-      // JIT sync — registers the user if first login
       const user = await usersApi.sync(token)
-      role = user.role
+      if (user?.role) role = user.role
     }
-  } catch {}
+  } catch {
+    // Sync failed — render with minimal VIEWER role, don't block the page
+  }
 
   return (
     <div className="flex h-full min-h-screen" style={{ background: 'var(--color-page)' }}>

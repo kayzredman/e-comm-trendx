@@ -45,6 +45,36 @@ const SLIDES = [
     image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1400&q=90',
     accent: '#10B981',
   },
+  {
+    id: 5,
+    badge: 'Home & Living',
+    headline: 'Transform\nYour Space',
+    sub: 'Modern furniture, décor & kitchen essentials. Make every room yours.',
+    cta: { label: 'Shop Home', href: '/categories/home-living' },
+    ctaSecondary: { label: 'View Kitchen', href: '/categories/kitchen' },
+    image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1400&q=90',
+    accent: '#F59E0B',
+  },
+  {
+    id: 6,
+    badge: 'Sports & Fitness',
+    headline: 'Train Hard,\nLive Better',
+    sub: 'Gym gear, activewear & sports equipment. Level up your fitness game.',
+    cta: { label: 'Shop Sports', href: '/categories/sports-fitness' },
+    ctaSecondary: { label: 'See Deals', href: '/deals' },
+    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=1400&q=90',
+    accent: '#EF4444',
+  },
+  {
+    id: 7,
+    badge: "Kids' World",
+    headline: "Fun For\nEvery Child",
+    sub: 'Toys, books, clothing & more for the little ones. Safe, quality picks.',
+    cta: { label: "Shop Kids'", href: '/categories/kids-babies' },
+    ctaSecondary: { label: 'Top Toys', href: '/categories/toys-games' },
+    image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1400&q=90',
+    accent: '#F97316',
+  },
 ]
 
 export default function HeroCarousel() {

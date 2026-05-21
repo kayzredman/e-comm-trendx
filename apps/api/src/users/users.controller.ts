@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Patch, Delete,
-  Body, Param, UseGuards, Req, ForbiddenException,
+  Body, Param, UseGuards, Req,
 } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { ClerkGuard } from '../auth/clerk.guard'
@@ -11,22 +11,20 @@ import type { FastifyRequest } from 'fastify'
 
 @ApiTags('users')
 @ApiBearerAuth()
-@UseGuards(ClerkGuard, RolesGuard)
+@UseGuards(ClerkGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // ── Sync current user (called on dashboard load) ────────────────────────
+  // ── Sync current user — ClerkGuard only, no RolesGuard (first-login JIT) ─
   @Post('sync')
-  @Roles('OWNER', 'MANAGER', 'CONTENT_EDITOR', 'ORDER_MANAGER', 'VIEWER', 'STAFF')
   async sync(@Req() req: FastifyRequest) {
     const user = (req as any).user
-    return this.usersService.syncUser({ sub: user.sub, email: user.email })
+    return this.usersService.syncUser({ sub: user.sub })
   }
 
-  // ── Get current user's profile + role ───────────────────────────────────
+  // ── Get current user's profile + role — ClerkGuard only ─────────────────
   @Get('me')
-  @Roles('OWNER', 'MANAGER', 'CONTENT_EDITOR', 'ORDER_MANAGER', 'VIEWER', 'STAFF')
   async getMe(@Req() req: FastifyRequest) {
     const user = (req as any).user
     return this.usersService.getMe(user.sub)
@@ -34,6 +32,7 @@ export class UsersController {
 
   // ── List all users (OWNER only) ──────────────────────────────────────────
   @Get()
+  @UseGuards(RolesGuard)
   @Roles('OWNER')
   listUsers() {
     return this.usersService.listUsers()
@@ -41,6 +40,7 @@ export class UsersController {
 
   // ── Invite user by email (OWNER only) ───────────────────────────────────
   @Post('invite')
+  @UseGuards(RolesGuard)
   @Roles('OWNER')
   async invite(
     @Body() body: { email: string; role: UserRole },
@@ -52,6 +52,7 @@ export class UsersController {
 
   // ── Update role (OWNER only) ─────────────────────────────────────────────
   @Patch(':id/role')
+  @UseGuards(RolesGuard)
   @Roles('OWNER')
   updateRole(
     @Param('id') id: string,
@@ -64,6 +65,7 @@ export class UsersController {
 
   // ── Remove user (OWNER only) ─────────────────────────────────────────────
   @Delete(':id')
+  @UseGuards(RolesGuard)
   @Roles('OWNER')
   removeUser(@Param('id') id: string) {
     return this.usersService.removeUser(id)

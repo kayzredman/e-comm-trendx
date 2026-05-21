@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { DbService } from '../db/db.service'
 import { orders, orderItems, customers, products } from '@trendmarga/db'
-import { sql, eq, lte, gte, desc, count, sum, ne } from 'drizzle-orm'
+import { sql, eq, lte, gte, desc, count, sum, ne, avg } from 'drizzle-orm'
 
 @Injectable()
 export class AnalyticsService {
@@ -57,16 +57,49 @@ export class AnalyticsService {
       .groupBy(sql`DATE(${orders.createdAt})`)
       .orderBy(sql`DATE(${orders.createdAt})`)
 
+    // ── Average order value (non-cancelled) ──────────────────────────────────
+    const [avgOrderValueRow] = await db
+      .select({ avg: avg(orders.total) })
+      .from(orders)
+      .where(ne(orders.status, 'CANCELLED'))
+
+    // ── Top 6 products by revenue ─────────────────────────────────────────────
+    const topProducts = await db
+      .select({
+        productId: orderItems.productId,
+        productName: orderItems.productName,
+        totalRevenue: sql<string>`SUM(${orderItems.unitPrice}::numeric * ${orderItems.quantity})::text`,
+        unitsSold: sql<number>`SUM(${orderItems.quantity})`,
+      })
+      .from(orderItems)
+      .innerJoin(orders, eq(orders.id, orderItems.orderId))
+      .where(ne(orders.status, 'CANCELLED'))
+      .groupBy(orderItems.productId, orderItems.productName)
+      .orderBy(sql`SUM(${orderItems.unitPrice}::numeric * ${orderItems.quantity}) DESC`)
+      .limit(6)
+
+    // ── Order completion rate ─────────────────────────────────────────────────
+    const [deliveredRow] = await db
+      .select({ count: count() })
+      .from(orders)
+      .where(eq(orders.status, 'DELIVERED'))
+    const completionRate = totalOrders.count > 0
+      ? Math.round((deliveredRow.count / totalOrders.count) * 100)
+      : 0
+
     return {
       totalOrders: totalOrders.count,
       totalCustomers: totalCustomers.count,
       totalProducts: totalProducts.count,
       revenue30d: revenue30d.total ?? '0',
       revenueAll: revenueAll.total ?? '0',
+      avgOrderValue: avgOrderValueRow.avg ?? '0',
+      completionRate,
       recentOrders,
       lowStockProducts,
       ordersByStatus,
       revenueByDay,
+      topProducts,
     }
   }
 }

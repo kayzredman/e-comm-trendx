@@ -2,8 +2,9 @@ import { auth } from '@clerk/nextjs/server'
 import { analyticsApi, type DashboardStats } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
-import { Package, ShoppingCart, Users, TrendingUp, AlertTriangle } from 'lucide-react'
+import { Package, ShoppingCart, Users, TrendingUp, AlertTriangle, CheckCircle, BarChart2 } from 'lucide-react'
 import RevenueChart from './RevenueChart'
+import OrdersDonut from './OrdersDonut'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,6 +59,22 @@ export default async function DashboardHome() {
       color: '#EA580C',
       bg: '#FFEDD5',
     },
+    {
+      label: 'Avg order value',
+      value: stats ? `GH₵ ${Number(stats.avgOrderValue).toFixed(2)}` : '—',
+      icon: BarChart2,
+      href: '/cms/orders',
+      color: '#0891B2',
+      bg: '#CFFAFE',
+    },
+    {
+      label: 'Completion rate',
+      value: stats ? `${stats.completionRate}%` : '—',
+      icon: CheckCircle,
+      href: '/cms/orders',
+      color: '#16A34A',
+      bg: '#DCFCE7',
+    },
   ]
 
   return (
@@ -70,7 +87,7 @@ export default async function DashboardHome() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 mb-6">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6 mb-6">
         {statCards.map(({ label, value, icon: Icon, href, color, bg }) => (
           <Link
             key={label}
@@ -106,6 +123,56 @@ export default async function DashboardHome() {
           <TrendingUp size={18} style={{ color: 'var(--color-primary)', marginTop: 2 }} />
         </div>
         <RevenueChart data={stats?.revenueByDay ?? []} />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2 mb-6">
+        {/* Orders by status */}
+        <div
+          className="rounded-xl border p-5"
+          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        >
+          <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--color-text)' }}>Orders by status</h2>
+          <OrdersDonut data={stats?.ordersByStatus ?? {}} />
+        </div>
+
+        {/* Top products by revenue */}
+        <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+          <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-muted)' }}>
+            <h2 className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>Top products by revenue</h2>
+            <Link href="/cms/products" className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>View all →</Link>
+          </div>
+          {!stats?.topProducts?.length ? (
+            <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>No sales data yet</p>
+          ) : (
+            <div>
+              {stats.topProducts.map((p, i) => {
+                const maxRev = Number(stats.topProducts[0].totalRevenue)
+                const pct = maxRev > 0 ? (Number(p.totalRevenue) / maxRev) * 100 : 0
+                return (
+                  <div
+                    key={p.productId}
+                    className="flex items-center gap-3 px-5 py-3 border-b last:border-0"
+                    style={{ borderColor: 'var(--color-border)' }}
+                  >
+                    <span className="text-xs font-bold w-5 shrink-0" style={{ color: 'var(--color-text-muted)' }}>
+                      {i + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{p.productName}</p>
+                      <div className="mt-1 h-1.5 rounded-full" style={{ background: 'var(--color-border)' }}>
+                        <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, background: 'var(--color-primary)' }} />
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>GH₵ {Number(p.totalRevenue).toFixed(0)}</p>
+                      <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{p.unitsSold} sold</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
