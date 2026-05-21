@@ -4,40 +4,74 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { type Product, type Category } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { Search, SlidersHorizontal, X, Heart, ShoppingCart } from 'lucide-react'
 
 function ProductCard({ product }: { product: Product }) {
+  const hasDiscount = product.comparePrice && Number(product.comparePrice) > Number(product.price)
+  const discountPct = hasDiscount
+    ? Math.round((1 - Number(product.price) / Number(product.comparePrice!)) * 100)
+    : null
+
   return (
-    <Link
-      href={`/products/${product.slug}`}
-      className="group rounded-2xl border overflow-hidden hover:shadow-md transition-shadow"
-      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-    >
-      <div className="aspect-square overflow-hidden" style={{ background: 'var(--color-surface-muted)' }}>
-        {product.images?.[0] ? (
-          <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
-        )}
-      </div>
+    <div className="group relative rounded-2xl border overflow-hidden hover:shadow-lg transition-all duration-200"
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+      {/* Discount badge */}
+      {discountPct && (
+        <span className="absolute top-3 left-3 z-10 text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: 'var(--color-error)' }}>
+          -{discountPct}%
+        </span>
+      )}
+      {/* Wishlist */}
+      <button
+        className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+        style={{ background: 'var(--color-surface)' }}
+        aria-label="Add to wishlist"
+      >
+        <Heart size={15} style={{ color: 'var(--color-text-muted)' }} />
+      </button>
+
+      {/* Image */}
+      <Link href={`/products/${product.slug}`}>
+        <div className="aspect-square overflow-hidden" style={{ background: '#F8F9FA' }}>
+          {product.images?.[0] ? (
+            <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
+          )}
+        </div>
+      </Link>
+
       <div className="p-4">
         {product.category && (
           <p className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: 'var(--color-primary)' }}>
             {product.category.name}
           </p>
         )}
-        <p className="font-semibold text-sm leading-snug line-clamp-2" style={{ color: 'var(--color-text)' }}>{product.name}</p>
-        <div className="flex items-center gap-2 mt-2">
-          <p className="font-bold" style={{ color: 'var(--color-text)' }}>{formatPrice(product.price)}</p>
-          {product.comparePrice && Number(product.comparePrice) > Number(product.price) && (
-            <p className="text-sm line-through" style={{ color: 'var(--color-text-subtle)' }}>{formatPrice(product.comparePrice)}</p>
+        <Link href={`/products/${product.slug}`}>
+          <p className="font-semibold text-sm leading-snug line-clamp-2 mb-2 hover:underline" style={{ color: 'var(--color-text)' }}>
+            {product.name}
+          </p>
+        </Link>
+        <div className="flex items-center gap-2 mb-3">
+          <p className="font-bold text-base" style={{ color: 'var(--color-text)' }}>{formatPrice(product.price)}</p>
+          {hasDiscount && (
+            <p className="text-xs line-through" style={{ color: 'var(--color-text-subtle)' }}>{formatPrice(product.comparePrice!)}</p>
           )}
         </div>
-        {product.inventory === 0 && (
-          <p className="text-xs mt-1.5 font-semibold" style={{ color: 'var(--color-error)' }}>Out of stock</p>
+        {product.inventory === 0 ? (
+          <p className="text-xs font-semibold text-center py-2" style={{ color: 'var(--color-error)' }}>Out of stock</p>
+        ) : (
+          <button
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold border transition-colors"
+            style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)' }}
+            onMouseEnter={e => { const b = e.currentTarget; b.style.background = 'var(--color-primary)'; b.style.color = '#fff' }}
+            onMouseLeave={e => { const b = e.currentTarget; b.style.background = 'transparent'; b.style.color = 'var(--color-primary)' }}
+          >
+            <ShoppingCart size={14} /> Add to Cart
+          </button>
         )}
       </div>
-    </Link>
+    </div>
   )
 }
 
