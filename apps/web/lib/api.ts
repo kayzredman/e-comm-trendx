@@ -28,11 +28,13 @@ export type Category = {
   imageUrl: string | null
   createdAt: string
   children?: Category[]
+  products?: Product[]
 }
 
 export const categoriesApi = {
   list: (): Promise<Category[]> => apiFetch('/categories'),
   get: (id: string): Promise<Category> => apiFetch(`/categories/${id}`),
+  getBySlug: (slug: string): Promise<Category | null> => (apiFetch(`/categories/slug/${slug}`) as Promise<Category>).catch(() => null),
   create: (data: Partial<Category>, token: string) =>
     apiFetch('/categories', { method: 'POST', body: JSON.stringify(data), token }),
   update: (id: string, data: Partial<Category>, token: string) =>

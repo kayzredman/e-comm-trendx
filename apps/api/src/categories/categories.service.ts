@@ -21,6 +21,13 @@ export class CategoriesService {
     })
   }
 
+  findBySlug(slug: string) {
+    return this.db.client.query.categories.findFirst({
+      where: eq(categories.slug, slug),
+      with: { children: true, products: { with: { category: true }, where: (p: any, { eq: eqFn }: any) => eqFn(p.status, 'ACTIVE') } },
+    })
+  }
+
   async create(data: typeof categories.$inferInsert) {
     const [cat] = await this.db.client.insert(categories).values(data).returning()
     return cat

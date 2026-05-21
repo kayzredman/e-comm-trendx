@@ -14,6 +14,10 @@ export class CategoriesController {
   @Public()
   findAll() { return this.categoriesService.findAll() }
 
+  @Get('slug/:slug')
+  @Public()
+  findBySlug(@Param('slug') slug: string) { return this.categoriesService.findBySlug(slug) }
+
   @Get(':id')
   @Public()
   findOne(@Param('id') id: string) { return this.categoriesService.findOne(id) }

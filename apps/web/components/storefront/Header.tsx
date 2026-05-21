@@ -1,73 +1,165 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-import { ShoppingBag, Menu, X, Search } from 'lucide-react'
-import { usePathname } from 'next/navigation'
+import { useState, useRef, useEffect } from 'react'
+import { ShoppingBag, Menu, X, Search, ChevronDown, Truck, Sparkles, Tag, User, LayoutGrid } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import type { Category } from '@/lib/api'
 
-export default function StorefrontHeader() {
+type Props = { categories: Category[] }
+
+export default function StorefrontHeader({ categories }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [catOpen, setCatOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const pathname = usePathname()
+  const router = useRouter()
+  const catRef = useRef<HTMLDivElement>(null)
+
+  // Close categories dropdown on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (catRef.current && !catRef.current.contains(e.target as Node)) setCatOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery('')
+      setMenuOpen(false)
+    }
+  }
 
   const navLinks = [
-    { label: 'Home', href: '/' },
-    { label: 'Products', href: '/products' },
+    { label: 'Deals', href: '/deals', icon: Tag },
+    { label: "What's New", href: '/new', icon: Sparkles },
+    { label: 'Delivery', href: '/delivery', icon: Truck },
   ]
 
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
+
   return (
-    <header className="sticky top-0 z-30 border-b" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 shadow-sm" style={{ background: 'var(--color-surface)' }}>
+      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-4">
         {/* Logo */}
-        <Link href="/" className="font-bold text-xl tracking-tight shrink-0" style={{ color: 'var(--color-primary)' }}>
+        <Link href="/" className="font-extrabold text-xl tracking-tight shrink-0 mr-2" style={{ color: 'var(--color-primary)' }}>
           TrendMarga
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-6">
-          {navLinks.map(({ label, href }) => (
+        {/* Categories dropdown */}
+        <div className="relative hidden md:block" ref={catRef}>
+          <button
+            onClick={() => setCatOpen(o => !o)}
+            className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-lg transition-colors"
+            style={{ color: catOpen ? 'var(--color-primary)' : 'var(--color-text)', background: catOpen ? 'var(--color-primary-light)' : 'transparent' }}
+          >
+            <LayoutGrid size={16} /> Categories <ChevronDown size={14} className={`transition-transform ${catOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {catOpen && (
+            <div className="absolute top-full left-0 mt-1 w-56 rounded-xl border shadow-lg py-2 z-50" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+              <Link href="/products" onClick={() => setCatOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50 font-medium" style={{ color: 'var(--color-text)' }}>
+                All Products
+              </Link>
+              <div className="my-1 border-t" style={{ borderColor: 'var(--color-border)' }} />
+              {categories.length === 0 && (
+                <p className="px-4 py-2 text-xs" style={{ color: 'var(--color-text-muted)' }}>No categories yet</p>
+              )}
+              {categories.map(cat => (
+                <Link
+                  key={cat.id}
+                  href={`/categories/${cat.slug}`}
+                  onClick={() => setCatOpen(false)}
+                  className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-50"
+                  style={{ color: 'var(--color-text)' }}
+                >
+                  {cat.imageUrl
+                    ? <img src={cat.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />
+                    : <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs" style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>●</span>
+                  }
+                  {cat.name}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop nav links */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navLinks.map(({ label, href, icon: Icon }) => (
             <Link
               key={href}
               href={href}
-              className="text-sm font-medium transition-colors"
-              style={{ color: pathname === href ? 'var(--color-primary)' : 'var(--color-text-muted)' }}
+              className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+              style={{ color: isActive(href) ? 'var(--color-primary)' : 'var(--color-text-muted)', background: isActive(href) ? 'var(--color-primary-light)' : 'transparent' }}
             >
-              {label}
+              <Icon size={15} /> {label}
             </Link>
           ))}
         </nav>
 
-        {/* Right side */}
-        <div className="flex items-center gap-3">
-          <Link href="/products" className="hidden sm:flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg border" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}>
-            <Search size={15} /> Search
+        {/* Search bar */}
+        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xs mx-auto relative">
+          <input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search products…"
+            className="w-full rounded-xl border pl-4 pr-10 py-2 text-sm outline-none focus:ring-2"
+            style={{ borderColor: 'var(--color-border)', background: '#F8F9FA', color: 'var(--color-text)' }}
+          />
+          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }}>
+            <Search size={16} />
+          </button>
+        </form>
+
+        {/* Right icons */}
+        <div className="flex items-center gap-2 ml-auto md:ml-0">
+          <Link href="/dashboard" className="hidden sm:flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors" style={{ color: 'var(--color-text-muted)' }}>
+            <User size={20} />
+            <span className="text-xs leading-none">Account</span>
           </Link>
-          <Link
-            href="/cart"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-white"
-            style={{ background: 'var(--color-primary)' }}
-          >
-            <ShoppingBag size={16} />
-            <span className="hidden sm:inline">Cart</span>
+          <Link href="/cart" className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors relative" style={{ color: 'var(--color-text-muted)' }}>
+            <ShoppingBag size={20} />
+            <span className="text-xs leading-none">Cart</span>
           </Link>
-          {/* Mobile menu */}
-          <button className="md:hidden" onClick={() => setMenuOpen(o => !o)} style={{ color: 'var(--color-text)' }}>
+          {/* Mobile menu toggle */}
+          <button className="md:hidden p-2 rounded-lg" onClick={() => setMenuOpen(o => !o)} style={{ color: 'var(--color-text)' }}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile nav dropdown */}
+      {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden border-t px-4 py-3 space-y-1" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-          {navLinks.map(({ label, href }) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setMenuOpen(false)}
-              className="block py-2 text-sm font-medium"
-              style={{ color: 'var(--color-text)' }}
-            >
-              {label}
+          {/* Mobile search */}
+          <form onSubmit={handleSearch} className="relative mb-3">
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search products…"
+              className="w-full rounded-xl border pl-4 pr-10 py-2.5 text-sm outline-none"
+              style={{ borderColor: 'var(--color-border)', background: '#F8F9FA', color: 'var(--color-text)' }}
+            />
+            <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }}>
+              <Search size={16} />
+            </button>
+          </form>
+          <Link href="/products" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+            <LayoutGrid size={16} /> All Products
+          </Link>
+          {categories.map(cat => (
+            <Link key={cat.id} href={`/categories/${cat.slug}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-1.5 pl-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              {cat.name}
+            </Link>
+          ))}
+          <div className="my-2 border-t" style={{ borderColor: 'var(--color-border)' }} />
+          {navLinks.map(({ label, href, icon: Icon }) => (
+            <Link key={href} href={href} onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+              <Icon size={16} /> {label}
             </Link>
           ))}
         </div>

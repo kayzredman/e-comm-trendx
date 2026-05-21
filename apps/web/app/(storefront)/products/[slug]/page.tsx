@@ -2,8 +2,9 @@ import { productsApi, type Product } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ShoppingBag, Tag, Truck, RefreshCw, ChevronRight } from 'lucide-react'
+import { ShoppingBag, ShoppingCart, Tag, Truck, RotateCcw, Home, ChevronRight } from 'lucide-react'
 import type { Metadata } from 'next'
+import ProductGallery from './ProductGallery'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -33,52 +34,37 @@ export default async function ProductDetailPage({ params }: Props) {
     ? Math.round((1 - Number(product.price) / Number(product.comparePrice)) * 100)
     : null
 
+  const lowStock = product.inventory > 0 && product.inventory < 10
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8" style={{ background: 'var(--color-page)' }}>
+    <div className="max-w-6xl mx-auto px-4 py-6" style={{ background: 'var(--color-page)' }}>
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs mb-6 flex-wrap" style={{ color: 'var(--color-text-muted)' }}>
-        <Link href="/" className="hover:underline" style={{ color: 'var(--color-primary)' }}>Home</Link>
+      <nav className="flex items-center gap-1.5 text-xs mb-6" style={{ color: 'var(--color-text-muted)' }}>
+        <Link href="/" className="flex items-center gap-1 hover:underline"><Home size={12} /> Home</Link>
         <ChevronRight size={12} />
-        <Link href="/products" className="hover:underline" style={{ color: 'var(--color-primary)' }}>Products</Link>
-        {product.category && (
+        {product.category ? (
           <>
+            <Link href={`/categories/${product.category.slug}`} className="hover:underline">{product.category.name}</Link>
             <ChevronRight size={12} />
-            <Link href={`/products?categoryId=${product.categoryId}`} className="hover:underline" style={{ color: 'var(--color-primary)' }}>
-              {product.category.name}
-            </Link>
+          </>
+        ) : (
+          <>
+            <Link href="/products" className="hover:underline">Products</Link>
+            <ChevronRight size={12} />
           </>
         )}
-        <ChevronRight size={12} />
-        <span className="truncate max-w-[180px]" style={{ color: 'var(--color-text-subtle)' }}>{product.name}</span>
+        <span className="font-medium line-clamp-1" style={{ color: 'var(--color-text)' }}>{product.name}</span>
       </nav>
 
-      <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-        {/* Image(s) */}
-        <div className="space-y-3">
-          <div
-            className="aspect-square rounded-2xl overflow-hidden"
-            style={{ background: 'var(--color-surface-muted)' }}
-          >
-            {product.images?.[0] ? (
-              <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-8xl">📦</div>
-            )}
-          </div>
-          {product.images && product.images.length > 1 && (
-            <div className="flex gap-2 flex-wrap">
-              {product.images.slice(1).map((img, i) => (
-                <img key={i} src={img} alt="" className="w-20 h-20 rounded-xl object-cover border" style={{ borderColor: 'var(--color-border)' }} />
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
+        {/* Gallery — client component for thumbnail click */}
+        <ProductGallery images={product.images ?? []} name={product.name} />
 
         {/* Info */}
         <div>
           {product.category && (
             <Link
-              href={`/products?categoryId=${product.categoryId}`}
+              href={`/categories/${product.category.slug}`}
               className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide mb-3"
               style={{ color: 'var(--color-primary)' }}
             >
@@ -86,12 +72,12 @@ export default async function ProductDetailPage({ params }: Props) {
             </Link>
           )}
 
-          <h1 className="text-3xl font-extrabold leading-tight mb-3" style={{ color: 'var(--color-text)' }}>
+          <h1 className="text-2xl md:text-3xl font-extrabold leading-tight mb-4" style={{ color: 'var(--color-text)' }}>
             {product.name}
           </h1>
 
-          {/* Price */}
-          <div className="flex items-center gap-3 mb-5">
+          {/* Price row */}
+          <div className="flex items-center gap-3 mb-5 flex-wrap">
             <span className="text-3xl font-bold" style={{ color: 'var(--color-text)' }}>
               {formatPrice(product.price)}
             </span>
@@ -108,57 +94,60 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
 
           {product.description && (
-            <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--color-text-muted)' }}>
               {product.description}
             </p>
           )}
 
-          {/* Stock */}
-          <p className="text-sm mb-6 font-medium" style={{ color: product.inventory > 0 ? '#16A34A' : 'var(--color-error)' }}>
-            {product.inventory > 0
-              ? product.inventory < 10
-                ? `Only ${product.inventory} left in stock!`
-                : 'In stock'
-              : 'Out of stock'}
-          </p>
+          {/* Stock status */}
+          <div className="mb-5">
+            {product.inventory === 0 ? (
+              <span className="text-sm font-semibold" style={{ color: '#DC2626' }}>● Out of stock</span>
+            ) : lowStock ? (
+              <span className="text-sm font-semibold" style={{ color: '#D97706' }}>● Only {product.inventory} left in stock!</span>
+            ) : (
+              <span className="text-sm font-semibold" style={{ color: '#16A34A' }}>● In stock</span>
+            )}
+          </div>
 
           {product.sku && (
             <p className="text-xs mb-5" style={{ color: 'var(--color-text-subtle)' }}>SKU: {product.sku}</p>
           )}
 
-          {/* Add to cart + Buy Now */}
-          <div className="flex gap-3 mb-5">
+          {/* Quantity + CTA */}
+          <div className="space-y-3">
             <button
               disabled={product.inventory === 0}
-              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-bold border disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)', background: 'transparent' }}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-base font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
+              style={{ background: 'var(--color-primary)' }}
             >
-              <ShoppingBag size={18} />
-              {product.inventory === 0 ? 'Out of stock' : 'Add to Cart'}
+              <ShoppingBag size={20} />
+              Buy Now
             </button>
             <button
               disabled={product.inventory === 0}
-              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl text-base font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
-              style={{ background: 'var(--color-primary)' }}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors border-2"
+              style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)', background: 'white' }}
             >
-              Buy Now
+              <ShoppingCart size={18} />
+              {product.inventory === 0 ? 'Out of stock' : 'Add to Cart'}
             </button>
           </div>
 
           {/* Trust badges */}
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            <div className="flex items-center gap-2 p-3 rounded-xl border" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-muted)' }}>
-              <Truck size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: '#F0FDF4' }}>
+              <Truck size={18} style={{ color: '#16A34A' }} />
               <div>
-                <p className="text-xs font-bold" style={{ color: 'var(--color-text)' }}>Free Delivery</p>
-                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>Orders over GH₵ 200</p>
+                <p className="text-xs font-bold" style={{ color: '#166534' }}>Free Delivery</p>
+                <p className="text-xs" style={{ color: '#15803D' }}>On orders over ₵200</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 p-3 rounded-xl border" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-muted)' }}>
-              <RefreshCw size={18} style={{ color: 'var(--color-primary)', flexShrink: 0 }} />
+            <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: '#EFF6FF' }}>
+              <RotateCcw size={18} style={{ color: '#2563EB' }} />
               <div>
-                <p className="text-xs font-bold" style={{ color: 'var(--color-text)' }}>Free Returns</p>
-                <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>7-day return policy</p>
+                <p className="text-xs font-bold" style={{ color: '#1E40AF' }}>Return Delivery</p>
+                <p className="text-xs" style={{ color: '#1D4ED8' }}>30-day returns</p>
               </div>
             </div>
           </div>
@@ -167,3 +156,4 @@ export default async function ProductDetailPage({ params }: Props) {
     </div>
   )
 }
+

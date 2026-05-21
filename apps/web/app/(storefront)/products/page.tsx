@@ -4,11 +4,11 @@ import ProductGrid from './ProductGrid'
 export const dynamic = 'force-dynamic'
 
 type Props = {
-  searchParams: Promise<{ categoryId?: string; search?: string }>
+  searchParams: Promise<{ categoryId?: string; q?: string }>
 }
 
 export default async function ProductsPage({ searchParams }: Props) {
-  const { categoryId } = await searchParams
+  const { categoryId, q } = await searchParams
 
   let products: Product[] = []
   let categories: Category[] = []
@@ -26,7 +26,9 @@ export default async function ProductsPage({ searchParams }: Props) {
         initialProducts={products}
         categories={categories}
         initialCategoryId={categoryId}
+        initialSearch={q}
       />
     </div>
   )
 }
+
