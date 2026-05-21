@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Delete, Body, Query, Param, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { DeliveryService } from './delivery.service'
 import { ClerkGuard } from '../auth/clerk.guard'
@@ -31,4 +31,8 @@ export class DeliveryController {
   @Post('zones')
   @ApiBearerAuth()
   upsertZone(@Body() body: any) { return this.deliveryService.upsertZone(body) }
+
+  @Delete('zones/:id')
+  @ApiBearerAuth()
+  deleteZone(@Param('id') id: string) { return this.deliveryService.deleteZone(id) }
 }

@@ -86,3 +86,83 @@ export const productsApi = {
   delete: (id: string, token: string) =>
     apiFetch(`/products/${id}`, { method: 'DELETE', token }),
 }
+
+// ─── Orders ───────────────────────────────────────────────────────────────────
+
+export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED'
+
+export type OrderItem = {
+  id: string
+  orderId: string
+  productId: string
+  productName: string
+  unitPrice: string
+  quantity: number
+}
+
+export type Order = {
+  id: string
+  customerId: string
+  status: OrderStatus
+  subtotal: string
+  deliveryFee: string
+  total: string
+  notes: string | null
+  paymentMethod: 'CASH_ON_DELIVERY' | 'MOBILE_MONEY' | 'CARD'
+  createdAt: string
+  updatedAt: string
+  customer?: Customer
+  items?: OrderItem[]
+}
+
+export const ordersApi = {
+  list: (token: string): Promise<Order[]> => apiFetch('/orders', { token }),
+  get: (id: string, token: string): Promise<Order> => apiFetch(`/orders/${id}`, { token }),
+  updateStatus: (id: string, status: OrderStatus, token: string): Promise<Order> =>
+    apiFetch(`/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }), token }),
+}
+
+// ─── Customers ────────────────────────────────────────────────────────────────
+
+export type Customer = {
+  id: string
+  name: string
+  phone: string
+  email: string | null
+  address: {
+    street: string
+    city: string
+    region: string
+    country: string
+    zip: string | null
+  }
+  createdAt: string
+  orders?: Order[]
+}
+
+export const customersApi = {
+  list: (token: string): Promise<Customer[]> => apiFetch('/customers', { token }),
+  get: (id: string, token: string): Promise<Customer> => apiFetch(`/customers/${id}`, { token }),
+}
+
+// ─── Delivery Zones ───────────────────────────────────────────────────────────
+
+export type FeeStrategy = 'FLAT' | 'DISTANCE_BASED' | 'FREE_THRESHOLD' | 'COMBINED'
+
+export type DeliveryZone = {
+  id: string
+  name: string
+  baseFee: string
+  feeStrategy: FeeStrategy
+  feePerKm: string | null
+  freeThreshold: string | null
+  isActive: boolean
+}
+
+export const deliveryApi = {
+  listAll: (token: string): Promise<DeliveryZone[]> => apiFetch('/delivery/zones/all', { token }),
+  upsert: (data: Partial<DeliveryZone> & { name: string; baseFee: string }, token: string): Promise<DeliveryZone> =>
+    apiFetch('/delivery/zones', { method: 'POST', body: JSON.stringify(data), token }),
+  delete: (id: string, token: string) =>
+    apiFetch(`/delivery/zones/${id}`, { method: 'DELETE', token }),
+}

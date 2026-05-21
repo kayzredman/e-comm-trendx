@@ -49,4 +49,8 @@ export class DeliveryService {
     const [z] = await this.db.client.insert(deliveryZones).values(data).returning()
     return z
   }
+
+  async deleteZone(id: string) {
+    await this.db.client.delete(deliveryZones).where(eq(deliveryZones.id, id))
+  }
 }

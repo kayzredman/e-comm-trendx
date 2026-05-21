@@ -13,10 +13,10 @@ const navItems = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Products', href: '/cms/products', icon: Package },
   { label: 'Categories', href: '/cms/categories', icon: Tag },
-  { label: 'Orders', href: '/cms/orders', icon: ShoppingCart, soon: true },
-  { label: 'Customers', href: '/cms/customers', icon: Users, soon: true },
+  { label: 'Orders', href: '/cms/orders', icon: ShoppingCart },
+  { label: 'Customers', href: '/cms/customers', icon: Users },
+  { label: 'Delivery', href: '/cms/delivery', icon: Truck },
   { label: 'Content', href: '/cms/content', icon: FileText, soon: true },
-  { label: 'Delivery', href: '/cms/delivery', icon: Truck, soon: true },
 ]
 
 export default function Sidebar() {
