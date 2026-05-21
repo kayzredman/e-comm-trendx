@@ -2,56 +2,48 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const SLIDES = [
   {
     id: 1,
-    badge: '🔥 Flash Sale — Up to 50% Off',
+    badge: 'New Season',
     headline: 'Dress to\nImpress',
     sub: 'Shop the freshest Ankara & kente styles. Fast delivery across Ghana.',
     cta: { label: 'Shop Fashion', href: '/categories/fashion-clothing' },
     ctaSecondary: { label: 'See Deals', href: '/deals' },
-    image: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=900&q=85',
+    image: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1400&q=90',
     accent: '#E11D48',
-    bg: '#FFF1F2',
-    overlay: 'linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%)',
   },
   {
     id: 2,
-    badge: '✨ New Arrivals 2026',
+    badge: 'Latest Tech',
     headline: 'Top Gadgets\nAt Your Fingertips',
     sub: 'Smart watches, earbuds, speakers and more. Latest tech, best prices.',
     cta: { label: 'Shop Electronics', href: '/categories/electronics-gadgets' },
     ctaSecondary: { label: 'View Phones', href: '/categories/phones-tablets' },
-    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=900&q=85',
-    accent: '#2563EB',
-    bg: '#EFF6FF',
-    overlay: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
+    image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1400&q=90',
+    accent: '#3B82F6',
   },
   {
     id: 3,
-    badge: '👟 Exclusive Styles',
+    badge: 'Exclusive Styles',
     headline: 'Step Into\nStyle',
     sub: 'Hundreds of shoes — sneakers, heels, oxfords. Free delivery over ₵200.',
     cta: { label: 'Shop Shoes', href: '/categories/shoes-footwear' },
     ctaSecondary: { label: 'View Bags', href: '/categories/bags-accessories' },
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&q=85',
-    accent: '#7C3AED',
-    bg: '#F5F3FF',
-    overlay: 'linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%)',
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1400&q=90',
+    accent: '#8B5CF6',
   },
   {
     id: 4,
-    badge: '🌿 Ghana\'s Finest',
+    badge: 'Natural Beauty',
     headline: 'Glow Up\nNaturally',
     sub: 'Pure shea butter, vitamin C serums, and natural beauty from Ghana.',
     cta: { label: 'Shop Beauty', href: '/categories/beauty-skincare' },
-    ctaSecondary: { label: 'What\'s New', href: '/new' },
-    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=900&q=85',
-    accent: '#059669',
-    bg: '#F0FDF4',
-    overlay: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)',
+    ctaSecondary: { label: "What's New", href: '/new' },
+    image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=1400&q=90',
+    accent: '#10B981',
   },
 ]
 
@@ -63,139 +55,161 @@ export default function HeroCarousel() {
     if (isAnimating) return
     setIsAnimating(true)
     setCurrent(idx)
-    setTimeout(() => setIsAnimating(false), 500)
+    setTimeout(() => setIsAnimating(false), 600)
   }, [isAnimating])
 
   const next = useCallback(() => goTo((current + 1) % SLIDES.length), [current, goTo])
   const prev = useCallback(() => goTo((current - 1 + SLIDES.length) % SLIDES.length), [current, goTo])
 
-  // Auto-advance every 5s
+  // Auto-advance every 6s
   useEffect(() => {
-    const timer = setInterval(next, 5000)
+    const timer = setInterval(next, 6000)
     return () => clearInterval(timer)
   }, [next])
 
   const slide = SLIDES[current]
 
   return (
-    <section
-      className="relative overflow-hidden transition-all duration-500"
-      style={{ background: slide.overlay, minHeight: 420 }}
-    >
-      <div className="max-w-6xl mx-auto px-4 py-10 md:py-16 grid md:grid-cols-2 gap-6 items-center">
-        {/* Text side */}
+    <section className="relative overflow-hidden" style={{ minHeight: '90vh' }}>
+      {/* Full-bleed background image with Ken Burns zoom */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        key={`bg-${current}`}
+        src={slide.image}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ animation: 'heroZoom 6.5s ease forwards' }}
+      />
+
+      {/* Dark cinematic overlay — deep on left, fades right */}
+      <div
+        className="absolute inset-0"
+        style={{ background: 'linear-gradient(105deg, rgba(6,6,6,0.82) 0%, rgba(6,6,6,0.55) 50%, rgba(6,6,6,0.18) 100%)' }}
+      />
+
+      {/* Slide content */}
+      <div
+        className="relative z-10 max-w-6xl mx-auto px-6 md:px-12 flex flex-col justify-center"
+        style={{ minHeight: '90vh' }}
+      >
         <div
-          key={`text-${current}`}
-          className="animate-fade-in-left"
-          style={{ animation: 'slideInLeft 0.5s ease forwards' }}
+          key={`content-${current}`}
+          className="max-w-xl"
+          style={{ animation: 'slideInLeft 0.6s cubic-bezier(0.25,0.46,0.45,0.94) forwards' }}
         >
+          {/* Eyebrow badge */}
           <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-4"
-            style={{ background: slide.accent + '22', color: slide.accent }}
+            className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-[0.18em] mb-6"
+            style={{ background: slide.accent, color: 'white' }}
           >
             {slide.badge}
           </div>
+
+          {/* Headline */}
           <h1
-            className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 whitespace-pre-line"
-            style={{ color: '#111827' }}
+            className="text-5xl md:text-6xl lg:text-7xl font-black leading-none mb-5 whitespace-pre-line"
+            style={{ color: 'white', textShadow: '0 4px 24px rgba(0,0,0,0.25)' }}
           >
             {slide.headline}
           </h1>
-          <p className="text-base md:text-lg mb-8 max-w-sm leading-relaxed" style={{ color: '#6B7280' }}>
+
+          {/* Subtext */}
+          <p
+            className="text-base md:text-lg leading-relaxed mb-9 max-w-sm"
+            style={{ color: 'rgba(255,255,255,0.70)' }}
+          >
             {slide.sub}
           </p>
+
+          {/* CTAs */}
           <div className="flex flex-wrap gap-3">
             <Link
               href={slide.cta.href}
-              className="inline-flex items-center gap-2 font-bold px-6 py-3.5 rounded-2xl text-sm text-white transition-transform hover:scale-105"
+              className="inline-flex items-center font-bold px-8 py-3.5 rounded-full text-sm text-white transition-all hover:scale-105 hover:shadow-xl"
               style={{ background: slide.accent }}
             >
-              {slide.cta.label} <ArrowRight size={16} />
+              {slide.cta.label}
             </Link>
             <Link
               href={slide.ctaSecondary.href}
-              className="inline-flex items-center gap-2 font-semibold px-6 py-3.5 rounded-2xl text-sm transition-transform hover:scale-105 border-2"
-              style={{ borderColor: slide.accent, color: slide.accent, background: 'white' }}
+              className="inline-flex items-center font-semibold px-8 py-3.5 rounded-full text-sm text-white transition-all hover:scale-105"
+              style={{
+                background: 'rgba(255,255,255,0.10)',
+                border: '1.5px solid rgba(255,255,255,0.35)',
+                backdropFilter: 'blur(6px)',
+              }}
             >
               {slide.ctaSecondary.label}
             </Link>
           </div>
         </div>
-
-        {/* Image side */}
-        <div className="hidden md:flex items-center justify-center">
-          <div
-            key={`img-${current}`}
-            className="relative w-80 h-80 lg:w-96 lg:h-96 rounded-3xl overflow-hidden shadow-2xl"
-            style={{ animation: 'slideInRight 0.5s ease forwards' }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={slide.image}
-              alt={slide.headline}
-              className="w-full h-full object-cover"
-            />
-            {/* Floating badge */}
-            <div className="absolute bottom-4 left-4 bg-white rounded-2xl shadow-lg px-3 py-2 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: slide.accent }}>
-                %
-              </div>
-              <div>
-                <p className="text-xs font-bold leading-none" style={{ color: '#111827' }}>Best Price</p>
-                <p className="text-xs" style={{ color: '#6B7280' }}>Guaranteed</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* Prev / Next buttons */}
+      {/* Slide counter */}
+      <div
+        className="absolute bottom-8 right-6 md:right-10 text-xs font-bold tracking-widest hidden md:block"
+        style={{ color: 'rgba(255,255,255,0.45)' }}
+      >
+        {String(current + 1).padStart(2, '0')}&thinsp;/&thinsp;{String(SLIDES.length).padStart(2, '0')}
+      </div>
+
+      {/* Prev / Next arrows */}
       <button
         type="button"
         onClick={prev}
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 shadow flex items-center justify-center transition-transform hover:scale-110"
-        style={{ color: '#374151' }}
+        className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all hover:scale-110"
+        style={{
+          background: 'rgba(255,255,255,0.10)',
+          border: '1.5px solid rgba(255,255,255,0.28)',
+          color: 'white',
+          backdropFilter: 'blur(6px)',
+        }}
         aria-label="Previous"
       >
-        <ChevronLeft size={18} />
+        <ChevronLeft size={20} />
       </button>
       <button
         type="button"
         onClick={next}
-        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 shadow flex items-center justify-center transition-transform hover:scale-110"
-        style={{ color: '#374151' }}
+        className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all hover:scale-110"
+        style={{
+          background: 'rgba(255,255,255,0.10)',
+          border: '1.5px solid rgba(255,255,255,0.28)',
+          color: 'white',
+          backdropFilter: 'blur(6px)',
+        }}
         aria-label="Next"
       >
-        <ChevronRight size={18} />
+        <ChevronRight size={20} />
       </button>
 
-      {/* Dot indicators */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+      {/* Pill dot indicators */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 items-center">
         {SLIDES.map((s, i) => (
           <button
             type="button"
             key={s.id}
             onClick={() => goTo(i)}
-            className="rounded-full transition-all duration-300"
+            className="rounded-full transition-all duration-400"
             style={{
-              width: i === current ? 24 : 8,
-              height: 8,
-              background: i === current ? slide.accent : '#D1D5DB',
+              width: i === current ? 28 : 8,
+              height: 4,
+              background: i === current ? 'white' : 'rgba(255,255,255,0.35)',
             }}
             aria-label={`Go to slide ${i + 1}`}
           />
         ))}
       </div>
 
-      {/* CSS animations injected */}
       <style>{`
         @keyframes slideInLeft {
-          from { opacity: 0; transform: translateX(-24px); }
+          from { opacity: 0; transform: translateX(-32px); }
           to   { opacity: 1; transform: translateX(0); }
         }
-        @keyframes slideInRight {
-          from { opacity: 0; transform: translateX(24px); }
-          to   { opacity: 1; transform: translateX(0); }
+        @keyframes heroZoom {
+          from { transform: scale(1.07); }
+          to   { transform: scale(1.0); }
         }
       `}</style>
     </section>

@@ -1,7 +1,7 @@
 import { productsApi, categoriesApi, type Product, type Category } from '@/lib/api'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
-import { ArrowRight, Truck, RotateCcw, Shield, Headphones, Heart, ShoppingCart, Shirt, ShoppingBag, BookOpen, Laptop, Watch, Star, Plane, Package } from 'lucide-react'
+import { ArrowRight, Truck, RotateCcw, Shield, Headphones, Heart, Shirt, ShoppingBag, BookOpen, Laptop, Watch, Star, Plane, Package } from 'lucide-react'
 import HeroCarousel from '@/components/storefront/HeroCarousel'
 
 export const dynamic = 'force-dynamic'
@@ -61,10 +61,12 @@ function ProductCard({ product }: { product: Product }) {
         </div>
         <Link
           href={`/products/${product.slug}`}
-          className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-xs font-bold text-white transition-opacity hover:opacity-90"
-          style={{ background: 'var(--color-primary)' }}
+          className="block w-full py-2.5 text-center text-xs font-bold tracking-wide rounded-xl border-2 transition-all duration-200 hover:text-white"
+          style={{ borderColor: '#111827', color: '#111827' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = '#111827' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent' }}
         >
-          <ShoppingCart size={13} /> Add to Cart
+          Add to Cart
         </Link>
       </div>
     </div>
@@ -147,17 +149,16 @@ export default async function StorefrontHome() {
       {/* Hot Deals banner */}
       {deals.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 pb-10">
-          {/* Section header with colored bg */}
-          <div className="flex items-center justify-between mb-5 px-5 py-4 rounded-2xl" style={{ background: 'linear-gradient(135deg, #DC2626, #F97316)', color: 'white' }}>
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">🔥</span>
-              <div>
-                <h2 className="text-xl font-extrabold">Hot Deals</h2>
-                <p className="text-xs opacity-80">Limited time — grab them fast!</p>
-              </div>
+          <div className="flex items-center justify-between mb-8 pb-5" style={{ borderBottom: '1.5px solid #F3F4F6' }}>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] mb-1.5 flex items-center gap-2">
+                <span className="inline-block w-5 h-0.5 rounded-full" style={{ background: 'var(--color-primary)' }} />
+                <span style={{ color: 'var(--color-primary)' }}>Today&apos;s Picks</span>
+              </p>
+              <h2 className="text-2xl md:text-3xl font-extrabold" style={{ color: '#0F0F0F' }}>Best Deals Right Now</h2>
             </div>
-            <Link href="/deals" className="text-sm font-bold flex items-center gap-1 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors">
-              See all <ArrowRight size={14} />
+            <Link href="/deals" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold border-b pb-0.5 transition-opacity hover:opacity-50" style={{ color: '#0F0F0F', borderColor: '#0F0F0F' }}>
+              View all <ArrowRight size={14} />
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -169,16 +170,16 @@ export default async function StorefrontHome() {
       {/* New Arrivals */}
       {newArrivals.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 pb-10">
-          <div className="flex items-center justify-between mb-5 px-5 py-4 rounded-2xl" style={{ background: 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white' }}>
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">✨</span>
-              <div>
-                <h2 className="text-xl font-extrabold">What's New</h2>
-                <p className="text-xs opacity-80">Fresh arrivals just landed</p>
-              </div>
+          <div className="flex items-center justify-between mb-8 pb-5" style={{ borderBottom: '1.5px solid #F3F4F6' }}>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] mb-1.5 flex items-center gap-2">
+                <span className="inline-block w-5 h-0.5 rounded-full" style={{ background: 'var(--color-primary)' }} />
+                <span style={{ color: 'var(--color-primary)' }}>Just Dropped</span>
+              </p>
+              <h2 className="text-2xl md:text-3xl font-extrabold" style={{ color: '#0F0F0F' }}>New Arrivals</h2>
             </div>
-            <Link href="/new" className="text-sm font-bold flex items-center gap-1 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors">
-              View all <ArrowRight size={14} />
+            <Link href="/new" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold border-b pb-0.5 transition-opacity hover:opacity-50" style={{ color: '#0F0F0F', borderColor: '#0F0F0F' }}>
+              Explore all <ArrowRight size={14} />
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -208,12 +209,15 @@ export default async function StorefrontHome() {
 
       {/* All featured products */}
       <section className="max-w-6xl mx-auto px-4 pb-16">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8 pb-5" style={{ borderBottom: '1.5px solid #F3F4F6' }}>
           <div>
-            <h2 className="text-2xl font-extrabold" style={{ color: 'var(--color-text)' }}>Featured Products</h2>
-            <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{featured.length > 0 ? `${featured.length} top picks for you` : 'Coming soon'}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] mb-1.5 flex items-center gap-2">
+              <span className="inline-block w-5 h-0.5 rounded-full" style={{ background: 'var(--color-primary)' }} />
+              <span style={{ color: 'var(--color-primary)' }}>Curated For You</span>
+            </p>
+            <h2 className="text-2xl md:text-3xl font-extrabold" style={{ color: '#0F0F0F' }}>Featured Products</h2>
           </div>
-          <Link href="/products" className="text-sm font-semibold flex items-center gap-1" style={{ color: 'var(--color-primary)' }}>
+          <Link href="/products" className="hidden sm:flex items-center gap-1.5 text-sm font-semibold border-b pb-0.5 transition-opacity hover:opacity-50" style={{ color: '#0F0F0F', borderColor: '#0F0F0F' }}>
             View all <ArrowRight size={14} />
           </Link>
         </div>
