@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
 import { ArrowRight, Truck, RotateCcw, Shield, Headphones, Heart, Shirt, ShoppingBag, BookOpen, Laptop, Watch, Star, Plane, Package } from 'lucide-react'
 import HeroCarousel from '@/components/storefront/HeroCarousel'
+import AddToCartButton from '@/components/storefront/AddToCartButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -61,13 +62,14 @@ function ProductCard({ product }: { product: Product }) {
         </div>
         <Link
           href={`/products/${product.slug}`}
-          className="block w-full py-2.5 text-center text-xs font-bold tracking-wide rounded-xl border-2 transition-all duration-200 hover:text-white"
-          style={{ borderColor: '#111827', color: '#111827' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = '#111827' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'transparent' }}
+          className="block w-full py-2.5 text-center text-xs font-bold tracking-wide rounded-xl border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white transition-all duration-200"
         >
-          Add to Cart
+          View Product
         </Link>
+        <AddToCartButton
+          product={product}
+          className="mt-2 flex w-full items-center justify-center gap-1.5 py-2.5 text-xs font-bold tracking-wide rounded-xl border-2 transition-all duration-200 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white disabled:opacity-60"
+        />
       </div>
     </div>
   )

@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react'
 import { ShoppingBag, Menu, X, Search, ChevronDown, Truck, Sparkles, Tag, User, LayoutGrid } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import type { Category } from '@/lib/api'
+import { useCartStore, selectItemCount } from '@/lib/cart-store'
 
 type Props = { categories: Category[] }
 
@@ -12,9 +13,13 @@ export default function StorefrontHeader({ categories }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [catOpen, setCatOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const catRef = useRef<HTMLDivElement>(null)
+  const cartCount = useCartStore(selectItemCount)
+
+  useEffect(() => setMounted(true), [])
 
   // Close categories dropdown on outside click
   useEffect(() => {
@@ -122,7 +127,17 @@ export default function StorefrontHeader({ categories }: Props) {
             <span className="text-xs leading-none">Account</span>
           </Link>
           <Link href="/cart" className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors relative" style={{ color: 'var(--color-text-muted)' }}>
-            <ShoppingBag size={20} />
+            <div className="relative">
+              <ShoppingBag size={20} />
+              {mounted && cartCount > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-white font-bold"
+                  style={{ fontSize: '10px', background: 'var(--color-primary)', padding: '0 3px' }}
+                >
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </div>
             <span className="text-xs leading-none">Cart</span>
           </Link>
           {/* Mobile menu toggle */}

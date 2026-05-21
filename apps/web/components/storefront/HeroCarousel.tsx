@@ -146,6 +146,17 @@ export default function HeroCarousel() {
         </div>
       </div>
 
+      {/* Scroll hint — left side, doesn't overlap dots */}
+      <div
+        className="absolute bottom-7 left-10 flex-col items-center gap-1 hidden md:flex"
+        style={{ color: 'rgba(255,255,255,0.50)', animation: 'scrollBounce 2s ease-in-out infinite' }}
+      >
+        <span className="text-xs font-semibold tracking-[0.14em] uppercase">Scroll</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 5v14M5 12l7 7 7-7" />
+        </svg>
+      </div>
+
       {/* Slide counter */}
       <div
         className="absolute bottom-8 right-6 md:right-10 text-xs font-bold tracking-widest hidden md:block"
@@ -210,6 +221,10 @@ export default function HeroCarousel() {
         @keyframes heroZoom {
           from { transform: scale(1.07); }
           to   { transform: scale(1.0); }
+        }
+        @keyframes scrollBounce {
+          0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.55; }
+          50%       { transform: translateX(-50%) translateY(6px); opacity: 0.9; }
         }
       `}</style>
     </section>

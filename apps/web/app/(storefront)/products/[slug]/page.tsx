@@ -2,9 +2,10 @@ import { productsApi, type Product } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ShoppingBag, ShoppingCart, Tag, Truck, RotateCcw, Home, ChevronRight } from 'lucide-react'
+import { ShoppingBag, Tag, Truck, RotateCcw, Home, ChevronRight } from 'lucide-react'
 import type { Metadata } from 'next'
 import ProductGallery from './ProductGallery'
+import AddToCartButton from '@/components/storefront/AddToCartButton'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -116,22 +117,20 @@ export default async function ProductDetailPage({ params }: Props) {
 
           {/* Quantity + CTA */}
           <div className="space-y-3">
-            <button
-              disabled={product.inventory === 0}
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-base font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
-              style={{ background: 'var(--color-primary)' }}
+            <Link
+              href="/checkout"
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-base font-bold text-white transition-opacity hover:opacity-90"
+              style={{ background: product.inventory === 0 ? '#9CA3AF' : 'var(--color-primary)', pointerEvents: product.inventory === 0 ? 'none' : 'auto' }}
             >
               <ShoppingBag size={20} />
               Buy Now
-            </button>
-            <button
+            </Link>
+            <AddToCartButton
+              product={product}
               disabled={product.inventory === 0}
               className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors border-2"
-              style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)', background: 'white' }}
-            >
-              <ShoppingCart size={18} />
-              {product.inventory === 0 ? 'Out of stock' : 'Add to Cart'}
-            </button>
+              style={{ borderColor: 'var(--color-primary)', color: 'var(--color-primary)', background: 'white' } as React.CSSProperties}
+            />
           </div>
 
           {/* Trust badges */}

@@ -186,3 +186,29 @@ export type DashboardStats = {
 export const analyticsApi = {
   dashboard: (token: string): Promise<DashboardStats> => apiFetch('/analytics/dashboard', { token }),
 }
+
+// ─── Storefront (public v1 endpoints) ─────────────────────────────────────────
+
+export type PlaceOrderInput = {
+  customer: {
+    name: string
+    phone: string
+    email?: string
+    address: { street: string; city: string; region: string; country: string; zip?: string }
+  }
+  items: Array<{ productId: string; productName: string; unitPrice: number; quantity: number }>
+  zoneId: string
+  notes?: string
+  paymentMethod?: 'CASH_ON_DELIVERY' | 'MOBILE_MONEY' | 'CARD'
+  subtotal: number
+  deliveryFee: number
+  total: number
+}
+
+export const storefrontApi = {
+  getDeliveryZones: (): Promise<DeliveryZone[]> => apiFetch('/v1/delivery-zones'),
+  placeOrder: (body: PlaceOrderInput): Promise<Order> =>
+    apiFetch('/v1/orders', { method: 'POST', body: JSON.stringify(body) }),
+  getOrder: (id: string): Promise<Order & { customer?: Customer; items?: OrderItem[] }> =>
+    apiFetch(`/v1/orders/${id}`),
+}
