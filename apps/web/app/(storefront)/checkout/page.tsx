@@ -47,6 +47,8 @@ export default function CheckoutPage() {
 
   const [zones, setZones] = useState<DeliveryZone[]>([])
   const [selectedZoneId, setSelectedZoneId] = useState('')
+  const [deliveryFee, setDeliveryFee] = useState(0)
+  const [feeLoading, setFeeLoading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -73,8 +75,21 @@ export default function CheckoutPage() {
       .catch(() => {})
   }, [])
 
+  // Recalculate fee whenever zone or subtotal changes
+  useEffect(() => {
+    if (!selectedZoneId || subtotal === 0) { setDeliveryFee(0); return }
+    setFeeLoading(true)
+    storefrontApi
+      .getDeliveryFee(selectedZoneId, subtotal)
+      .then((fee) => setDeliveryFee(typeof fee === 'number' ? fee : 0))
+      .catch(() => {
+        const zone = zones.find((z) => z.id === selectedZoneId)
+        setDeliveryFee(zone ? Number(zone.baseFee) : 0)
+      })
+      .finally(() => setFeeLoading(false))
+  }, [selectedZoneId, subtotal, zones])
+
   const selectedZone = zones.find((z) => z.id === selectedZoneId)
-  const deliveryFee = selectedZone ? Number(selectedZone.baseFee) : 0
   const total = subtotal + deliveryFee
 
   function handleChange(
@@ -502,12 +517,12 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--color-text-muted)' }}>Delivery</span>
-                  <span className="font-semibold" style={{ color: 'var(--color-text)' }}>
-                    {selectedZone
-                      ? deliveryFee === 0
-                        ? 'Free'
-                        : formatPrice(deliveryFee)
-                      : '—'}
+                  <span className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--color-text)' }}>
+                    {feeLoading
+                      ? <Loader2 size={13} className="animate-spin" style={{ color: 'var(--color-text-muted)' }} />
+                      : selectedZone
+                        ? deliveryFee === 0 ? 'Free' : formatPrice(deliveryFee)
+                        : '—'}
                   </span>
                 </div>
               </div>

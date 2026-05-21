@@ -292,6 +292,11 @@ export type PlaceOrderInput = {
 
 export const storefrontApi = {
   getDeliveryZones: (): Promise<DeliveryZone[]> => apiFetch('/v1/delivery-zones'),
+  getDeliveryFee: (zoneId: string, total: number, km?: number): Promise<number> => {
+    const params = new URLSearchParams({ zoneId, total: String(total) })
+    if (km !== undefined) params.set('km', String(km))
+    return apiFetch(`/delivery/fee?${params}`)
+  },
   placeOrder: (body: PlaceOrderInput): Promise<Order> =>
     apiFetch('/v1/orders', { method: 'POST', body: JSON.stringify(body) }),
   getOrder: (id: string): Promise<Order & { customer?: Customer; items?: OrderItem[] }> =>
