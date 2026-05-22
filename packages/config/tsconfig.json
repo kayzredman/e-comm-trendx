@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./lib",
     "rootDir": "./src",
     "module": "CommonJS",
     "moduleResolution": "Node",
@@ -9,5 +9,5 @@
     "declarationMap": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["dist", "node_modules"]
+  "exclude": ["lib", "node_modules"]
 }
