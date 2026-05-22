@@ -23,9 +23,22 @@ async function bootstrap() {
     }),
   )
 
-  // CORS — allow web app origin
+  // CORS — allow web app origin(s)
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    ...(process.env.WEB_URL ? [process.env.WEB_URL] : []),
+  ]
   app.enableCors({
-    origin: process.env.WEB_URL ?? 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman, server-side)
+      if (!origin) return callback(null, true)
+      // Allow any *.up.railway.app subdomain (staging / prod previews)
+      if (allowedOrigins.includes(origin) || /^https:\/\/[^.]+\.up\.railway\.app$/.test(origin)) {
+        return callback(null, true)
+      }
+      return callback(new Error(`CORS: origin ${origin} not allowed`), false)
+    },
     credentials: true,
   })
 
