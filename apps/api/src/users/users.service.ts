@@ -15,10 +15,8 @@ export class UsersService {
   // ── JIT sync: upsert user from Clerk JWT payload ──────────────────────────
   async syncUser(payload: { sub: string; email?: string; name?: string }) {
     const db = this.db.client
-    const clerkUser = await this.clerk.users.getUser(payload.sub)
-    const email = clerkUser.emailAddresses[0]?.emailAddress ?? payload.email ?? ''
-    const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || email
 
+    // DB-first: skip Clerk API call for returning users (avoids latency on every page load)
     const existing = await db
       .select()
       .from(users)
@@ -28,6 +26,11 @@ export class UsersService {
     if (existing.length > 0) {
       return existing[0]
     }
+
+    // First-time only: fetch name/email from Clerk
+    const clerkUser = await this.clerk.users.getUser(payload.sub)
+    const email = clerkUser.emailAddresses[0]?.emailAddress ?? payload.email ?? ''
+    const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || email
 
     // First-time: create as VIEWER (OWNER must be seeded separately)
     const [created] = await db
