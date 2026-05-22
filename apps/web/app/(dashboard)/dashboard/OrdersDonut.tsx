@@ -53,8 +53,8 @@ export default function OrdersDonut({ data }: Props) {
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number, name: string) => [
-              `${value} (${Math.round((value / total) * 100)}%)`, name
+            formatter={(value, name) => [
+              `${value} (${Math.round((Number(value) / total) * 100)}%)`, String(name)
             ]}
             contentStyle={{
               background: 'var(--color-surface)',

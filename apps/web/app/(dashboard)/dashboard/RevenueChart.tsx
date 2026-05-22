@@ -69,7 +69,7 @@ export default function RevenueChart({ data }: Props) {
           width={48}
         />
         <Tooltip
-          formatter={(value: number) => [formatRevenue(value), 'Revenue']}
+          formatter={(value) => [formatRevenue(Number(value)), 'Revenue']}
           contentStyle={{
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',
