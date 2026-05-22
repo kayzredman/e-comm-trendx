@@ -23,19 +23,10 @@ COPY packages/config/src ./packages/config/src
 # Build packages first, then the API
 RUN pnpm --filter @trendmarga/db --filter @trendmarga/types --filter @trendmarga/config build
 
-# Build API with full debug output
-RUN echo "=== API src files ===" && find /app/apps/api/src -name "*.ts" | head -20
-RUN echo "=== Running nest build ===" && \
-    pnpm --filter @trendmarga/api build 2>&1 || true && \
-    echo "=== dist after nest build ===" && \
-    find /app/apps/api/dist -type f 2>/dev/null | head -20 || echo "(no dist files)"
-RUN if [ ! -f /app/apps/api/dist/main.js ]; then \
-      echo "nest build did not produce dist/main.js — running tsc directly" && \
-      cd /app/apps/api && \
-      ../../node_modules/.bin/tsc -p tsconfig.json 2>&1 || true && \
-      echo "=== dist after tsc ===" && \
-      find /app/apps/api/dist -type f 2>/dev/null | head -20 || echo "(no dist files)"; \
-    fi
+# Build API
+RUN pnpm --filter @trendmarga/api build
+
+# Verify output exists
 RUN ls /app/apps/api/dist/main.js
 
 # Stage 2: Runtime

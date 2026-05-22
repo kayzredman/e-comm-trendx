@@ -19,11 +19,8 @@
     "strictBindCallApply": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "paths": {
-      "@trendmarga/db": ["../../packages/db/src/index.ts"],
-      "@trendmarga/types": ["../../packages/types/src/index.ts"],
-      "@trendmarga/config": ["../../packages/config/src/index.ts"]
-    }
+    "rootDir": "./src"
   },
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
