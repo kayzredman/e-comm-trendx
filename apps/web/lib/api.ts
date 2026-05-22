@@ -8,7 +8,11 @@ async function apiFetch<T = unknown>(
   if (opts?.token) headers['Authorization'] = `Bearer ${opts.token}`
 
   const { token: _token, ...rest } = opts ?? {}
-  const res = await fetch(`${API}${path}`, { ...rest, headers })
+  const res = await fetch(`${API}${path}`, {
+    ...rest,
+    headers,
+    signal: rest.signal ?? AbortSignal.timeout(8000),
+  })
 
   if (!res.ok) {
     const body = await res.text()
