@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "target": "ES2021",
     "sourceMap": true,
-    "outDir": "./server",
+    "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
@@ -25,5 +25,5 @@
       "@trendmarga/config": ["../../packages/config/src/index.ts"]
     }
   },
-  "exclude": ["node_modules", "server"]
+  "exclude": ["node_modules", "dist"]
 }

@@ -32,4 +32,4 @@ WORKDIR /app
 COPY --from=build /app .
 
 EXPOSE 4001
-CMD ["node", "apps/api/server/main.js"]
+CMD ["node", "apps/api/dist/main.js"]
