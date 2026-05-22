@@ -22,7 +22,13 @@ COPY packages/config/src ./packages/config/src
 
 # Build packages first, then the API
 RUN pnpm --filter @trendmarga/db --filter @trendmarga/types --filter @trendmarga/config build
+
+# Build API: try nest build, then fall back to tsc directly if dist/main.js not produced
 RUN pnpm --filter @trendmarga/api build
+RUN ls /app/apps/api/dist/main.js 2>/dev/null || \
+    (echo "nest build did not produce dist/main.js — running tsc directly" && \
+     cd /app/apps/api && ../../node_modules/.bin/tsc -p tsconfig.json --noEmitOnError false && \
+     ls /app/apps/api/dist/main.js)
 
 # Stage 2: Runtime
 FROM node:20-slim
