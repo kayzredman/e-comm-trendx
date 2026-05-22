@@ -241,8 +241,8 @@ export const usersApi = {
     apiFetch('/users/me', { token }),
   list: (token: string): Promise<StaffUser[]> =>
     apiFetch('/users', { token }),
-  invite: (email: string, role: UserRole, token: string) =>
-    apiFetch('/users/invite', { method: 'POST', body: JSON.stringify({ email, role }), token }),
+  invite: (email: string, role: UserRole, token: string): Promise<{ type: 'invited' | 'updated'; user: StaffUser }> =>
+    apiFetch<{ type: 'invited' | 'updated'; user: StaffUser }>('/users/invite', { method: 'POST', body: JSON.stringify({ email, role }), token }),
   updateRole: (id: string, role: UserRole, token: string): Promise<StaffUser> =>
     apiFetch(`/users/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }), token }),
   remove: (id: string, token: string): Promise<{ deleted: boolean }> =>
