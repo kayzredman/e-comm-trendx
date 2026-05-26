@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const SLIDES = [
   {
@@ -99,84 +100,124 @@ export default function HeroCarousel() {
 
   const slide = SLIDES[current]
 
+  const contentVariants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.12 } },
+    exit: {},
+  }
+  const itemVariants = {
+    hidden: { opacity: 0, y: 24 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] } },
+    exit: { opacity: 0, y: -12, transition: { duration: 0.3 } },
+  }
+
   return (
     <section className="relative overflow-hidden" style={{ minHeight: '90vh' }}>
-      {/* Full-bleed background image with Ken Burns zoom */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        key={`bg-${current}`}
-        src={slide.image}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ animation: 'heroZoom 6.5s ease forwards' }}
-      />
+      {/* Background image */}
+      <AnimatePresence>
+        <motion.img
+          key={`bg-${current}`}
+          src={slide.image}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+          initial={{ opacity: 0, scale: 1.06 }}
+          animate={{ opacity: 1, scale: 1.0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+        />
+      </AnimatePresence>
 
-      {/* Dark cinematic overlay — deep on left, fades right */}
+      {/* Cinematic overlay */}
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(105deg, rgba(6,6,6,0.82) 0%, rgba(6,6,6,0.55) 50%, rgba(6,6,6,0.18) 100%)' }}
+        style={{ background: 'linear-gradient(105deg, rgba(6,6,6,0.84) 0%, rgba(6,6,6,0.55) 50%, rgba(6,6,6,0.16) 100%)' }}
       />
 
-      {/* Slide content */}
+      {/* Floating accent orb */}
       <div
-        className="relative z-10 max-w-6xl mx-auto px-6 md:px-12 flex flex-col justify-center"
+        className="absolute right-20 top-1/4 w-96 h-96 rounded-full opacity-20 blur-3xl pointer-events-none hidden lg:block"
+        style={{ background: slide.accent, animation: 'orb-drift 12s ease-in-out infinite' }}
+      />
+
+      {/* Content */}
+      <div
+        className="relative z-10 max-w-6xl mx-auto px-6 md:px-12 flex items-center"
         style={{ minHeight: '90vh' }}
       >
-        <div
-          key={`content-${current}`}
-          className="max-w-xl"
-          style={{ animation: 'slideInLeft 0.6s cubic-bezier(0.25,0.46,0.45,0.94) forwards' }}
-        >
-          {/* Eyebrow badge */}
-          <div
-            className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-[0.18em] mb-6"
-            style={{ background: slide.accent, color: 'white' }}
-          >
-            {slide.badge}
-          </div>
-
-          {/* Headline */}
-          <h1
-            className="text-5xl md:text-6xl lg:text-7xl font-black leading-none mb-5 whitespace-pre-line"
-            style={{ color: 'white', textShadow: '0 4px 24px rgba(0,0,0,0.25)' }}
-          >
-            {slide.headline}
-          </h1>
-
-          {/* Subtext */}
-          <p
-            className="text-base md:text-lg leading-relaxed mb-9 max-w-sm"
-            style={{ color: 'rgba(255,255,255,0.70)' }}
-          >
-            {slide.sub}
-          </p>
-
-          {/* CTAs */}
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={slide.cta.href}
-              className="inline-flex items-center font-bold px-8 py-3.5 rounded-full text-sm text-white transition-all hover:scale-105 hover:shadow-xl"
-              style={{ background: slide.accent }}
+        <div className="flex-1 max-w-xl">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`content-${current}`}
+              variants={contentVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
             >
-              {slide.cta.label}
-            </Link>
-            <Link
-              href={slide.ctaSecondary.href}
-              className="inline-flex items-center font-semibold px-8 py-3.5 rounded-full text-sm text-white transition-all hover:scale-105"
-              style={{
-                background: 'rgba(255,255,255,0.10)',
-                border: '1.5px solid rgba(255,255,255,0.35)',
-                backdropFilter: 'blur(6px)',
-              }}
-            >
-              {slide.ctaSecondary.label}
-            </Link>
-          </div>
+              {/* Badge */}
+              <motion.div variants={itemVariants}>
+                <span
+                  className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-[0.18em] mb-6"
+                  style={{ background: slide.accent, color: 'white' }}
+                >
+                  {slide.badge}
+                </span>
+              </motion.div>
+
+              {/* Headline */}
+              <motion.h1
+                variants={itemVariants}
+                className="text-5xl md:text-6xl lg:text-7xl font-black leading-none mb-5 whitespace-pre-line"
+                style={{ color: 'white', textShadow: '0 4px 24px rgba(0,0,0,0.25)' }}
+              >
+                {slide.headline}
+              </motion.h1>
+
+              {/* Sub */}
+              <motion.p
+                variants={itemVariants}
+                className="text-base md:text-lg leading-relaxed mb-9 max-w-sm"
+                style={{ color: 'rgba(255,255,255,0.72)' }}
+              >
+                {slide.sub}
+              </motion.p>
+
+              {/* CTAs */}
+              <motion.div variants={itemVariants} className="flex flex-wrap gap-3">
+                <Link
+                  href={slide.cta.href}
+                  className="inline-flex items-center font-bold px-8 py-3.5 rounded-full text-sm text-white transition-all hover:scale-105 hover:shadow-xl active:scale-95"
+                  style={{ background: slide.accent }}
+                >
+                  {slide.cta.label}
+                </Link>
+                <Link
+                  href={slide.ctaSecondary.href}
+                  className="inline-flex items-center font-semibold px-8 py-3.5 rounded-full text-sm text-white transition-all hover:scale-105 active:scale-95 glass"
+                >
+                  {slide.ctaSecondary.label}
+                </Link>
+              </motion.div>
+
+              {/* Stats row */}
+              <motion.div variants={itemVariants} className="flex gap-6 mt-10">
+                {[
+                  { val: '10k+', label: 'Products' },
+                  { val: 'Free', label: 'Delivery' },
+                  { val: '24/7', label: 'Support' },
+                ].map(({ val, label }) => (
+                  <div key={label} className="text-white">
+                    <div className="text-2xl font-black" style={{ textShadow: '0 2px 8px rgba(0,0,0,.3)' }}>{val}</div>
+                    <div className="text-xs font-medium opacity-60 mt-0.5">{label}</div>
+                  </div>
+                ))}
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Scroll hint — left side, doesn't overlap dots */}
+      {/* Scroll hint */}
       <div
         className="absolute bottom-7 left-10 flex-col items-center gap-1 hidden md:flex"
         style={{ color: 'rgba(255,255,255,0.50)', animation: 'scrollBounce 2s ease-in-out infinite' }}
@@ -195,17 +236,12 @@ export default function HeroCarousel() {
         {String(current + 1).padStart(2, '0')}&thinsp;/&thinsp;{String(SLIDES.length).padStart(2, '0')}
       </div>
 
-      {/* Prev / Next arrows */}
+      {/* Prev / Next */}
       <button
         type="button"
         onClick={prev}
-        className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all hover:scale-110"
-        style={{
-          background: 'rgba(255,255,255,0.10)',
-          border: '1.5px solid rgba(255,255,255,0.28)',
-          color: 'white',
-          backdropFilter: 'blur(6px)',
-        }}
+        className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 glass"
+        style={{ color: 'white' }}
         aria-label="Previous"
       >
         <ChevronLeft size={20} />
@@ -213,19 +249,14 @@ export default function HeroCarousel() {
       <button
         type="button"
         onClick={next}
-        className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all hover:scale-110"
-        style={{
-          background: 'rgba(255,255,255,0.10)',
-          border: '1.5px solid rgba(255,255,255,0.28)',
-          color: 'white',
-          backdropFilter: 'blur(6px)',
-        }}
+        className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-95 glass"
+        style={{ color: 'white' }}
         aria-label="Next"
       >
         <ChevronRight size={20} />
       </button>
 
-      {/* Pill dot indicators */}
+      {/* Dot indicators */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 items-center">
         {SLIDES.map((s, i) => (
           <button
@@ -244,17 +275,9 @@ export default function HeroCarousel() {
       </div>
 
       <style>{`
-        @keyframes slideInLeft {
-          from { opacity: 0; transform: translateX(-32px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes heroZoom {
-          from { transform: scale(1.07); }
-          to   { transform: scale(1.0); }
-        }
         @keyframes scrollBounce {
-          0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.55; }
-          50%       { transform: translateX(-50%) translateY(6px); opacity: 0.9; }
+          0%, 100% { transform: translateY(0); opacity: 0.55; }
+          50%       { transform: translateY(6px); opacity: 0.9; }
         }
       `}</style>
     </section>

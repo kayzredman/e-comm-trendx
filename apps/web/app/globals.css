@@ -1,29 +1,35 @@
 @import "tailwindcss";
 
-/* TrendMarga Design Tokens — mobile-first */
+/* TrendMarga Design Tokens — V2 */
 @theme inline {
   /* Brand colors */
   --color-primary: #2563EB;
   --color-primary-dark: #1D4ED8;
   --color-primary-light: #EFF6FF;
 
+  /* Navy scale */
+  --color-navy: #0A0F1E;
+  --color-navy-mid: #0F172A;
+  --color-navy-light: #1E293B;
+  --color-slate: #334155;
+
   /* Page & surface */
-  --color-page: #E8EDF3;
+  --color-page: #F1F5F9;
   --color-surface: #ffffff;
   --color-surface-muted: #F8FAFC;
 
   /* Text */
-  --color-text: #111827;
-  --color-text-muted: #6B7280;
-  --color-text-subtle: #9CA3AF;
+  --color-text: #0F172A;
+  --color-text-muted: #64748B;
+  --color-text-subtle: #94A3B8;
 
   /* Borders */
-  --color-border: #E5E7EB;
+  --color-border: #E2E8F0;
 
   /* Status */
-  --color-success: #16A34A;
-  --color-warning: #D97706;
-  --color-error: #DC2626;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
 
   /* Font */
   --font-sans: var(--font-inter), system-ui, sans-serif;
@@ -32,6 +38,15 @@
 :root {
   --background: var(--color-page);
   --foreground: var(--color-text);
+  /* Gradient shorthands available as CSS vars */
+  --grad-brand: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+  --grad-green: linear-gradient(135deg, #10B981 0%, #06B6D4 100%);
+  --grad-amber: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+  --grad-rose:  linear-gradient(135deg, #F43F5E 0%, #EC4899 100%);
+  --shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.05);
+  --shadow-lg:   0 10px 40px rgba(0,0,0,.12), 0 4px 16px rgba(0,0,0,.08);
+  --shadow-hover: 0 16px 48px rgba(0,0,0,.16), 0 4px 16px rgba(0,0,0,.08);
 }
 
 body {
@@ -40,4 +55,86 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Keyframes ─────────────────────────────────────────────── */
+@keyframes heroZoom {
+  from { transform: scale(1); }
+  to   { transform: scale(1.08); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -20px) scale(1.05); }
+  66%       { transform: translate(-20px, 15px) scale(0.97); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: .7; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* ── Utility helpers ───────────────────────────────────────── */
+.animate-fade-up   { animation: fadeInUp  .5s ease both; }
+.animate-fade-in   { animation: fadeIn    .4s ease both; }
+.animate-slide-left{ animation: slideInLeft .55s cubic-bezier(.25,.46,.45,.94) both; }
+
+/* stagger delays */
+.stagger-1 { animation-delay: .05s; }
+.stagger-2 { animation-delay: .10s; }
+.stagger-3 { animation-delay: .15s; }
+.stagger-4 { animation-delay: .20s; }
+.stagger-5 { animation-delay: .25s; }
+.stagger-6 { animation-delay: .30s; }
+
+/* Glassmorphism surface */
+.glass {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.glass-dark {
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Gradient text */
+.grad-text {
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform .3s cubic-bezier(.34,1.1,.64,1), box-shadow .3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Focus ring */
+*:focus-visible {
+  outline: 2px solid #2563EB;
+  outline-offset: 2px;
+  border-radius: 4px;
 }

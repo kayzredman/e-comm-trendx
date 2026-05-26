@@ -14,7 +14,6 @@ async function bootstrap() {
     new FastifyAdapter({ logger: env.NODE_ENV === 'development' }),
   )
 
-  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

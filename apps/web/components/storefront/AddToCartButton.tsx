@@ -1,6 +1,6 @@
 'use client'
 
-import { CSSProperties, useState } from 'react'
+import { CSSProperties, ReactNode, useState } from 'react'
 import { useCartStore } from '@/lib/cart-store'
 import { ShoppingCart, Check } from 'lucide-react'
 
@@ -15,9 +15,11 @@ type Props = {
   disabled?: boolean
   className?: string
   style?: CSSProperties
+  /** Override the button content (idle state) */
+  label?: ReactNode
 }
 
-export default function AddToCartButton({ product, disabled, className, style }: Props) {
+export default function AddToCartButton({ product, disabled, className, style, label }: Props) {
   const [added, setAdded] = useState(false)
   const addItem = useCartStore((s) => s.addItem)
 
@@ -40,8 +42,7 @@ export default function AddToCartButton({ product, disabled, className, style }:
       className={className}
       style={style}
     >
-      {added ? <Check size={16} /> : <ShoppingCart size={16} />}
-      {added ? 'Added!' : 'Add to Cart'}
+      {added ? <><Check size={16} /> Added!</> : (label ?? <><ShoppingCart size={16} /> Add to Cart</>)}
     </button>
   )
 }

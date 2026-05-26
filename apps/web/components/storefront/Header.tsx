@@ -48,10 +48,19 @@ export default function StorefrontHeader({ categories }: Props) {
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
 
   return (
-    <header className="sticky top-0 z-40 shadow-sm" style={{ background: 'var(--color-surface)' }}>
+    <header
+      className="sticky top-0 z-40"
+      style={{
+        background: 'rgba(255,255,255,0.90)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(226,232,240,0.7)',
+        boxShadow: '0 1px 12px rgba(0,0,0,0.06)',
+      }}
+    >
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-4">
         {/* Logo */}
-        <Link href="/" className="font-extrabold text-xl tracking-tight shrink-0 mr-2" style={{ color: 'var(--color-primary)' }}>
+        <Link href="/" className="font-extrabold text-xl tracking-tight shrink-0 mr-2 grad-text">
           TrendMarga
         </Link>
 
@@ -107,13 +116,19 @@ export default function StorefrontHeader({ categories }: Props) {
         </nav>
 
         {/* Search bar */}
-        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xs mx-auto relative">
+        <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-sm mx-auto relative">
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search products…"
-            className="w-full rounded-xl border pl-4 pr-10 py-2 text-sm outline-none focus:ring-2"
-            style={{ borderColor: 'var(--color-border)', background: '#F8F9FA', color: 'var(--color-text)' }}
+            placeholder="Search products… (⌘K)"
+            className="w-full rounded-xl pl-4 pr-10 py-2 text-sm outline-none transition-all"
+            style={{
+              border: '1.5px solid var(--color-border)',
+              background: 'var(--color-surface-muted)',
+              color: 'var(--color-text)',
+            }}
+            onFocus={e => { e.currentTarget.style.borderColor = '#2563EB'; e.currentTarget.style.background = '#fff'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)'; }}
+            onBlur={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = 'var(--color-surface-muted)'; e.currentTarget.style.boxShadow = 'none'; }}
           />
           <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }}>
             <Search size={16} />
@@ -122,9 +137,18 @@ export default function StorefrontHeader({ categories }: Props) {
 
         {/* Right icons */}
         <div className="flex items-center gap-2 ml-auto md:ml-0">
-          <Link href="/dashboard" className="hidden sm:flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors" style={{ color: 'var(--color-text-muted)' }}>
-            <User size={20} />
-            <span className="text-xs leading-none">Account</span>
+          <Link
+            href="/dashboard"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
+            style={{
+              background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
+              color: '#fff',
+              boxShadow: '0 2px 8px rgba(37,99,235,0.28)',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '.9'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.transform = 'none'; }}
+          >
+            <User size={15} /> Sign In
           </Link>
           <Link href="/cart" className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors relative" style={{ color: 'var(--color-text-muted)' }}>
             <div className="relative">
@@ -149,7 +173,7 @@ export default function StorefrontHeader({ categories }: Props) {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t px-4 py-3 space-y-1" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+        <div className="md:hidden border-t px-4 py-3 space-y-1" style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderColor: 'var(--color-border)' }}>
           {/* Mobile search */}
           <form onSubmit={handleSearch} className="relative mb-3">
             <input

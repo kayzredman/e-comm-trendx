@@ -52,7 +52,7 @@ export default function Sidebar({ role }: SidebarProps) {
     role.charAt(0) + role.slice(1).toLowerCase()
 
   const NavList = () => (
-    <nav className="flex-1 px-3 py-4 space-y-1">
+    <nav className="flex-1 px-3 py-4 space-y-0.5">
       {visibleItems.map(({ label, href, icon: Icon }) => {
         const active = pathname === href || pathname.startsWith(href + '/')
         return (
@@ -60,13 +60,14 @@ export default function Sidebar({ role }: SidebarProps) {
             key={href}
             href={href}
             onClick={() => setOpen(false)}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
             style={{
-              background: active ? 'var(--color-primary-light)' : 'transparent',
-              color: active ? 'var(--color-primary)' : 'var(--color-text)',
+              background: active ? 'rgba(37,99,235,0.25)' : 'transparent',
+              color: active ? '#93C5FD' : 'rgba(148,163,184,0.85)',
+              borderLeft: active ? '3px solid #3B82F6' : '3px solid transparent',
             }}
           >
-            <Icon size={18} />
+            <Icon size={17} />
             <span>{label}</span>
           </Link>
         )
@@ -77,10 +78,11 @@ export default function Sidebar({ role }: SidebarProps) {
   const RoleTag = () => (
     <div className="px-5 pb-3">
       <span
-        className="text-xs font-semibold px-2 py-0.5 rounded-full"
+        className="text-xs font-semibold px-2.5 py-1 rounded-full"
         style={{
-          background: role === 'OWNER' ? '#EDE9FE' : 'var(--color-surface-muted)',
-          color: role === 'OWNER' ? '#7C3AED' : 'var(--color-text-muted)',
+          background: role === 'OWNER' ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.07)',
+          color: role === 'OWNER' ? '#C4B5FD' : 'rgba(148,163,184,0.6)',
+          border: '1px solid ' + (role === 'OWNER' ? 'rgba(124,58,237,0.3)' : 'rgba(255,255,255,0.08)'),
         }}
       >
         {roleLabel}
@@ -92,11 +94,11 @@ export default function Sidebar({ role }: SidebarProps) {
     <>
       {/* Mobile header bar */}
       <header
-        className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14 border-b"
-        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        className="md:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 h-14"
+        style={{ background: 'var(--color-navy-mid)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
       >
-        <span className="font-bold text-base" style={{ color: 'var(--color-primary)' }}>TrendMarga CMS</span>
-        <button onClick={() => setOpen(true)} style={{ color: 'var(--color-text)' }}>
+        <span className="font-extrabold text-base" style={{ color: '#F1F5F9' }}>TrendMarga CMS</span>
+        <button type="button" onClick={() => setOpen(true)} style={{ color: 'rgba(148,163,184,0.8)' }}>
           <Menu size={22} />
         </button>
       </header>
@@ -104,21 +106,25 @@ export default function Sidebar({ role }: SidebarProps) {
       {/* Mobile overlay */}
       {open && (
         <div className="md:hidden fixed inset-0 z-40 flex">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
+          <button type="button" aria-label="Close menu" className="absolute inset-0 w-full h-full bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <aside
             className="relative z-50 flex flex-col w-72 h-full"
-            style={{ background: 'var(--color-surface)' }}
+            style={{ background: 'var(--color-navy-mid)' }}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--color-border)' }}>
-              <span className="font-bold text-base" style={{ color: 'var(--color-primary)' }}>TrendMarga CMS</span>
-              <button onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)' }}><X size={20} /></button>
+            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-white text-xs" style={{ background: 'linear-gradient(135deg,#2563EB,#7C3AED)' }}>T</div>
+                <span className="font-extrabold text-base" style={{ color: '#F1F5F9' }}>TrendMarga</span>
+              </div>
+              <button type="button" onClick={() => setOpen(false)} style={{ color: 'rgba(148,163,184,0.7)' }}><X size={20} /></button>
             </div>
             <NavList />
             <RoleTag />
             <button
+              type="button"
               onClick={() => signOut()}
-              className="flex items-center gap-3 mx-3 mb-4 px-3 py-2.5 rounded-lg text-sm font-medium"
-              style={{ color: 'var(--color-error)' }}
+              className="flex items-center gap-3 mx-3 mb-4 px-3 py-2.5 rounded-xl text-sm font-medium"
+              style={{ color: 'rgba(239,68,68,0.8)' }}
             >
               <LogOut size={18} /> Sign out
             </button>
@@ -126,21 +132,39 @@ export default function Sidebar({ role }: SidebarProps) {
         </div>
       )}
 
-      {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex flex-col w-64 min-h-screen border-r shrink-0"
-        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+        className="hidden md:flex flex-col w-64 min-h-screen shrink-0"
+        style={{ background: 'var(--color-navy-mid)' }}
       >
-        <div className="px-5 py-5 border-b" style={{ borderColor: 'var(--color-border)' }}>
-          <span className="font-bold text-lg" style={{ color: 'var(--color-primary)' }}>TrendMarga</span>
-          <span className="text-xs ml-1.5 font-medium" style={{ color: 'var(--color-text-muted)' }}>CMS</span>
+        {/* Logo */}
+        <div className="px-5 py-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-white text-sm"
+              style={{ background: 'linear-gradient(135deg,#2563EB,#7C3AED)' }}
+            >
+              T
+            </div>
+            <div>
+              <span className="font-extrabold text-base" style={{ color: '#F1F5F9' }}>TrendMarga</span>
+              <span
+                className="text-xs ml-1.5 font-semibold px-1.5 py-0.5 rounded"
+                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', fontSize: '10px' }}
+              >
+                CMS
+              </span>
+            </div>
+          </div>
         </div>
         <NavList />
         <RoleTag />
         <button
+          type="button"
           onClick={() => signOut()}
-          className="flex items-center gap-3 mx-3 mb-4 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-red-50"
-          style={{ color: 'var(--color-error)' }}
+          className="flex items-center gap-3 mx-3 mb-4 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
+          style={{ color: 'rgba(239,68,68,0.8)' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
         >
           <LogOut size={18} /> Sign out
         </button>

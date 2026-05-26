@@ -1,10 +1,12 @@
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { analyticsApi, type DashboardStats } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Package, ShoppingCart, Users, TrendingUp, AlertTriangle, CheckCircle, BarChart2 } from 'lucide-react'
 import RevenueChart from './RevenueChart'
 import OrdersDonut from './OrdersDonut'
+import AnimatedStatCard from '@/components/cms/AnimatedStatCard'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +22,11 @@ const STATUS_STYLE: Record<string, { label: string; bg: string; color: string }>
 export default async function DashboardHome() {
   const { getToken } = await auth()
   const token = await getToken()
+  const user = await currentUser()
+  const firstName = user?.firstName ?? 'there'
+
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
   let stats: DashboardStats | null = null
   try {
@@ -32,77 +39,69 @@ export default async function DashboardHome() {
       value: stats?.totalProducts ?? '—',
       icon: Package,
       href: '/cms/products',
-      color: '#2563EB',
-      bg: '#DBEAFE',
+      gradient: 'linear-gradient(135deg,#2563EB,#3B82F6)',
     },
     {
       label: 'Total orders',
       value: stats?.totalOrders ?? '—',
       icon: ShoppingCart,
       href: '/cms/orders',
-      color: '#7C3AED',
-      bg: '#EDE9FE',
+      gradient: 'linear-gradient(135deg,#7C3AED,#A78BFA)',
     },
     {
       label: 'Customers',
       value: stats?.totalCustomers ?? '—',
       icon: Users,
       href: '/cms/customers',
-      color: '#16A34A',
-      bg: '#DCFCE7',
+      gradient: 'linear-gradient(135deg,#059669,#34D399)',
     },
     {
       label: 'Revenue (30 days)',
       value: stats ? `GH₵ ${Number(stats.revenue30d).toFixed(2)}` : '—',
       icon: TrendingUp,
       href: '/cms/orders',
-      color: '#EA580C',
-      bg: '#FFEDD5',
+      gradient: 'linear-gradient(135deg,#EA580C,#FB923C)',
     },
     {
       label: 'Avg order value',
       value: stats ? `GH₵ ${Number(stats.avgOrderValue).toFixed(2)}` : '—',
       icon: BarChart2,
       href: '/cms/orders',
-      color: '#0891B2',
-      bg: '#CFFAFE',
+      gradient: 'linear-gradient(135deg,#0891B2,#22D3EE)',
     },
     {
       label: 'Completion rate',
       value: stats ? `${stats.completionRate}%` : '—',
       icon: CheckCircle,
       href: '/cms/orders',
-      color: '#16A34A',
-      bg: '#DCFCE7',
+      gradient: 'linear-gradient(135deg,#16A34A,#4ADE80)',
     },
   ]
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Dashboard</h1>
-        <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-          Welcome back — here's what's happening today
+      {/* Greeting */}
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-extrabold" style={{ color: 'var(--color-text)' }}>
+          {greeting}, {firstName} 👋
+        </h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
+          Here&apos;s what&apos;s happening with your store today.
         </p>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6 mb-6">
-        {statCards.map(({ label, value, icon: Icon, href, color, bg }) => (
-          <Link
+        {statCards.map(({ label, value, icon, href, gradient }, i) => (
+          <AnimatedStatCard
             key={label}
+            label={label}
+            value={value}
+            icon={icon}
             href={href}
-            className="rounded-xl border p-4 flex flex-col gap-3 hover:shadow-sm transition-shadow"
-            style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-          >
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: bg }}>
-              <Icon size={18} style={{ color }} />
-            </div>
-            <div>
-              <p className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>{value}</p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{label}</p>
-            </div>
-          </Link>
+            gradient={gradient}
+            index={i}
+          />
         ))}
       </div>
 
@@ -237,7 +236,7 @@ export default async function DashboardHome() {
                 >
                   <div className="flex items-center gap-3">
                     {product.images?.[0] ? (
-                      <img src={product.images[0]} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                      <Image src={product.images[0]} alt="" width={32} height={32} unoptimized className="rounded object-cover shrink-0" style={{ width: 32, height: 32 }} />
                     ) : (
                       <div className="w-8 h-8 rounded shrink-0 flex items-center justify-center text-base" style={{ background: 'var(--color-surface-muted)' }}>📦</div>
                     )}

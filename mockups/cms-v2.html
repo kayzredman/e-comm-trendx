@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TrendMarga — CMS V2 Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#F1F5F9;color:#1E293B;font-size:14px;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+button{font-family:'Inter',sans-serif;cursor:pointer;border:none;outline:none}
+
+:root{
+  --blue:#2563EB;--blue-dark:#1D4ED8;--blue-mid:#3B82F6;
+  --purple:#7C3AED;--amber:#F59E0B;--rose:#F43F5E;--green:#10B981;--orange:#F97316;
+  --navy:#0A0F1E;--navy-mid:#0F172A;--navy-light:#1E293B;
+  --slate:#334155;--muted:#64748B;--subtle:#94A3B8;
+  --border:#E2E8F0;--surface:#fff;--page:#F1F5F9;
+  --grad-brand:linear-gradient(135deg,#2563EB 0%,#7C3AED 100%);
+  --grad-green:linear-gradient(135deg,#10B981 0%,#06B6D4 100%);
+  --grad-amber:linear-gradient(135deg,#F59E0B 0%,#EF4444 100%);
+  --grad-rose:linear-gradient(135deg,#F43F5E 0%,#EC4899 100%);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.06);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.12),0 4px 16px rgba(0,0,0,.08);
+  --radius:12px;--radius-sm:8px;--radius-lg:16px;--radius-xl:20px
+}
+
+/* ─── DEMO BAR ─── */
+#demo-bar{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:rgba(10,15,30,.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  padding:8px 20px;display:flex;gap:6px;align-items:center;flex-wrap:wrap
+}
+#demo-bar .label{color:#475569;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}
+#demo-bar button{padding:5px 13px;border-radius:6px;font-size:11px;font-weight:600;background:rgba(255,255,255,.06);color:#64748B;border:1px solid rgba(255,255,255,.08);transition:.15s}
+#demo-bar button.active,#demo-bar button:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+#demo-bar .dot{width:6px;height:6px;border-radius:50%;background:#10B981;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.screen{display:none;min-height:100vh;padding-top:44px}
+.screen.active{display:block}
+
+/* ─── LAYOUT ─── */
+.cms-shell{display:flex;height:calc(100vh - 44px);overflow:hidden;position:fixed;top:44px;left:0;right:0;bottom:0}
+.sidebar{width:240px;background:var(--navy-mid);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{
+  height:60px;background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;flex-shrink:0
+}
+.content-area{flex:1;overflow-y:auto;padding:24px;background:var(--page)}
+
+/* ─── SIDEBAR ─── */
+.sb-logo{padding:18px 18px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sb-logo-mark{display:flex;align-items:center;gap:9px}
+.sb-icon{
+  width:32px;height:32px;border-radius:9px;
+  background:var(--grad-brand);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:900;color:#fff
+}
+.sb-name{font-size:16px;font-weight:800;color:#F1F5F9;letter-spacing:-.3px}
+.sb-badge{font-size:10px;color:#475569;background:#1E293B;padding:2px 7px;border-radius:4px;margin-top:3px;display:inline-block}
+.sb-section{padding:20px 18px 6px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#475569}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 14px;margin:1px 10px;border-radius:9px;
+  cursor:pointer;color:#94A3B8;font-size:13px;font-weight:500;
+  transition:.15s
+}
+.sb-item:hover{background:rgba(255,255,255,.07);color:#E2E8F0}
+.sb-item.active{background:rgba(37,99,235,.25);color:#93C5FD}
+.sb-item-icon{width:18px;text-align:center;flex-shrink:0;font-size:15px}
+.sb-badge-pill{
+  margin-left:auto;background:var(--grad-brand);
+  color:#fff;font-size:9px;font-weight:700;
+  padding:2px 7px;border-radius:99px;min-width:20px;text-align:center
+}
+.sb-badge-pill.green{background:var(--grad-green)}
+.sb-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-user{display:flex;align-items:center;gap:10px}
+.sb-avatar{
+  width:34px;height:34px;border-radius:99px;
+  background:var(--grad-brand);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:13px;font-weight:700;flex-shrink:0
+}
+.sb-user-name{font-size:13px;font-weight:700;color:#E2E8F0}
+.sb-user-role{font-size:11px;color:#64748B}
+
+/* ─── TOPBAR ─── */
+.tb-left{display:flex;align-items:center;gap:8px}
+.tb-title{font-size:17px;font-weight:800;color:#0F172A}
+.tb-crumb{font-size:13px;color:#94A3B8}
+.tb-sep{color:#CBD5E1;margin:0 4px}
+.tb-right{display:flex;align-items:center;gap:10px}
+.tb-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:9px;
+  font-size:13px;font-weight:600;
+  background:#fff;border:1.5px solid var(--border);
+  color:#334155;cursor:pointer;transition:.15s
+}
+.tb-btn:hover{background:#F8FAFC;border-color:#CBD5E1}
+.tb-btn-primary{background:var(--grad-brand);color:#fff;border:none;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+.tb-btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.tb-notif{
+  position:relative;width:38px;height:38px;border-radius:9px;
+  background:#F8FAFC;border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;transition:.15s
+}
+.tb-notif:hover{background:#F1F5F9}
+.tb-notif-dot{
+  position:absolute;top:6px;right:6px;
+  width:8px;height:8px;border-radius:50%;
+  background:#EF4444;border:2px solid #fff
+}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-primary{background:var(--grad-brand);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-secondary{background:#fff;color:#334155;border:1.5px solid var(--border)}
+.btn-secondary:hover{background:#F8FAFC}
+.btn-danger{background:#FEF2F2;color:#DC2626;border:1.5px solid #FECACA}
+.btn-danger:hover{background:#FEE2E2}
+.btn-success{background:#D1FAE5;color:#065F46;border:1.5px solid #A7F3D0}
+
+/* ─── PAGE HEADER ─── */
+.pg-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.pg-title{font-size:22px;font-weight:800;color:#0F172A;letter-spacing:-.4px}
+.pg-sub{font-size:13.5px;color:#64748B;margin-top:4px}
+.hdr-actions{display:flex;gap:8px}
+
+/* ─── STAT CARDS ─── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{
+  background:#fff;border-radius:var(--radius-lg);padding:20px;
+  border:1.5px solid rgba(226,232,240,.8);
+  position:relative;overflow:hidden;
+  transition:all .3s cubic-bezier(.34,1.1,.64,1);cursor:default
+}
+.stat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:transparent}
+.stat-card::before{
+  content:'';position:absolute;top:-30px;right:-30px;
+  width:100px;height:100px;border-radius:50%;opacity:.08;
+  transition:.3s
+}
+.stat-card:hover::before{opacity:.14;transform:scale(1.2)}
+.sc-blue::before{background:var(--blue)}
+.sc-green::before{background:var(--green)}
+.sc-amber::before{background:var(--amber)}
+.sc-purple::before{background:var(--purple)}
+.stat-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;margin-bottom:14px
+}
+.si-blue{background:#EFF6FF}
+.si-green{background:#D1FAE5}
+.si-amber{background:#FEF3C7}
+.si-purple{background:#EDE9FE}
+.stat-val{font-size:28px;font-weight:900;color:#0F172A;letter-spacing:-1px;line-height:1}
+.stat-label{font-size:12.5px;color:#64748B;margin-top:5px;font-weight:500}
+.stat-change{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:11px;font-weight:700;margin-top:8px;
+  padding:2px 7px;border-radius:5px
+}
+.sc-up{background:#D1FAE5;color:#065F46}
+.sc-down{background:#FEE2E2;color:#991B1B}
+
+/* ─── CHART CARD ─── */
+.chart-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{
+  background:#fff;border-radius:var(--radius-lg);
+  border:1.5px solid rgba(226,232,240,.8);padding:20px
+}
+.chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.chart-title{font-size:15px;font-weight:800;color:#0F172A}
+.chart-sub{font-size:12px;color:#94A3B8;margin-bottom:16px}
+.chart-tabs{display:flex;gap:4px}
+.chart-tab{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;color:#94A3B8;border:none;background:none}
+.chart-tab.active{background:#EFF6FF;color:var(--blue)}
+/* Bar chart */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:140px;padding-top:12px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar{
+  width:100%;border-radius:5px 5px 0 0;
+  transition:all .6s cubic-bezier(.34,1.1,.64,1);
+  position:relative;cursor:pointer;
+  animation:growBar .8s ease both
+}
+@keyframes growBar{from{height:0!important}to{}}
+.bar:hover{filter:brightness(1.1)}
+.bar-val{font-size:9px;font-weight:700;color:#94A3B8}
+.bar-month{font-size:10px;color:#94A3B8;font-weight:500}
+.bar-chart-axes{display:flex;justify-content:space-between;margin-top:4px;padding:0 2px}
+/* Donut chart */
+.donut-wrap{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:140px;position:relative
+}
+.donut-svg{width:110px;height:110px}
+.donut-center{
+  position:absolute;text-align:center;
+  top:50%;left:50%;transform:translate(-50%,-50%)
+}
+.donut-pct{font-size:22px;font-weight:900;color:#0F172A}
+.donut-label{font-size:10px;color:#94A3B8}
+.donut-legend{display:flex;flex-direction:column;gap:6px;margin-top:14px;width:100%}
+.dl-item{display:flex;align-items:center;justify-content:space-between;font-size:12px}
+.dl-dot{width:8px;height:8px;border-radius:50%;margin-right:6px;flex-shrink:0}
+.dl-label{display:flex;align-items:center;color:#64748B;flex:1}
+.dl-val{font-weight:700;color:#1E293B}
+
+/* ─── RECENT ORDERS TABLE ─── */
+.table-card{
+  background:#fff;border-radius:var(--radius-lg);
+  border:1.5px solid rgba(226,232,240,.8);margin-bottom:24px;overflow:hidden
+}
+.table-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1.5px solid #F1F5F9
+}
+.table-title{font-size:15px;font-weight:800;color:#0F172A}
+.table-search{
+  display:flex;align-items:center;gap:8px;
+  background:#F8FAFC;border:1.5px solid var(--border);
+  border-radius:8px;padding:0 12px;height:36px;
+  transition:.2s
+}
+.table-search:focus-within{border-color:var(--blue);background:#fff}
+.table-search input{border:none;outline:none;background:none;font-size:13px;color:#1E293B;width:200px}
+table{width:100%;border-collapse:collapse}
+th{
+  padding:10px 20px;text-align:left;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+  color:#94A3B8;background:#FAFBFC;border-bottom:1.5px solid #F1F5F9
+}
+td{
+  padding:14px 20px;font-size:13px;
+  border-bottom:1px solid #F8FAFC;
+  transition:.15s;vertical-align:middle
+}
+tr:hover td{background:#FAFBFC}
+tr:last-child td{border-bottom:none}
+.order-id{font-weight:700;color:#0F172A}
+.cust-cell{display:flex;align-items:center;gap:9px}
+.cust-av{
+  width:30px;height:30px;border-radius:99px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff
+}
+.cust-name{font-weight:600;color:#1E293B}
+.cust-email{font-size:11px;color:#94A3B8}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700}
+.badge-pending{background:#FEF3C7;color:#92400E}
+.badge-processing{background:#DBEAFE;color:#1E40AF}
+.badge-delivered{background:#D1FAE5;color:#065F46}
+.badge-cancelled{background:#FEE2E2;color:#991B1B}
+.badge-dot{width:6px;height:6px;border-radius:50%}
+.bd-pending{background:#F59E0B}
+.bd-processing{background:#3B82F6}
+.bd-delivered{background:#10B981}
+.bd-cancelled{background:#EF4444}
+.amt{font-weight:700;color:#0F172A}
+.action-btns{display:flex;gap:6px}
+.tbl-action{
+  padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;
+  cursor:pointer;transition:.15s;border:none
+}
+.tbl-view{background:#EFF6FF;color:var(--blue)}
+.tbl-view:hover{background:#DBEAFE}
+.tbl-edit{background:#F8FAFC;color:#64748B;border:1px solid #E2E8F0}
+.tbl-edit:hover{background:#F1F5F9}
+
+/* ─── PRODUCT MANAGEMENT ─── */
+.prod-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;gap:12px;flex-wrap:wrap
+}
+.prod-search{
+  display:flex;align-items:center;gap:8px;
+  background:#fff;border:1.5px solid var(--border);
+  border-radius:9px;padding:0 14px;height:40px;flex:1;max-width:320px;transition:.2s
+}
+.prod-search:focus-within{border-color:var(--blue)}
+.prod-search input{border:none;outline:none;background:none;font-size:13px;color:#1E293B;flex:1}
+.prod-filters{display:flex;gap:8px;align-items:center}
+.filter-select{
+  background:#fff;border:1.5px solid var(--border);
+  border-radius:8px;padding:8px 12px;font-size:13px;color:#334155;cursor:pointer;
+  display:flex;align-items:center;gap:6px
+}
+/* Prod table enhancements */
+.prod-img-cell{display:flex;align-items:center;gap:12px}
+.prod-thumb-img{
+  width:48px;height:48px;border-radius:8px;object-fit:cover;
+  background:#F1F5F9;flex-shrink:0;border:1.5px solid #F1F5F9
+}
+.prod-name-cell .pn-name{font-size:13.5px;font-weight:700;color:#0F172A}
+.prod-name-cell .pn-sku{font-size:11px;color:#94A3B8;margin-top:2px}
+.stock-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+.sb-in{background:#D1FAE5;color:#065F46}
+.sb-low{background:#FEF3C7;color:#92400E}
+.sb-out{background:#FEE2E2;color:#991B1B}
+.price-cell{font-size:14px;font-weight:700;color:#0F172A}
+.compare-cell{font-size:12px;color:#94A3B8;text-decoration:line-through}
+/* Status toggle */
+.toggle-wrap{display:flex;align-items:center;gap:6px}
+.toggle{
+  width:38px;height:20px;border-radius:99px;position:relative;cursor:pointer;
+  transition:.25s;background:#E2E8F0
+}
+.toggle.on{background:var(--green)}
+.toggle-thumb{
+  width:16px;height:16px;border-radius:50%;background:#fff;
+  position:absolute;top:2px;left:2px;transition:.25s;
+  box-shadow:0 1px 3px rgba(0,0,0,.2)
+}
+.toggle.on .toggle-thumb{left:20px}
+.toggle-label{font-size:12px;font-weight:600}
+.tl-on{color:var(--green)}
+.tl-off{color:#94A3B8}
+
+/* ─── ANALYTICS ─── */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.an-card{
+  background:#fff;border-radius:var(--radius-lg);
+  border:1.5px solid rgba(226,232,240,.8);padding:20px
+}
+.an-title{font-size:14px;font-weight:800;color:#0F172A;margin-bottom:4px}
+.an-sub{font-size:12px;color:#94A3B8;margin-bottom:16px}
+/* Sparklines */
+.sparkline{height:60px;width:100%;overflow:visible}
+/* Top products */
+.top-prod-list{display:flex;flex-direction:column;gap:12px}
+.tp-item{display:flex;align-items:center;gap:12px}
+.tp-rank{font-size:13px;font-weight:800;color:#94A3B8;min-width:16px;text-align:center}
+.tp-img{width:40px;height:40px;border-radius:8px;object-fit:cover;background:#F1F5F9}
+.tp-info{flex:1;min-width:0}
+.tp-name{font-size:13px;font-weight:700;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tp-sales{font-size:11px;color:#94A3B8;margin-top:1px}
+.tp-bar-wrap{width:80px;height:5px;background:#F1F5F9;border-radius:3px;overflow:hidden}
+.tp-bar{height:100%;border-radius:3px;background:var(--grad-brand);animation:growBar .8s ease both}
+.tp-amount{font-size:13px;font-weight:700;color:#0F172A;min-width:70px;text-align:right}
+
+/* ─── CATEGORY MANAGEMENT ─── */
+.cat-mgmt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.cat-mgmt-card{
+  background:#fff;border-radius:var(--radius-lg);
+  border:1.5px solid rgba(226,232,240,.8);
+  overflow:hidden;transition:all .25s;cursor:pointer
+}
+.cat-mgmt-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:transparent}
+.cat-mgmt-img{width:100%;height:120px;object-fit:cover;background:#F1F5F9}
+.cat-mgmt-info{padding:14px 16px}
+.cat-mgmt-name{font-size:14px;font-weight:800;color:#0F172A;margin-bottom:4px}
+.cat-mgmt-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cat-mgmt-count{font-size:12px;color:#64748B}
+.cat-mgmt-actions{display:flex;gap:6px}
+
+/* ─── ORDERS DETAIL ─── */
+.order-detail-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.od-card{
+  background:#fff;border-radius:var(--radius-lg);
+  border:1.5px solid rgba(226,232,240,.8);
+  padding:20px;margin-bottom:16px
+}
+.od-title{font-size:14px;font-weight:800;color:#0F172A;margin-bottom:14px;padding-bottom:12px;border-bottom:1.5px solid #F1F5F9}
+.od-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #F8FAFC}
+.od-item:last-child{border:none}
+.od-item-img{width:52px;height:52px;border-radius:8px;object-fit:cover;background:#F1F5F9}
+.od-item-info{flex:1}
+.od-item-name{font-size:13px;font-weight:700;color:#0F172A}
+.od-item-meta{font-size:12px;color:#94A3B8;margin-top:2px}
+.od-item-price{font-weight:700;color:#0F172A}
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-step{display:flex;gap:12px;position:relative}
+.tl-step::before{content:'';position:absolute;left:13px;top:28px;width:2px;height:calc(100% - 14px);background:#F1F5F9}
+.tl-step:last-child::before{display:none}
+.tl-dot{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;z-index:1}
+.tl-done{background:#D1FAE5;border:2px solid #A7F3D0;color:#10B981}
+.tl-active{background:#DBEAFE;border:2px solid #93C5FD;color:#3B82F6}
+.tl-pending{background:#F8FAFC;border:2px solid #E2E8F0;color:#94A3B8}
+.tl-content{padding:4px 0 16px}
+.tl-label{font-size:13px;font-weight:700;color:#0F172A}
+.tl-time{font-size:11px;color:#94A3B8;margin-top:1px}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.animate-in{animation:fadeInUp .45s ease both}
+.stagger-1{animation-delay:.04s}.stagger-2{animation-delay:.08s}.stagger-3{animation-delay:.12s}.stagger-4{animation-delay:.16s}
+.stagger-5{animation-delay:.2s}.stagger-6{animation-delay:.24s}
+
+/* counter */
+.counter{display:inline-block}
+</style>
+</head>
+<body>
+
+<div id="demo-bar">
+  <span class="label">📊 CMS V2</span>
+  <button class="active" onclick="showCMS('dashboard')">📊 Dashboard</button>
+  <button onclick="showCMS('products')">📦 Products</button>
+  <button onclick="showCMS('orders')">🧾 Orders</button>
+  <button onclick="showCMS('analytics')">📈 Analytics</button>
+  <button onclick="showCMS('categories')">🗂 Categories</button>
+  <span style="margin-left:auto;font-size:10px;color:#475569;display:flex;align-items:center;gap:4px"><span class="dot"></span>Hover for micro-animations</span>
+</div>
+
+<div id="screen-cms" class="screen active">
+  <div class="cms-shell">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-logo">
+        <div class="sb-logo-mark">
+          <div class="sb-icon">T</div>
+          <div>
+            <div class="sb-name">TrendMarga</div>
+            <span class="sb-badge">Owner Panel</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sb-section">Main</div>
+      <div class="sb-item active" id="si-dashboard" onclick="showCMS('dashboard')">
+        <span class="sb-item-icon">📊</span> Dashboard
+      </div>
+      <div class="sb-item" id="si-products" onclick="showCMS('products')">
+        <span class="sb-item-icon">📦</span> Products
+        <span class="sb-badge-pill">128</span>
+      </div>
+      <div class="sb-item" id="si-categories" onclick="showCMS('categories')">
+        <span class="sb-item-icon">🗂</span> Categories
+      </div>
+      <div class="sb-item" id="si-orders" onclick="showCMS('orders')">
+        <span class="sb-item-icon">🧾</span> Orders
+        <span class="sb-badge-pill green">12</span>
+      </div>
+      <div class="sb-item" id="si-analytics" onclick="showCMS('analytics')">
+        <span class="sb-item-icon">📈</span> Analytics
+      </div>
+
+      <div class="sb-section">Store</div>
+      <div class="sb-item">
+        <span class="sb-item-icon">👤</span> Customers
+      </div>
+      <div class="sb-item">
+        <span class="sb-item-icon">🚚</span> Delivery
+      </div>
+      <div class="sb-item">
+        <span class="sb-item-icon">🎨</span> CMS Pages
+      </div>
+
+      <div class="sb-section">System</div>
+      <div class="sb-item">
+        <span class="sb-item-icon">⚙️</span> Settings
+      </div>
+      <div class="sb-item">
+        <span class="sb-item-icon">🔗</span> Integrations
+      </div>
+
+      <div class="sb-footer">
+        <div class="sb-user">
+          <div class="sb-avatar">KA</div>
+          <div>
+            <div class="sb-user-name">Kweku Admin</div>
+            <div class="sb-user-role">Store Owner</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-area">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="tb-left">
+          <span class="tb-title" id="tb-title">Dashboard</span>
+          <span class="tb-crumb" id="tb-crumb"></span>
+        </div>
+        <div class="tb-right">
+          <button class="tb-btn">⬇ Export</button>
+          <button class="tb-btn"><span>📅</span> Last 30 days</button>
+          <div class="tb-notif">
+            🔔
+            <div class="tb-notif-dot"></div>
+          </div>
+          <div style="width:36px;height:36px;border-radius:99px;background:linear-gradient(135deg,#2563EB,#7C3AED);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;cursor:pointer">KA</div>
+        </div>
+      </div>
+
+      <!-- CONTENT AREA — screens -->
+      <div class="content-area">
+
+        <!-- ═══ DASHBOARD ═══ -->
+        <div id="cms-dashboard" class="cms-screen" style="display:block">
+          <div class="pg-hdr">
+            <div>
+              <div class="pg-title">Good morning, Kweku 👋</div>
+              <div class="pg-sub">Here's what's happening with your store today</div>
+            </div>
+            <div class="hdr-actions">
+              <button class="btn btn-secondary">⬇ Download Report</button>
+              <button class="btn btn-primary">+ New Product</button>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats-grid">
+            <div class="stat-card sc-blue animate-in stagger-1">
+              <div class="stat-icon si-blue">💰</div>
+              <div class="stat-val"><span class="counter">₵48,290</span></div>
+              <div class="stat-label">Total Revenue (May)</div>
+              <div class="stat-change sc-up">↑ 18.4% vs last month</div>
+            </div>
+            <div class="stat-card sc-green animate-in stagger-2">
+              <div class="stat-icon si-green">🛒</div>
+              <div class="stat-val">384</div>
+              <div class="stat-label">Orders this month</div>
+              <div class="stat-change sc-up">↑ 12.1% vs last month</div>
+            </div>
+            <div class="stat-card sc-amber animate-in stagger-3">
+              <div class="stat-icon si-amber">👤</div>
+              <div class="stat-val">1,847</div>
+              <div class="stat-label">New Customers</div>
+              <div class="stat-change sc-up">↑ 7.3% vs last month</div>
+            </div>
+            <div class="stat-card sc-purple animate-in stagger-4">
+              <div class="stat-icon si-purple">📦</div>
+              <div class="stat-val">128</div>
+              <div class="stat-label">Active Products</div>
+              <div class="stat-change sc-down">↓ 3 removed this week</div>
+            </div>
+          </div>
+
+          <!-- Charts -->
+          <div class="chart-row">
+            <div class="chart-card animate-in stagger-1">
+              <div class="chart-hdr">
+                <div>
+                  <div class="chart-title">Revenue Overview</div>
+                  <div class="chart-sub">Monthly revenue for 2026</div>
+                </div>
+                <div class="chart-tabs">
+                  <button class="chart-tab active">Monthly</button>
+                  <button class="chart-tab">Weekly</button>
+                  <button class="chart-tab">Daily</button>
+                </div>
+              </div>
+              <div class="bar-chart" id="revenue-chart">
+                <div class="bar-wrap"><div class="bar" style="height:45%;background:linear-gradient(180deg,#60A5FA,#2563EB);animation-delay:.1s" title="₵22k"></div><div class="bar-val">₵22k</div><div class="bar-month">Jan</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:62%;background:linear-gradient(180deg,#60A5FA,#2563EB);animation-delay:.15s" title="₵30k"></div><div class="bar-val">₵30k</div><div class="bar-month">Feb</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:55%;background:linear-gradient(180deg,#60A5FA,#2563EB);animation-delay:.2s" title="₵27k"></div><div class="bar-val">₵27k</div><div class="bar-month">Mar</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:75%;background:linear-gradient(180deg,#60A5FA,#2563EB);animation-delay:.25s" title="₵36k"></div><div class="bar-val">₵36k</div><div class="bar-month">Apr</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:100%;background:linear-gradient(180deg,#93C5FD,#2563EB);animation-delay:.3s;box-shadow:0 0 16px rgba(37,99,235,.4)" title="₵48k"></div><div class="bar-val" style="color:var(--blue);font-weight:800">₵48k</div><div class="bar-month" style="color:var(--blue);font-weight:700">May</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:22%;background:linear-gradient(180deg,#E2E8F0,#CBD5E1);animation-delay:.35s;opacity:.4" title="Projected"></div><div class="bar-val" style="color:#CBD5E1">—</div><div class="bar-month">Jun</div></div>
+                <div class="bar-wrap"><div class="bar" style="height:22%;background:linear-gradient(180deg,#E2E8F0,#CBD5E1);animation-delay:.4s;opacity:.4" title="Projected"></div><div class="bar-val" style="color:#CBD5E1">—</div><div class="bar-month">Jul</div></div>
+              </div>
+            </div>
+
+            <div class="chart-card animate-in stagger-2">
+              <div class="chart-title">Orders by Status</div>
+              <div class="chart-sub">Current month breakdown</div>
+              <div class="donut-wrap">
+                <svg class="donut-svg" viewBox="0 0 110 110">
+                  <circle cx="55" cy="55" r="40" fill="none" stroke="#F1F5F9" stroke-width="14"/>
+                  <circle cx="55" cy="55" r="40" fill="none" stroke="url(#g1)" stroke-width="14" stroke-dasharray="138 113" stroke-dashoffset="-12" stroke-linecap="round" style="animation:dash 1s ease both"/>
+                  <circle cx="55" cy="55" r="40" fill="none" stroke="#3B82F6" stroke-width="14" stroke-dasharray="62 189" stroke-dashoffset="-150" stroke-linecap="round" style="animation:dash 1s ease both .1s"/>
+                  <circle cx="55" cy="55" r="40" fill="none" stroke="#F59E0B" stroke-width="14" stroke-dasharray="38 213" stroke-dashoffset="-212" stroke-linecap="round" style="animation:dash 1s ease both .2s"/>
+                  <circle cx="55" cy="55" r="40" fill="none" stroke="#EF4444" stroke-width="14" stroke-dasharray="13 238" stroke-dashoffset="-250" stroke-linecap="round" style="animation:dash 1s ease both .3s"/>
+                  <defs>
+                    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#10B981"/>
+                      <stop offset="100%" stop-color="#06B6D4"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div class="donut-center"><div class="donut-pct">384</div><div class="donut-label">Orders</div></div>
+              </div>
+              <div class="donut-legend">
+                <div class="dl-item"><span class="dl-label"><span class="dl-dot" style="background:#10B981"></span>Delivered</span><span class="dl-val">220 (57%)</span></div>
+                <div class="dl-item"><span class="dl-label"><span class="dl-dot" style="background:#3B82F6"></span>Processing</span><span class="dl-val">100 (26%)</span></div>
+                <div class="dl-item"><span class="dl-label"><span class="dl-dot" style="background:#F59E0B"></span>Pending</span><span class="dl-val">40 (10%)</span></div>
+                <div class="dl-item"><span class="dl-label"><span class="dl-dot" style="background:#EF4444"></span>Cancelled</span><span class="dl-val">24 (7%)</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Orders -->
+          <div class="table-card animate-in">
+            <div class="table-hdr">
+              <div class="table-title">Recent Orders</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="table-search">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  <input placeholder="Search orders…" />
+                </div>
+                <button class="btn btn-secondary" style="font-size:12px">View All →</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Products</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="order-id">#TM-0384</span></td>
+                  <td><div class="cust-cell"><div class="cust-av" style="background:linear-gradient(135deg,#3B82F6,#8B5CF6)">AK</div><div><div class="cust-name">Ama Kyei</div><div class="cust-email">ama.k@gmail.com</div></div></div></td>
+                  <td><span style="font-size:12px;color:#64748B">Nike Air Max × 1</span></td>
+                  <td><span class="amt">₵1,299</span></td>
+                  <td><span class="badge badge-processing"><span class="badge-dot bd-processing"></span>Processing</span></td>
+                  <td style="font-size:12px;color:#64748B">26 May 2026</td>
+                  <td><div class="action-btns"><button class="tbl-action tbl-view">View</button><button class="tbl-action tbl-edit">Edit</button></div></td>
+                </tr>
+                <tr>
+                  <td><span class="order-id">#TM-0383</span></td>
+                  <td><div class="cust-cell"><div class="cust-av" style="background:linear-gradient(135deg,#10B981,#06B6D4)">KO</div><div><div class="cust-name">Kofi Osei</div><div class="cust-email">kofi.osei@yahoo.com</div></div></div></td>
+                  <td><span style="font-size:12px;color:#64748B">Glow Serum × 2, Tote Bag × 1</span></td>
+                  <td><span class="amt">₵1,380</span></td>
+                  <td><span class="badge badge-delivered"><span class="badge-dot bd-delivered"></span>Delivered</span></td>
+                  <td style="font-size:12px;color:#64748B">26 May 2026</td>
+                  <td><div class="action-btns"><button class="tbl-action tbl-view">View</button><button class="tbl-action tbl-edit">Edit</button></div></td>
+                </tr>
+                <tr>
+                  <td><span class="order-id">#TM-0382</span></td>
+                  <td><div class="cust-cell"><div class="cust-av" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">AB</div><div><div class="cust-name">Abena Boateng</div><div class="cust-email">a.boateng@gmail.com</div></div></div></td>
+                  <td><span style="font-size:12px;color:#64748B">SoundWave Pro × 1</span></td>
+                  <td><span class="amt">₵2,199</span></td>
+                  <td><span class="badge badge-pending"><span class="badge-dot bd-pending"></span>Pending</span></td>
+                  <td style="font-size:12px;color:#64748B">25 May 2026</td>
+                  <td><div class="action-btns"><button class="tbl-action tbl-view">View</button><button class="tbl-action tbl-edit">Edit</button></div></td>
+                </tr>
+                <tr>
+                  <td><span class="order-id">#TM-0381</span></td>
+                  <td><div class="cust-cell"><div class="cust-av" style="background:linear-gradient(135deg,#8B5CF6,#EC4899)">MA</div><div><div class="cust-name">Maxwell Adjei</div><div class="cust-email">max.adjei@outlook.com</div></div></div></td>
+                  <td><span style="font-size:12px;color:#64748B">Kente Shirt × 2</span></td>
+                  <td><span class="amt">₵560</span></td>
+                  <td><span class="badge badge-cancelled"><span class="badge-dot bd-cancelled"></span>Cancelled</span></td>
+                  <td style="font-size:12px;color:#64748B">25 May 2026</td>
+                  <td><div class="action-btns"><button class="tbl-action tbl-view">View</button><button class="tbl-action tbl-edit">Edit</button></div></td>
+                </tr>
+                <tr>
+                  <td><span class="order-id">#TM-0380</span></td>
+                  <td><div class="cust-cell"><div class="cust-av" style="background:linear-gradient(135deg,#06B6D4,#3B82F6)">EF</div><div><div class="cust-name">Efua Frimpong</div><div class="cust-email">efua.f@gmail.com</div></div></div></td>
+                  <td><span style="font-size:12px;color:#64748B">Smart Speaker × 1, Candle Set × 1</span></td>
+                  <td><span class="amt">₵1,228</span></td>
+                  <td><span class="badge badge-delivered"><span class="badge-dot bd-delivered"></span>Delivered</span></td>
+                  <td style="font-size:12px;color:#64748B">24 May 2026</td>
+                  <td><div class="action-btns"><button class="tbl-action tbl-view">View</button><button class="tbl-action tbl-edit">Edit</button></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══ PRODUCTS ═══ -->
+        <div id="cms-products" class="cms-screen" style="display:none">
+          <div class="pg-hdr">
+            <div><div class="pg-title">Products</div><div class="pg-sub">Manage your product catalogue</div></div>
+            <div class="hdr-actions">
+              <button class="btn btn-secondary">⬇ Import CSV</button>
+              <button class="btn btn-primary">+ Add Product</button>
+            </div>
+          </div>
+          <div class="prod-toolbar">
+            <div class="prod-search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input placeholder="Search products by name, SKU…" />
+            </div>
+            <div class="prod-filters">
+              <div class="filter-select">Category: All <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="filter-select">Status: Active <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="filter-select">Stock: All <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+            </div>
+          </div>
+          <div class="table-card animate-in">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:340px">Product</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Sales</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><div class="prod-img-cell"><img class="prod-thumb-img" src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&q=80"/><div class="prod-name-cell"><div class="pn-name">Nike Air Max 270 — Phantom</div><div class="pn-sku">SKU: NKE-AM270-PH</div></div></div></td>
+                  <td><span style="font-size:12px;font-weight:600;color:#64748B">Shoes</span></td>
+                  <td><div class="price-cell">₵1,299</div><div class="compare-cell">₵1,799</div></td>
+                  <td><span class="stock-badge sb-low">⚠ 7 left</span></td>
+                  <td><span style="font-size:13px;font-weight:700;color:#0F172A">312</span></td>
+                  <td><div class="toggle-wrap"><div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div><span class="toggle-label tl-on">Active</span></div></td>
+                  <td><div class="action-btns"><button class="tbl-action tbl-view">Edit</button><button class="tbl-action" style="background:#FEE2E2;color:#DC2626;border:none">Delete</button></div></td>
+                </tr>
+                <tr>
+                  <td><div class="prod-img-cell"><img class="prod-thumb-img" src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&q=80"/><div class="prod-name-cell"><div class="pn-name">Premium Minimalist Watch</div><div class="pn-sku">SKU: WCH-MIN-SG-01</div></div></div></td>
+                  <td><span style="font-size:12px;font-weight:600;color:#64748B">Watches</span></td>
+                  <td><div class="price-cell">₵1,299</div><div class="compare-cell">₵1,999</div></td>
+                  <td><span class="stock-badge sb-in">✓ 43</span></td>
+                  <td><span style="font-size:13px;font-weight:700;color:#0F172A">128</span></td>
+                  <td><div class="toggle-wrap"><div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div><span class="toggle-label tl-on">Active</span></div></td>
+                  <td><div class="action-btns"><button class="tbl-action tbl-view">Edit</button><button class="tbl-action" style="background:#FEE2E2;color:#DC2626;border:none">Delete</button></div></td>
+                </tr>
+                <tr>
+                  <td><div class="prod-img-cell"><img class="prod-thumb-img" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&q=80"/><div class="prod-name-cell"><div class="pn-name">SoundWave Pro NC Headphones</div><div class="pn-sku">SKU: AUD-SWP-BLK</div></div></div></td>
+                  <td><span style="font-size:12px;font-weight:600;color:#64748B">Electronics</span></td>
+                  <td><div class="price-cell">₵2,199</div><div class="compare-cell">₵2,799</div></td>
+                  <td><span class="stock-badge sb-in">✓ 28</span></td>
+                  <td><span style="font-size:13px;font-weight:700;color:#0F172A">512</span></td>
+                  <td><div class="toggle-wrap"><div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div><span class="toggle-label tl-on">Active</span></div></td>
+                  <td><div class="action-btns"><button class="tbl-action tbl-view">Edit</button><button class="tbl-action" style="background:#FEE2E2;color:#DC2626;border:none">Delete</button></div></td>
+                </tr>
+                <tr>
+                  <td><div class="prod-img-cell"><img class="prod-thumb-img" src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=100&q=80"/><div class="prod-name-cell"><div class="pn-name">Glow Serum Vit C & Shea</div><div class="pn-sku">SKU: BTY-GS-VC-50</div></div></div></td>
+                  <td><span style="font-size:12px;font-weight:600;color:#64748B">Beauty</span></td>
+                  <td><div class="price-cell">₵380</div><div class="compare-cell">₵450</div></td>
+                  <td><span class="stock-badge sb-out">✗ Out of stock</span></td>
+                  <td><span style="font-size:13px;font-weight:700;color:#0F172A">241</span></td>
+                  <td><div class="toggle-wrap"><div class="toggle" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div><span class="toggle-label tl-off">Inactive</span></div></td>
+                  <td><div class="action-btns"><button class="tbl-action tbl-view">Edit</button><button class="tbl-action" style="background:#FEE2E2;color:#DC2626;border:none">Delete</button></div></td>
+                </tr>
+                <tr>
+                  <td><div class="prod-img-cell"><img class="prod-thumb-img" src="https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=100&q=80"/><div class="prod-name-cell"><div class="pn-name">AirFlex Pro Training Sneakers</div><div class="pn-sku">SKU: SHO-AFP-WHT-41</div></div></div></td>
+                  <td><span style="font-size:12px;font-weight:600;color:#64748B">Shoes</span></td>
+                  <td><div class="price-cell">₵849</div></td>
+                  <td><span class="stock-badge sb-in">✓ 56</span></td>
+                  <td><span style="font-size:13px;font-weight:700;color:#0F172A">96</span></td>
+                  <td><div class="toggle-wrap"><div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-thumb"></div></div><span class="toggle-label tl-on">Active</span></div></td>
+                  <td><div class="action-btns"><button class="tbl-action tbl-view">Edit</button><button class="tbl-action" style="background:#FEE2E2;color:#DC2626;border:none">Delete</button></div></td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- Pagination -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1.5px solid #F1F5F9">
+              <span style="font-size:12.5px;color:#64748B">Showing 1–5 of 128 products</span>
+              <div style="display:flex;gap:4px">
+                <button class="tb-btn" style="padding:5px 10px;font-size:12px">‹ Prev</button>
+                <button style="width:30px;height:30px;border-radius:7px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;border:none">1</button>
+                <button style="width:30px;height:30px;border-radius:7px;background:#F8FAFC;border:1.5px solid #E2E8F0;font-size:12px;color:#64748B">2</button>
+                <button style="width:30px;height:30px;border-radius:7px;background:#F8FAFC;border:1.5px solid #E2E8F0;font-size:12px;color:#64748B">3</button>
+                <button class="tb-btn" style="padding:5px 10px;font-size:12px">Next ›</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ ORDERS ═══ -->
+        <div id="cms-orders" class="cms-screen" style="display:none">
+          <div class="pg-hdr">
+            <div><div class="pg-title">Orders</div><div class="pg-sub">Track and manage all customer orders</div></div>
+            <div class="hdr-actions">
+              <button class="btn btn-secondary">⬇ Export CSV</button>
+              <button class="btn btn-primary">+ Manual Order</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;margin-bottom:20px">
+            <div class="stat-card animate-in stagger-1" style="flex:1;padding:14px 16px">
+              <div style="font-size:11px;color:#94A3B8;font-weight:600;text-transform:uppercase;letter-spacing:.06em">All Orders</div>
+              <div style="font-size:24px;font-weight:900;color:#0F172A;margin-top:4px">384</div>
+            </div>
+            <div class="stat-card animate-in stagger-2" style="flex:1;padding:14px 16px">
+              <div style="font-size:11px;color:#3B82F6;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Processing</div>
+              <div style="font-size:24px;font-weight:900;color:#0F172A;margin-top:4px">100</div>
+            </div>
+            <div class="stat-card animate-in stagger-3" style="flex:1;padding:14px 16px">
+              <div style="font-size:11px;color:#F59E0B;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Pending</div>
+              <div style="font-size:24px;font-weight:900;color:#0F172A;margin-top:4px">40</div>
+            </div>
+            <div class="stat-card animate-in stagger-4" style="flex:1;padding:14px 16px">
+              <div style="font-size:11px;color:#10B981;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Delivered</div>
+              <div style="font-size:24px;font-weight:900;color:#0F172A;margin-top:4px">220</div>
+            </div>
+            <div class="stat-card animate-in stagger-5" style="flex:1;padding:14px 16px">
+              <div style="font-size:11px;color:#EF4444;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Cancelled</div>
+              <div style="font-size:24px;font-weight:900;color:#0F172A;margin-top:4px">24</div>
+            </div>
+          </div>
+
+          <!-- Order Detail example -->
+          <div class="order-detail-grid">
+            <div>
+              <div class="od-card animate-in stagger-1">
+                <div class="od-title">Order #TM-0383 — Kofi Osei</div>
+                <div class="od-item">
+                  <img class="od-item-img" src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=200&q=80"/>
+                  <div class="od-item-info">
+                    <div class="od-item-name">Glow Serum — Vitamin C</div>
+                    <div class="od-item-meta">50ml · Qty: 2</div>
+                  </div>
+                  <div class="od-item-price">₵760</div>
+                </div>
+                <div class="od-item">
+                  <img class="od-item-img" src="https://images.unsplash.com/photo-1594938298603-c8148c4b4ece?w=200&q=80"/>
+                  <div class="od-item-info">
+                    <div class="od-item-name">Leather Tote Bag — Brown</div>
+                    <div class="od-item-meta">One size · Qty: 1</div>
+                  </div>
+                  <div class="od-item-price">₵620</div>
+                </div>
+                <div style="padding:12px 0 0;display:flex;flex-direction:column;gap:6px;border-top:1.5px solid #F1F5F9;margin-top:4px">
+                  <div style="display:flex;justify-content:space-between;font-size:13px;color:#64748B"><span>Subtotal</span><span>₵1,380</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;color:#10B981;font-weight:600"><span>Delivery</span><span>Free</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;color:#0F172A;padding-top:8px;border-top:1px solid #F1F5F9"><span>Total</span><span>₵1,380</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="od-card animate-in stagger-2">
+                <div class="od-title">Order Timeline</div>
+                <div class="timeline">
+                  <div class="tl-step">
+                    <div class="tl-dot tl-done">✓</div>
+                    <div class="tl-content"><div class="tl-label">Order Placed</div><div class="tl-time">26 May · 09:14am</div></div>
+                  </div>
+                  <div class="tl-step">
+                    <div class="tl-dot tl-done">✓</div>
+                    <div class="tl-content"><div class="tl-label">Payment Confirmed</div><div class="tl-time">26 May · 09:16am</div></div>
+                  </div>
+                  <div class="tl-step">
+                    <div class="tl-dot tl-done">✓</div>
+                    <div class="tl-content"><div class="tl-label">Packed & Ready</div><div class="tl-time">26 May · 11:30am</div></div>
+                  </div>
+                  <div class="tl-step">
+                    <div class="tl-dot tl-done">✓</div>
+                    <div class="tl-content"><div class="tl-label">Out for Delivery</div><div class="tl-time">26 May · 02:00pm</div></div>
+                  </div>
+                  <div class="tl-step">
+                    <div class="tl-dot tl-done">✓</div>
+                    <div class="tl-content"><div class="tl-label">Delivered</div><div class="tl-time">26 May · 04:42pm</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="od-card animate-in stagger-3">
+                <div class="od-title">Customer</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                  <div class="cust-av" style="background:linear-gradient(135deg,#10B981,#06B6D4);width:40px;height:40px;font-size:14px">KO</div>
+                  <div><div style="font-weight:700;color:#0F172A">Kofi Osei</div><div style="font-size:12px;color:#94A3B8">kofi.osei@yahoo.com</div></div>
+                </div>
+                <div style="font-size:12.5px;color:#64748B;line-height:1.7">
+                  📍 <strong>Deliver to:</strong> 14 Kwame Nkrumah Ave,<br>&nbsp;&nbsp;&nbsp;&nbsp;Adabraka, Accra
+                  <br>📞 +233 24 000 0000
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ ANALYTICS ═══ -->
+        <div id="cms-analytics" class="cms-screen" style="display:none">
+          <div class="pg-hdr">
+            <div><div class="pg-title">Analytics</div><div class="pg-sub">Deep dive into your store performance</div></div>
+            <div class="hdr-actions">
+              <button class="btn btn-secondary">📅 May 2026</button>
+              <button class="btn btn-secondary">⬇ Export PDF</button>
+            </div>
+          </div>
+          <div class="stats-grid" style="margin-bottom:20px">
+            <div class="stat-card animate-in stagger-1"><div class="stat-icon si-blue">💰</div><div class="stat-val">₵48.3k</div><div class="stat-label">Revenue</div><div class="stat-change sc-up">↑ 18.4%</div></div>
+            <div class="stat-card animate-in stagger-2"><div class="stat-icon si-green">🛒</div><div class="stat-val">384</div><div class="stat-label">Orders</div><div class="stat-change sc-up">↑ 12.1%</div></div>
+            <div class="stat-card animate-in stagger-3"><div class="stat-icon si-amber">📊</div><div class="stat-val">₵125.8</div><div class="stat-label">Avg Order Value</div><div class="stat-change sc-up">↑ 5.7%</div></div>
+            <div class="stat-card animate-in stagger-4"><div class="stat-icon si-purple">🔄</div><div class="stat-val">3.4%</div><div class="stat-label">Conversion Rate</div><div class="stat-change sc-down">↓ 0.2%</div></div>
+          </div>
+          <div class="analytics-grid">
+            <div class="an-card animate-in stagger-1">
+              <div class="an-title">Revenue Trend</div>
+              <div class="an-sub">Daily revenue — last 14 days</div>
+              <svg class="sparkline" viewBox="0 0 300 60" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="spark-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#2563EB" stop-opacity=".3"/>
+                    <stop offset="100%" stop-color="#2563EB" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,45 L20,38 L40,42 L60,30 L80,35 L100,22 L120,28 L140,18 L160,25 L180,15 L200,20 L220,12 L240,18 L260,8 L280,14 L300,5" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M0,45 L20,38 L40,42 L60,30 L80,35 L100,22 L120,28 L140,18 L160,25 L180,15 L200,20 L220,12 L240,18 L260,8 L280,14 L300,5 L300,60 L0,60Z" fill="url(#spark-grad)"/>
+              </svg>
+            </div>
+            <div class="an-card animate-in stagger-2">
+              <div class="an-title">Top Products by Revenue</div>
+              <div class="an-sub">This month's best performers</div>
+              <div class="top-prod-list">
+                <div class="tp-item">
+                  <div class="tp-rank">#1</div>
+                  <img class="tp-img" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=80&q=80"/>
+                  <div class="tp-info"><div class="tp-name">SoundWave Pro Headphones</div><div class="tp-sales">512 sold</div></div>
+                  <div class="tp-bar-wrap"><div class="tp-bar" style="width:100%"></div></div>
+                  <div class="tp-amount">₵11,246</div>
+                </div>
+                <div class="tp-item">
+                  <div class="tp-rank">#2</div>
+                  <img class="tp-img" src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=80&q=80"/>
+                  <div class="tp-info"><div class="tp-name">Nike Air Max 270</div><div class="tp-sales">312 sold</div></div>
+                  <div class="tp-bar-wrap"><div class="tp-bar" style="width:80%;animation-delay:.1s"></div></div>
+                  <div class="tp-amount">₵8,988</div>
+                </div>
+                <div class="tp-item">
+                  <div class="tp-rank">#3</div>
+                  <img class="tp-img" src="https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=80&q=80"/>
+                  <div class="tp-info"><div class="tp-name">Glow Serum Vitamin C</div><div class="tp-sales">241 sold</div></div>
+                  <div class="tp-bar-wrap"><div class="tp-bar" style="width:60%;animation-delay:.2s"></div></div>
+                  <div class="tp-amount">₵5,560</div>
+                </div>
+                <div class="tp-item">
+                  <div class="tp-rank">#4</div>
+                  <img class="tp-img" src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=80&q=80"/>
+                  <div class="tp-info"><div class="tp-name">Minimalist Watch</div><div class="tp-sales">128 sold</div></div>
+                  <div class="tp-bar-wrap"><div class="tp-bar" style="width:42%;animation-delay:.3s"></div></div>
+                  <div class="tp-amount">₵4,154</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ CATEGORIES ═══ -->
+        <div id="cms-categories" class="cms-screen" style="display:none">
+          <div class="pg-hdr">
+            <div><div class="pg-title">Categories</div><div class="pg-sub">Organise your product catalogue</div></div>
+            <div class="hdr-actions">
+              <button class="btn btn-primary">+ New Category</button>
+            </div>
+          </div>
+          <div class="cat-mgmt-grid">
+            <div class="cat-mgmt-card animate-in stagger-1">
+              <img class="cat-mgmt-img" src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&q=80"/>
+              <div class="cat-mgmt-info">
+                <div class="cat-mgmt-name">Fashion & Clothing</div>
+                <div class="cat-mgmt-meta">
+                  <span class="cat-mgmt-count">1,240 products · ₵28.4k revenue</span>
+                  <span class="badge badge-delivered">Active</span>
+                </div>
+                <div class="cat-mgmt-actions">
+                  <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Edit</button>
+                  <button class="btn btn-danger" style="font-size:12px;padding:6px 12px">Remove</button>
+                </div>
+              </div>
+            </div>
+            <div class="cat-mgmt-card animate-in stagger-2">
+              <img class="cat-mgmt-img" src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&q=80"/>
+              <div class="cat-mgmt-info">
+                <div class="cat-mgmt-name">Electronics & Gadgets</div>
+                <div class="cat-mgmt-meta">
+                  <span class="cat-mgmt-count">890 products · ₵22.1k revenue</span>
+                  <span class="badge badge-delivered">Active</span>
+                </div>
+                <div class="cat-mgmt-actions">
+                  <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Edit</button>
+                  <button class="btn btn-danger" style="font-size:12px;padding:6px 12px">Remove</button>
+                </div>
+              </div>
+            </div>
+            <div class="cat-mgmt-card animate-in stagger-3">
+              <img class="cat-mgmt-img" src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80"/>
+              <div class="cat-mgmt-info">
+                <div class="cat-mgmt-name">Shoes & Footwear</div>
+                <div class="cat-mgmt-meta">
+                  <span class="cat-mgmt-count">640 products · ₵15.3k revenue</span>
+                  <span class="badge badge-delivered">Active</span>
+                </div>
+                <div class="cat-mgmt-actions">
+                  <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Edit</button>
+                  <button class="btn btn-danger" style="font-size:12px;padding:6px 12px">Remove</button>
+                </div>
+              </div>
+            </div>
+            <div class="cat-mgmt-card animate-in stagger-4">
+              <img class="cat-mgmt-img" src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&q=80"/>
+              <div class="cat-mgmt-info">
+                <div class="cat-mgmt-name">Beauty & Skincare</div>
+                <div class="cat-mgmt-meta">
+                  <span class="cat-mgmt-count">520 products · ₵10.8k revenue</span>
+                  <span class="badge badge-delivered">Active</span>
+                </div>
+                <div class="cat-mgmt-actions">
+                  <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Edit</button>
+                  <button class="btn btn-danger" style="font-size:12px;padding:6px 12px">Remove</button>
+                </div>
+              </div>
+            </div>
+            <div class="cat-mgmt-card animate-in stagger-5">
+              <img class="cat-mgmt-img" src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80"/>
+              <div class="cat-mgmt-info">
+                <div class="cat-mgmt-name">Home & Living</div>
+                <div class="cat-mgmt-meta">
+                  <span class="cat-mgmt-count">380 products · ₵7.2k revenue</span>
+                  <span class="badge badge-delivered">Active</span>
+                </div>
+                <div class="cat-mgmt-actions">
+                  <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px">Edit</button>
+                  <button class="btn btn-danger" style="font-size:12px;padding:6px 12px">Remove</button>
+                </div>
+              </div>
+            </div>
+            <div class="cat-mgmt-card animate-in stagger-6" style="border:2px dashed #E2E8F0;display:flex;align-items:center;justify-content:center;min-height:200px;background:#FAFBFC;cursor:pointer">
+              <div style="text-align:center;color:#94A3B8">
+                <div style="font-size:32px;margin-bottom:8px">+</div>
+                <div style="font-size:14px;font-weight:700">Add New Category</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /content-area -->
+    </div><!-- /main-area -->
+  </div><!-- /cms-shell -->
+</div><!-- /screen-cms -->
+
+<style>
+@keyframes dash{from{stroke-dasharray:0 251;stroke-dashoffset:0}to{}}
+</style>
+
+<script>
+const titles = {
+  dashboard: ['Dashboard','Overview'],
+  products: ['Products','Catalogue'],
+  orders: ['Orders','Management'],
+  analytics: ['Analytics','Insights'],
+  categories: ['Categories','Organisation'],
+}
+function showCMS(id) {
+  document.querySelectorAll('.cms-screen').forEach(s => s.style.display='none')
+  document.querySelectorAll('.sb-item').forEach(s => s.classList.remove('active'))
+  document.getElementById('cms-' + id).style.display = 'block'
+  const si = document.getElementById('si-' + id)
+  if(si) si.classList.add('active')
+  const [title, crumb] = titles[id]
+  document.getElementById('tb-title').textContent = title
+  document.getElementById('tb-crumb').textContent = crumb ? '/ ' + crumb : ''
+  document.querySelectorAll('#demo-bar button').forEach(b => b.classList.remove('active'))
+  // re-trigger animations
+  document.querySelectorAll('.animate-in').forEach(el => {
+    el.style.animation='none'; el.offsetHeight; el.style.animation=''
+  })
+}
+// Toggle handler
+document.querySelectorAll('.toggle').forEach(t => {
+  t.addEventListener('click', function() {
+    this.classList.toggle('on')
+    const label = this.nextElementSibling
+    if(label) {
+      label.textContent = this.classList.contains('on') ? 'Active' : 'Inactive'
+      label.className = 'toggle-label ' + (this.classList.contains('on') ? 'tl-on' : 'tl-off')
+    }
+  })
+})
+</script>
+</body>
+</html>
