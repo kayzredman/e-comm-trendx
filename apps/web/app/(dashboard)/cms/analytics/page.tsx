@@ -44,7 +44,7 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8 -m-4 md:-m-6 lg:-m-8" style={{ background: '#EFF6FF', minHeight: '100%' }}>
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-450 mx-auto">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
@@ -74,7 +74,7 @@ export default async function AnalyticsPage() {
       )}
 
       {/* KPI row — focused on rates & values */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 2xl:gap-6 mb-6">
         <KpiCard
           icon={<Wallet size={16} />}
           label="Revenue · 30 days"
@@ -82,6 +82,7 @@ export default async function AnalyticsPage() {
           sub={stats ? `All time: GH₵ ${Number(stats.revenueAll).toFixed(2)}` : ''}
           tint="#2563EB"
           bg="#DBEAFE"
+          index={0}
         />
         <KpiCard
           icon={<TrendingUp size={16} />}
@@ -90,6 +91,7 @@ export default async function AnalyticsPage() {
           sub={stats ? `${totalOrders} orders total` : ''}
           tint="#F97316"
           bg="#FFEDD5"
+          index={1}
         />
         <KpiCard
           icon={<CheckCircle2 size={16} />}
@@ -98,6 +100,7 @@ export default async function AnalyticsPage() {
           sub="Delivered ÷ all orders"
           tint="#16A34A"
           bg="#DCFCE7"
+          index={2}
         />
         <KpiCard
           icon={<Users size={16} />}
@@ -106,11 +109,12 @@ export default async function AnalyticsPage() {
           sub={stats ? `${stats.totalProducts} active products` : ''}
           tint="#2563EB"
           bg="#DBEAFE"
+          index={3}
         />
       </div>
 
       {/* Revenue + status donut */}
-      <div className="grid gap-4 lg:grid-cols-[2fr_1fr] mb-6">
+      <div className="grid gap-4 2xl:gap-6 lg:grid-cols-[2fr_1fr] mb-6">
         <div className="rounded-2xl p-4" style={{ background: 'var(--color-surface)', border: '1.5px solid var(--color-border)' }}>
           <div className="flex items-start justify-between mb-1">
             <div>
@@ -129,7 +133,7 @@ export default async function AnalyticsPage() {
       </div>
 
       {/* Status funnel (bar) + Top products */}
-      <div className="grid gap-4 lg:grid-cols-2 mb-6">
+      <div className="grid gap-4 2xl:gap-6 lg:grid-cols-2 mb-6">
         {/* Status funnel */}
         <div className="rounded-2xl p-4" style={{ background: 'var(--color-surface)', border: '1.5px solid var(--color-border)' }}>
           <div className="flex items-center justify-between mb-4">
@@ -240,7 +244,7 @@ export default async function AnalyticsPage() {
             All products are well stocked
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-6">
             {stats.lowStockProducts.map(product => (
               <Link
                 key={product.id}
@@ -279,7 +283,7 @@ export default async function AnalyticsPage() {
 }
 
 function KpiCard({
-  icon, label, value, sub, tint, bg,
+  icon, label, value, sub, tint, bg, index = 0,
 }: {
   icon: React.ReactNode
   label: string
@@ -287,9 +291,17 @@ function KpiCard({
   sub?: string
   tint: string
   bg: string
+  index?: number
 }) {
   return (
-    <div className="rounded-2xl p-4" style={{ background: 'var(--color-surface)', border: '1.5px solid var(--color-border)' }}>
+    <div
+      className="rounded-2xl p-4 animate-fade-up"
+      style={{
+        background: 'var(--color-surface)',
+        border: '1.5px solid var(--color-border)',
+        animationDelay: `${index * 60}ms`,
+      }}
+    >
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
           {label}
@@ -301,7 +313,7 @@ function KpiCard({
           {icon}
         </div>
       </div>
-      <p className="text-2xl font-extrabold tracking-tight font-mono tabular-nums" style={{ color: 'var(--color-text)' }}>{value}</p>
+      <p className="text-2xl 2xl:text-3xl font-extrabold tracking-tight font-mono tabular-nums" style={{ color: 'var(--color-text)' }}>{value}</p>
       {sub && <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>{sub}</p>}
     </div>
   )
