@@ -66,7 +66,7 @@ export default async function DashboardHome() {
   ]
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 -m-4 md:-m-6 lg:-m-8" style={{ background: '#EFF6FF', minHeight: '100%' }}>
+    <div className="flex-1 p-4 md:p-6 lg:p-8" style={{ background: '#EFF6FF', minHeight: '100vh' }}>
       {/* Greeting + period selector */}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>

@@ -43,7 +43,7 @@ export default async function AnalyticsPage() {
     : 0
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 -m-4 md:-m-6 lg:-m-8" style={{ background: '#EFF6FF', minHeight: '100%' }}>
+    <div className="flex-1 p-4 md:p-6 lg:p-8" style={{ background: '#EFF6FF', minHeight: '100vh' }}>
       <div className="max-w-450 mx-auto">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
