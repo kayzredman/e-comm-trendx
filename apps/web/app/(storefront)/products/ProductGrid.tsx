@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { type Product, type Category } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import { Search, X, Heart, ShoppingCart } from 'lucide-react'
+import AddToCartButton from '@/components/storefront/AddToCartButton'
 
 function ProductCard({ product }: { product: Product }) {
   const hasDiscount = product.comparePrice && Number(product.comparePrice) > Number(product.price)
@@ -47,13 +48,13 @@ function ProductCard({ product }: { product: Product }) {
             <span className="text-xs line-through" style={{ color: 'var(--color-text-subtle)' }}>{formatPrice(product.comparePrice!)}</span>
           )}
         </div>
-        <button
+        <AddToCartButton
+          product={product}
           disabled={product.inventory === 0}
           className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
           style={{ background: 'var(--color-primary)' }}
-        >
-          <ShoppingCart size={13} /> {product.inventory === 0 ? 'Out of stock' : 'Add to Cart'}
-        </button>
+          label={<><ShoppingCart size={13} /> {product.inventory === 0 ? 'Out of stock' : 'Add to Cart'}</>}
+        />
       </div>
     </div>
   )

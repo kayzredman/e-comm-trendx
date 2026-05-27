@@ -3,6 +3,7 @@ import { formatPrice } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Heart, ShoppingCart, Home, ChevronRight } from 'lucide-react'
+import AddToCartButton from '@/components/storefront/AddToCartButton'
 import type { Metadata } from 'next'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -46,9 +47,13 @@ function ProductCard({ product }: { product: Product }) {
           <span className="font-bold text-sm" style={{ color: 'var(--color-text)' }}>{formatPrice(product.price)}</span>
           {hasDiscount && <span className="text-xs line-through" style={{ color: 'var(--color-text-subtle)' }}>{formatPrice(product.comparePrice!)}</span>}
         </div>
-        <button disabled={product.inventory === 0} className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-40" style={{ background: 'var(--color-primary)' }}>
-          <ShoppingCart size={13} /> {product.inventory === 0 ? 'Out of stock' : 'Add to Cart'}
-        </button>
+        <AddToCartButton
+          product={product}
+          disabled={product.inventory === 0}
+          className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl text-xs font-semibold text-white disabled:opacity-40"
+          style={{ background: 'var(--color-primary)' }}
+          label={<><ShoppingCart size={13} /> {product.inventory === 0 ? 'Out of stock' : 'Add to Cart'}</>}
+        />
       </div>
     </div>
   )
