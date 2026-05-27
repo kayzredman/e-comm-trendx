@@ -189,6 +189,22 @@ export type DashboardStats = {
   ordersByStatus: Partial<Record<string, number>>
   revenueByDay: Array<{ date: string; revenue: string }>
   topProducts: Array<{ productId: string; productName: string; totalRevenue: string; unitsSold: number }>
+  deliveryPipeline: {
+    confirmed: number
+    processing: number
+    outForDelivery: number
+    deliveredToday: number
+  }
+  activeDeliveries: Array<{
+    id: string
+    status: string
+    total: string
+    updatedAt: string
+    createdAt: string
+    customerName: string
+    city: string | null
+    region: string | null
+  }>
 }
 
 export const analyticsApi = {

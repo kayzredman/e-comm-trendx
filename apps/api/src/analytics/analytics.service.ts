@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { DbService } from '../db/db.service'
 import { orders, orderItems, customers, products } from '@trendmarga/db'
-import { sql, eq, lte, gte, desc, count, sum, ne, avg } from 'drizzle-orm'
+import { sql, eq, lte, gte, desc, asc, count, sum, ne, avg, inArray, and } from 'drizzle-orm'
 
 @Injectable()
 export class AnalyticsService {
@@ -87,6 +87,54 @@ export class AnalyticsService {
       ? Math.round((deliveredRow.count / totalOrders.count) * 100)
       : 0
 
+    // ── Delivery board ────────────────────────────────────────────────────────
+    // Pipeline counts: in-motion buckets + delivered today
+    const startOfToday = new Date()
+    startOfToday.setHours(0, 0, 0, 0)
+
+    const [confirmedRow] = await db
+      .select({ count: count() })
+      .from(orders)
+      .where(eq(orders.status, 'CONFIRMED'))
+    const [processingRow] = await db
+      .select({ count: count() })
+      .from(orders)
+      .where(eq(orders.status, 'PROCESSING'))
+    const [outForDeliveryRow] = await db
+      .select({ count: count() })
+      .from(orders)
+      .where(eq(orders.status, 'OUT_FOR_DELIVERY'))
+    const [deliveredTodayRow] = await db
+      .select({ count: count() })
+      .from(orders)
+      .where(and(eq(orders.status, 'DELIVERED'), gte(orders.updatedAt, startOfToday)))
+
+    const deliveryPipeline = {
+      confirmed: confirmedRow.count,
+      processing: processingRow.count,
+      outForDelivery: outForDeliveryRow.count,
+      deliveredToday: deliveredTodayRow.count,
+    }
+
+    // Active deliveries: oldest-first in PROCESSING / OUT_FOR_DELIVERY, top 5
+    const activeDeliveriesRaw = await db.query.orders.findMany({
+      where: inArray(orders.status, ['PROCESSING', 'OUT_FOR_DELIVERY']),
+      with: { customer: true },
+      orderBy: [asc(orders.updatedAt)],
+      limit: 5,
+    })
+
+    const activeDeliveries = activeDeliveriesRaw.map(o => ({
+      id: o.id,
+      status: o.status,
+      total: o.total,
+      updatedAt: o.updatedAt,
+      createdAt: o.createdAt,
+      customerName: o.customer?.name ?? 'Unknown',
+      city: o.customer?.address?.city ?? null,
+      region: o.customer?.address?.region ?? null,
+    }))
+
     return {
       totalOrders: totalOrders.count,
       totalCustomers: totalCustomers.count,
@@ -100,6 +148,8 @@ export class AnalyticsService {
       ordersByStatus,
       revenueByDay,
       topProducts,
+      deliveryPipeline,
+      activeDeliveries,
     }
   }
 }
