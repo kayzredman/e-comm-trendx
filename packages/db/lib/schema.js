@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.paymentMethodEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
+exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.paymentMethodEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 const drizzle_orm_1 = require("drizzle-orm");
 const cuid2_1 = require("@paralleldrive/cuid2");
@@ -126,4 +126,53 @@ exports.orderItemsRelations = (0, drizzle_orm_1.relations)(exports.orderItems, (
 exports.customersRelations = (0, drizzle_orm_1.relations)(exports.customers, ({ many }) => ({
     orders: many(exports.orders),
 }));
+// ── Reviews (FEATURE_REVIEWS) ────────────────────────────────────────────────
+exports.reviewStatusEnum = (0, pg_core_1.pgEnum)('review_status', ['PENDING', 'PUBLISHED', 'HIDDEN']);
+exports.reviews = (0, pg_core_1.pgTable)('reviews', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    productId: (0, pg_core_1.varchar)('product_id', { length: 128 }).notNull(),
+    customerId: (0, pg_core_1.varchar)('customer_id', { length: 128 }).notNull(),
+    orderId: (0, pg_core_1.varchar)('order_id', { length: 128 }),
+    rating: (0, pg_core_1.integer)('rating').notNull(),
+    title: (0, pg_core_1.varchar)('title', { length: 255 }),
+    body: (0, pg_core_1.text)('body'),
+    status: (0, exports.reviewStatusEnum)('status').notNull().default('PENDING'),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+});
+exports.reviewsRelations = (0, drizzle_orm_1.relations)(exports.reviews, ({ one }) => ({
+    product: one(exports.products, { fields: [exports.reviews.productId], references: [exports.products.id] }),
+    customer: one(exports.customers, { fields: [exports.reviews.customerId], references: [exports.customers.id] }),
+    order: one(exports.orders, { fields: [exports.reviews.orderId], references: [exports.orders.id] }),
+}));
+// ── Discount codes (FEATURE_DISCOUNTS) ───────────────────────────────────────
+exports.discountTypeEnum = (0, pg_core_1.pgEnum)('discount_type', ['PERCENT', 'FIXED']);
+exports.discountCodes = (0, pg_core_1.pgTable)('discount_codes', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    code: (0, pg_core_1.varchar)('code', { length: 64 }).notNull().unique(),
+    type: (0, exports.discountTypeEnum)('type').notNull(),
+    value: (0, pg_core_1.numeric)('value', { precision: 12, scale: 2 }).notNull(),
+    minSubtotal: (0, pg_core_1.numeric)('min_subtotal', { precision: 12, scale: 2 }).notNull().default('0'),
+    maxUses: (0, pg_core_1.integer)('max_uses'),
+    usedCount: (0, pg_core_1.integer)('used_count').notNull().default(0),
+    expiresAt: (0, pg_core_1.timestamp)('expires_at'),
+    isActive: (0, pg_core_1.boolean)('is_active').notNull().default(true),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+});
+// ── Notification log (FEATURE_NOTIFICATIONS) ─────────────────────────────────
+exports.notificationChannelEnum = (0, pg_core_1.pgEnum)('notification_channel', ['SMS', 'EMAIL']);
+exports.notificationStatusEnum = (0, pg_core_1.pgEnum)('notification_status', ['QUEUED', 'SENT', 'FAILED']);
+exports.notificationLog = (0, pg_core_1.pgTable)('notification_log', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    orderId: (0, pg_core_1.varchar)('order_id', { length: 128 }),
+    customerId: (0, pg_core_1.varchar)('customer_id', { length: 128 }),
+    channel: (0, exports.notificationChannelEnum)('channel').notNull(),
+    template: (0, pg_core_1.varchar)('template', { length: 64 }).notNull(),
+    recipient: (0, pg_core_1.varchar)('recipient', { length: 255 }).notNull(),
+    status: (0, exports.notificationStatusEnum)('status').notNull().default('QUEUED'),
+    providerId: (0, pg_core_1.varchar)('provider_id', { length: 255 }),
+    errorMessage: (0, pg_core_1.text)('error_message'),
+    payload: (0, pg_core_1.jsonb)('payload').$type(),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+    sentAt: (0, pg_core_1.timestamp)('sent_at'),
+});
 //# sourceMappingURL=schema.js.map

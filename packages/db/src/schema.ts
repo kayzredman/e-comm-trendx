@@ -144,3 +144,60 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 export const customersRelations = relations(customers, ({ many }) => ({
   orders: many(orders),
 }))
+
+// ── Reviews (FEATURE_REVIEWS) ────────────────────────────────────────────────
+export const reviewStatusEnum = pgEnum('review_status', ['PENDING', 'PUBLISHED', 'HIDDEN'])
+
+export const reviews = pgTable('reviews', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  productId: varchar('product_id', { length: 128 }).notNull(),
+  customerId: varchar('customer_id', { length: 128 }).notNull(),
+  orderId: varchar('order_id', { length: 128 }),
+  rating: integer('rating').notNull(),
+  title: varchar('title', { length: 255 }),
+  body: text('body'),
+  status: reviewStatusEnum('status').notNull().default('PENDING'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  product: one(products, { fields: [reviews.productId], references: [products.id] }),
+  customer: one(customers, { fields: [reviews.customerId], references: [customers.id] }),
+  order: one(orders, { fields: [reviews.orderId], references: [orders.id] }),
+}))
+
+// ── Discount codes (FEATURE_DISCOUNTS) ───────────────────────────────────────
+export const discountTypeEnum = pgEnum('discount_type', ['PERCENT', 'FIXED'])
+
+export const discountCodes = pgTable('discount_codes', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  code: varchar('code', { length: 64 }).notNull().unique(),
+  type: discountTypeEnum('type').notNull(),
+  value: numeric('value', { precision: 12, scale: 2 }).notNull(),
+  minSubtotal: numeric('min_subtotal', { precision: 12, scale: 2 }).notNull().default('0'),
+  maxUses: integer('max_uses'),
+  usedCount: integer('used_count').notNull().default(0),
+  expiresAt: timestamp('expires_at'),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// ── Notification log (FEATURE_NOTIFICATIONS) ─────────────────────────────────
+export const notificationChannelEnum = pgEnum('notification_channel', ['SMS', 'EMAIL'])
+export const notificationStatusEnum = pgEnum('notification_status', ['QUEUED', 'SENT', 'FAILED'])
+
+export const notificationLog = pgTable('notification_log', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  orderId: varchar('order_id', { length: 128 }),
+  customerId: varchar('customer_id', { length: 128 }),
+  channel: notificationChannelEnum('channel').notNull(),
+  template: varchar('template', { length: 64 }).notNull(),
+  recipient: varchar('recipient', { length: 255 }).notNull(),
+  status: notificationStatusEnum('status').notNull().default('QUEUED'),
+  providerId: varchar('provider_id', { length: 255 }),
+  errorMessage: text('error_message'),
+  payload: jsonb('payload').$type<Record<string, unknown>>(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  sentAt: timestamp('sent_at'),
+})
+

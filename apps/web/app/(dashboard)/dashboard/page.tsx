@@ -3,7 +3,8 @@ import { analyticsApi, type DashboardStats } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 import Image from 'next/image'
-import { TrendingUp, AlertTriangle } from 'lucide-react'
+import { TrendingUp, AlertTriangle, Package } from 'lucide-react'
+import PeriodSelector from '@/components/cms/PeriodSelector'
 import RevenueChart from './RevenueChart'
 import OrdersDonut from './OrdersDonut'
 import AnimatedStatCard, { type StatAccent, type StatIcon } from '@/components/cms/AnimatedStatCard'
@@ -65,15 +66,18 @@ export default async function DashboardHome() {
   ]
 
   return (
-    <div className="p-4 md:p-8">
-      {/* Greeting */}
-      <div className="mb-8">
+    <div className="flex-1 p-4 md:p-6 lg:p-8" style={{ background: '#EFF6FF', minHeight: '100vh' }}>
+      {/* Greeting + period selector */}
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
         <h1 className="text-2xl md:text-3xl font-extrabold" style={{ color: 'var(--color-text)' }}>
-          {greeting}, {firstName} 👋
-        </h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
-          Here&apos;s what&apos;s happening with your store today.
-        </p>
+            {greeting}, {firstName} 👋
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
+            Here&apos;s what&apos;s happening with your store today.
+          </p>
+        </div>
+        <PeriodSelector active="30d" />
       </div>
 
       {/* Stat cards (V2 hero row — 4 across) */}
@@ -183,7 +187,9 @@ export default async function DashboardHome() {
                     {product.images?.[0] ? (
                       <Image src={product.images[0]} alt="" width={32} height={32} unoptimized className="rounded object-cover shrink-0" style={{ width: 32, height: 32 }} />
                     ) : (
-                      <div className="w-8 h-8 rounded shrink-0 flex items-center justify-center text-base" style={{ background: 'var(--color-surface-muted)' }}>📦</div>
+                      <div className="w-8 h-8 rounded shrink-0 flex items-center justify-center" style={{ background: 'var(--color-surface-muted)' }}>
+                        <Package size={14} style={{ color: 'var(--color-text-muted)' }} />
+                      </div>
                     )}
                     <div>
                       <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>{product.name}</p>

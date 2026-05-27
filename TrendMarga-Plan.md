@@ -195,6 +195,16 @@ Each Phase 2 service gets its own Railway service entry, its own env vars, its o
 
 - S7: Delivery fee calculator (all strategies), PWA manifest, responsive QA, prod Railway deploy
 
+### Phase 1E — Analytics UI Polish (S8, May 2026) ✅
+
+> Replaces the original Tremor charts plan — shipped with **Recharts** instead.
+> Design system: **Data-Dense Dashboard** (tracking blue `#2563EB` + delivery orange `#F97316` + page `#EFF6FF`).
+
+- **A · Palette + density** (`51e6958`) — `#EFF6FF` page wrappers on `/cms/analytics` + `/dashboard`, orange CTA accents, Lucide icons replace emojis in data UI (Package, PartyPopper), reusable `PeriodSelector` pill (24h/7d/30d/90d/all — only 30d functional), `font-mono tabular-nums` on every KPI number, `p-5 → p-4` card density
+- **B · Charts + interaction** (`794a8e9`) — RevenueChart now `ComposedChart` with gradient `Area` fill + optional `Brush` zoom (enabled on analytics, `showBrush` prop); styled tooltip with soft shadow + mono numerics; analytics top-products rows get per-row gradient progress bar (#1 orange, rest blue) and hover highlight
+- **C · Large-screen scaling** (`a18338b`) — `max-w-450` (1800px) container, `2xl:` gap + typography bumps, low-stock `2xl:grid-cols-6`, CSS-keyframe stagger fade-up entrance (`60ms` per card) on analytics KpiCards
+- **Fix** (`1f9df91`) — removed `-m-*` bg-bleed trick that was pushing the page bg outside `<main>` into the sidebar; use `flex-1 + min-h-screen` instead
+
 ---
 
 ## Decisions

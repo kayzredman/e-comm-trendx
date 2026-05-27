@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, Clock, Package, Truck, Home, ShoppingBag } from 'lucide-react'
 import type { Metadata } from 'next'
+import OrderStatusPoller from './OrderStatusPoller'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -201,6 +202,8 @@ export default async function OrderTrackingPage({ params }: Props) {
               </p>
             </div>
           )}
+
+          <OrderStatusPoller status={order.status} />
         </div>
       )}
 

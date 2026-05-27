@@ -7,6 +7,7 @@ import { Heart, ShoppingCart, Eye } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 import type { Product } from '@/lib/api'
 import AddToCartButton from './AddToCartButton'
+import { publicFeatures } from '@trendmarga/config'
 
 export default function ProductCard({ product }: { product: Product }) {
   const [wishlisted, setWishlisted] = useState(false)
@@ -18,6 +19,12 @@ export default function ProductCard({ product }: { product: Product }) {
     : 0
 
   const isNew = false // could derive from createdAt in future
+
+  // Stock UI gated by FEATURE_INVENTORY
+  const stockEnabled = publicFeatures.inventory
+  const inv = product.inventory ?? 0
+  const outOfStock = stockEnabled && inv <= 0
+  const lowStock = stockEnabled && inv > 0 && inv <= 5
 
   return (
     <motion.div
@@ -62,6 +69,22 @@ export default function ProductCard({ product }: { product: Product }) {
               style={{ background: 'linear-gradient(135deg, #10B981, #06B6D4)' }}
             >
               New
+            </span>
+          )}
+          {outOfStock && (
+            <span
+              className="text-[11px] font-bold px-2.5 py-1 rounded-full text-white"
+              style={{ background: '#6B7280' }}
+            >
+              Out of stock
+            </span>
+          )}
+          {lowStock && (
+            <span
+              className="text-[11px] font-bold px-2.5 py-1 rounded-full text-white"
+              style={{ background: '#F59E0B' }}
+            >
+              Only {inv} left
             </span>
           )}
         </div>

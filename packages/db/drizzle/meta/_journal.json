@@ -15,6 +15,13 @@
       "when": 1779392986936,
       "tag": "0001_old_quasar",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779880378066,
+      "tag": "0002_robust_brother_voodoo",
+      "breakpoints": true
     }
   ]
 }

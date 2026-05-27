@@ -54,17 +54,67 @@ const SLIDES: Slide[] = [
     ctaLabel: 'Shop Shoes',
     ctaSecondaryHref: '/categories/bags-accessories',
     ctaSecondaryLabel: 'View Bags',
-    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=900&q=90',
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1200&q=90',
+  },
+  {
+    badge: '💄 Beauty Drop',
+    titleA: 'Glow Up ',
+    titleB: 'Daily',
+    titleC: ' With Premium Beauty',
+    sub: 'Skincare, makeup & fragrances from top global brands. Authentic, sealed, fast-shipped.',
+    ctaHref: '/categories/beauty-cosmetics',
+    ctaLabel: 'Shop Beauty',
+    ctaSecondaryHref: '/deals',
+    ctaSecondaryLabel: 'See Deals',
+    image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1200&q=90',
+  },
+  {
+    badge: '🏠 Home & Living',
+    titleA: 'Upgrade Your ',
+    titleB: 'Space',
+    titleC: ' Effortlessly',
+    sub: 'Furniture, decor & smart-home essentials curated to make your space feel like you.',
+    ctaHref: '/categories/home-living',
+    ctaLabel: 'Shop Home',
+    ctaSecondaryHref: '/new',
+    ctaSecondaryLabel: "What's New",
+    image: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=1200&q=90',
+  },
+  {
+    badge: '⌚ Accessory Game',
+    titleA: 'Bags, Watches & ',
+    titleB: 'More',
+    titleC: ' to Match Your Vibe',
+    sub: 'Statement pieces that finish the look. From everyday carry to weekend luxury.',
+    ctaHref: '/categories/bags-accessories',
+    ctaLabel: 'Shop Accessories',
+    ctaSecondaryHref: '/categories/watches-jewelry',
+    ctaSecondaryLabel: 'View Watches',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1200&q=90',
+  },
+  {
+    badge: '📱 Mobile Hub',
+    titleA: 'Smartphones & ',
+    titleB: 'Accessories',
+    titleC: ' for Every Budget',
+    sub: 'iPhones, Samsung, Tecno & more. Cases, chargers, screen protectors — all in one place.',
+    ctaHref: '/categories/electronics-gadgets',
+    ctaLabel: 'Shop Phones',
+    ctaSecondaryHref: '/categories/electronics-gadgets',
+    ctaSecondaryLabel: 'Browse Tech',
+    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1200&q=90',
   },
 ]
 
 export default function HeroV2() {
   const [current, setCurrent] = useState(0)
 
+  // Re-run interval whenever `current` changes so manual clicks reset the 7s timer.
   useEffect(() => {
-    const t = setInterval(() => setCurrent((c) => (c + 1) % SLIDES.length), 7000)
-    return () => clearInterval(t)
-  }, [])
+    const t = setTimeout(() => setCurrent((c) => (c + 1) % SLIDES.length), 7000)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current])
 
   const slide = SLIDES[current]
 
@@ -114,8 +164,11 @@ export default function HeroV2() {
         }}
       />
 
-      {/* Grid layout */}
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 grid md:grid-cols-2 gap-10 items-center" style={{ minHeight: '88vh' }}>
+      {/* Grid layout — copy : image = 1 : 1.4 on desktop for a bigger hero image */}
+      <div
+        className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 grid gap-8 md:gap-10 lg:gap-14 items-center md:grid-cols-[1fr_1.25fr] lg:grid-cols-[1fr_1.4fr]"
+        style={{ minHeight: '88vh' }}
+      >
         {/* LEFT — copy */}
         <div className="py-14 md:py-0">
           <AnimatePresence mode="wait">
@@ -280,8 +333,8 @@ export default function HeroV2() {
           </div>
         </div>
 
-        {/* RIGHT — image + floating cards */}
-        <div className="relative h-[460px] md:h-[600px] hidden md:block">
+        {/* RIGHT — image + floating cards. Bigger on every breakpoint. */}
+        <div className="relative hidden md:block h-[560px] lg:h-[680px] xl:h-[740px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={`hero-img-${current}`}
@@ -295,7 +348,15 @@ export default function HeroV2() {
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <Image src={slide.image} alt="" fill unoptimized sizes="50vw" className="object-cover" />
+              <Image
+                src={slide.image}
+                alt=""
+                fill
+                unoptimized
+                priority
+                sizes="(min-width: 1280px) 58vw, (min-width: 768px) 55vw, 100vw"
+                className="object-cover"
+              />
               <div
                 className="absolute inset-0"
                 style={{ background: 'linear-gradient(180deg, rgba(10,15,30,0) 50%, rgba(10,15,30,0.45) 100%)' }}
