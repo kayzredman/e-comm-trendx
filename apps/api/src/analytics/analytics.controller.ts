@@ -11,5 +11,7 @@ export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Get('dashboard')
-  getDashboard() { return this.analyticsService.getDashboardStats() }
+  getDashboard() {
+    return this.analyticsService.getDashboardStats()
+  }
 }

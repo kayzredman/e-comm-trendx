@@ -8,17 +8,10 @@ import PeriodSelector from '@/components/cms/PeriodSelector'
 import RevenueChart from './RevenueChart'
 import OrdersDonut from './OrdersDonut'
 import AnimatedStatCard, { type StatAccent, type StatIcon } from '@/components/cms/AnimatedStatCard'
+import DeliveryPipeline from '@/components/cms/DeliveryPipeline'
+import ActiveDeliveries from '@/components/cms/ActiveDeliveries'
 
 export const dynamic = 'force-dynamic'
-
-const STATUS_STYLE: Record<string, { label: string; bg: string; color: string }> = {
-  PENDING:          { label: 'Pending',         bg: '#FEF9C3', color: '#CA8A04' },
-  CONFIRMED:        { label: 'Confirmed',        bg: '#DBEAFE', color: '#2563EB' },
-  PROCESSING:       { label: 'Processing',       bg: '#EDE9FE', color: '#7C3AED' },
-  OUT_FOR_DELIVERY: { label: 'Out for delivery', bg: '#FFEDD5', color: '#EA580C' },
-  DELIVERED:        { label: 'Delivered',        bg: '#DCFCE7', color: '#16A34A' },
-  CANCELLED:        { label: 'Cancelled',        bg: '#F3F4F6', color: '#6B7280' },
-}
 
 export default async function DashboardHome() {
   const { getToken } = await auth()
@@ -123,46 +116,14 @@ export default async function DashboardHome() {
         </div>
       </div>
 
+      {/* Delivery pipeline strip (full-width) */}
+      <DeliveryPipeline
+        data={stats?.deliveryPipeline ?? { confirmed: 0, processing: 0, outForDelivery: 0, deliveredToday: 0 }}
+      />
+
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* Recent orders */}
-        <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', border: '1.5px solid rgba(226,232,240,0.8)' }}>
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1.5px solid #F1F5F9' }}>
-            <h2 className="font-extrabold" style={{ color: '#0F172A', fontSize: '15px' }}>Recent orders</h2>
-            <Link href="/cms/orders" className="text-xs font-semibold" style={{ color: 'var(--color-primary)' }}>View all →</Link>
-          </div>
-          {!stats?.recentOrders?.length ? (
-            <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>No orders yet</p>
-          ) : (
-            <div>
-              {stats.recentOrders.map(order => {
-                const s = STATUS_STYLE[order.status] ?? STATUS_STYLE.PENDING
-                return (
-                  <Link
-                    key={order.id}
-                    href={`/cms/orders/${order.id}`}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
-                    style={{ borderBottom: '1px solid #F8FAFC' }}
-                  >
-                    <div>
-                      <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                        #{order.id.slice(-8).toUpperCase()}
-                      </p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                        {order.customer?.name} · {new Date(order.createdAt).toLocaleDateString('en-GB')}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>{formatPrice(order.total)}</p>
-                      <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: s.bg, color: s.color }}>
-                        {s.label}
-                      </span>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </div>
+        {/* Active deliveries (replaces Recent orders) */}
+        <ActiveDeliveries deliveries={stats?.activeDeliveries ?? []} />
 
         {/* Low stock */}
         <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', border: '1.5px solid rgba(226,232,240,0.8)' }}>
