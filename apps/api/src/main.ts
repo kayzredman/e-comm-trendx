@@ -44,8 +44,8 @@ async function bootstrap() {
   // Swagger (dev only)
   if (env.NODE_ENV === 'development') {
     const config = new DocumentBuilder()
-      .setTitle('TrendMarga API')
-      .setDescription('TrendMarga REST API — Phase 1')
+      .setTitle('trendMarga API')
+      .setDescription('trendMarga REST API — Phase 1')
       .setVersion('1.0')
       .addBearerAuth()
       .build()

@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import type { Category } from '@/lib/api'
 import { useCartStore, selectItemCount } from '@/lib/cart-store'
 import { publicFeatures } from '@trendmarga/config'
+import { Logo } from '@/components/brand/Logo'
 
 type Props = { categories: Category[] }
 
@@ -62,8 +63,8 @@ export default function StorefrontHeader({ categories }: Props) {
     >
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-4">
         {/* Logo */}
-        <Link href="/" className="font-extrabold text-xl tracking-tight shrink-0 mr-2 grad-text">
-          TrendMarga
+        <Link href="/" aria-label="trendMarga" className="shrink-0 mr-2 inline-flex items-center">
+          <Logo variant="wordmark" size={22} />
         </Link>
 
         {/* Categories dropdown */}

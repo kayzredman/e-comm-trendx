@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>trendMarga — Logo Studio v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&f[]=clash-display@500,600,700&f[]=general-sans@500,600,700&f[]=cabinet-grotesk@500,700,800,900&f[]=switzer@500,700,800&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0A0B0F; --ink-2:#1A1C24; --muted:#6B7280; --line:#E5E7EB;
+    --bg:#F7F7F8; --card:#FFFFFF;
+    --accent-cyan:#06B6D4; --accent-emerald:#059669; --accent-amber:#D97706;
+    --accent-coral:#EF4444; --accent-violet:#6D28D9;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Satoshi','Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .page{max-width:1280px;margin:0 auto;padding:56px 32px 120px}
+  h1{font-family:'Clash Display',sans-serif;font-size:40px;font-weight:600;letter-spacing:-.025em;margin:0 0 8px}
+  .lede{color:var(--muted);font-size:15px;line-height:1.6;max-width:680px;margin:0 0 8px}
+  h2{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:64px 0 20px;display:flex;align-items:center;gap:12px}
+  h2::before{content:"";display:inline-block;width:8px;height:8px;background:var(--ink);border-radius:50%}
+  h3{font-family:'Clash Display',sans-serif;font-size:22px;font-weight:600;letter-spacing:-.015em;margin:0}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .concept{background:var(--card);border:1px solid var(--line);border-radius:24px;overflow:hidden}
+  .c-head{padding:24px 28px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  .c-head .meta small{display:block;color:var(--muted);font-size:13px;line-height:1.55;margin-top:6px;max-width:340px}
+  .c-head .tag{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:4px 10px;background:var(--bg);border:1px solid var(--line);border-radius:999px;white-space:nowrap}
+
+  .stage{padding:48px 32px;display:flex;align-items:center;justify-content:center;min-height:180px;background:#FFFFFF}
+  .stage.alt{background:#FAFAFA}
+  .stage.dark{background:var(--ink);color:#fff}
+  .stage.cream{background:#F5F1EA}
+  .stage.brand{background:#2563EB;color:#fff}
+
+  .row-stage{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--line)}
+  .row-stage > div{padding:32px 16px;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--line);min-height:140px}
+  .row-stage > div:last-child{border-right:none}
+
+  /* ====== WORDMARK STYLES ====== */
+  .wm{font-family:'Satoshi',sans-serif;font-weight:700;letter-spacing:-.035em;line-height:1;display:inline-flex;align-items:baseline;color:var(--ink)}
+  .wm-clash{font-family:'Clash Display',sans-serif;font-weight:600;letter-spacing:-.02em}
+  .wm-cabinet{font-family:'Cabinet Grotesk',sans-serif;font-weight:800;letter-spacing:-.03em}
+  .wm-general{font-family:'General Sans',sans-serif;font-weight:600;letter-spacing:-.025em}
+  .wm-switzer{font-family:'Switzer',sans-serif;font-weight:800;letter-spacing:-.03em}
+
+  .accent-violet{color:var(--accent-violet)}
+  .accent-emerald{color:var(--accent-emerald)}
+  .accent-cyan{color:var(--accent-cyan)}
+  .accent-amber{color:var(--accent-amber)}
+  .accent-coral{color:var(--accent-coral)}
+  .on-dark .wm{color:#fff}
+
+  /* Concept 1 — Pivot M (typography only) */
+  .c1-mark{font-family:'Clash Display',sans-serif;font-weight:600;font-size:64px;letter-spacing:-.03em;line-height:1;position:relative;display:inline-block}
+  .c1-mark .pivot{position:relative;display:inline-block}
+  .c1-mark .pivot::after{content:"";position:absolute;left:50%;bottom:-10px;width:34px;height:6px;background:var(--accent-violet);border-radius:3px;transform:translateX(-50%)}
+  .c1-short{font-family:'Clash Display',sans-serif;font-weight:600;font-size:48px;letter-spacing:-.02em}
+
+  /* Concept 2 — tMg Tile */
+  .tmg-tile{display:inline-flex;align-items:center;justify-content:center;width:96px;height:96px;background:linear-gradient(135deg,#0A0B0F 0%,#1A1C24 100%);color:#fff;border-radius:24px;font-family:'Clash Display',sans-serif;font-weight:600;font-size:36px;letter-spacing:-.04em;position:relative}
+  .tmg-tile .accent{color:var(--accent-cyan)}
+  .tmg-tile.flat{background:var(--ink)}
+  .tmg-tile.light{background:#fff;color:var(--ink);border:2px solid var(--ink)}
+  .tmg-tile.cream{background:var(--accent-amber);color:var(--ink)}
+
+  /* Concept 3 — Pulse Dot */
+  .pulse{display:inline-flex;align-items:center;gap:6px}
+  .pulse .dot{width:14px;height:14px;background:var(--accent-emerald);border-radius:50%;display:inline-block;animation:pulse 2s ease-in-out infinite;box-shadow:0 0 0 0 rgba(5,150,105,.45)}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(5,150,105,.45)}
+    70%{box-shadow:0 0 0 14px rgba(5,150,105,0)}
+    100%{box-shadow:0 0 0 0 rgba(5,150,105,0)}
+  }
+  .pulse-short .dot{width:10px;height:10px}
+
+  /* Concept 4 — Underline Path */
+  .u-mark{display:inline-flex;flex-direction:column;align-items:flex-start;gap:6px}
+  .u-mark .word{font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:48px;letter-spacing:-.03em;line-height:1}
+  .u-mark .word .cap{color:var(--ink)}
+  .u-mark .underline{display:block;width:100%;height:6px;background:linear-gradient(90deg,var(--accent-coral) 0%,var(--accent-amber) 100%);border-radius:3px;position:relative;overflow:visible}
+  .u-mark .underline::after{content:"";position:absolute;right:-2px;top:-4px;border-left:8px solid var(--accent-amber);border-top:7px solid transparent;border-bottom:7px solid transparent}
+
+  /* ====== SCALE ====== */
+  .scale{display:flex;align-items:center;gap:24px;padding:18px 24px;background:var(--bg);border-top:1px solid var(--line);justify-content:space-around}
+  .scale .item{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .scale .item small{font-size:10px;color:var(--muted);font-family:'Satoshi',sans-serif}
+  .scale-wm-16{font-size:11px}.scale-wm-24{font-size:14px}.scale-wm-32{font-size:18px}.scale-wm-48{font-size:24px}.scale-wm-64{font-size:32px}
+
+  /* ====== APPS ====== */
+  .apps{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-top:1px solid var(--line)}
+  .app{background:#fff;padding:18px 20px}
+  .app.dark{background:var(--ink-2)}
+  .app .sb{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .app .strip{height:6px;background:var(--line);border-radius:3px;margin-bottom:6px;width:80%}
+  .app .strip.short{width:60%}
+  .app.dark .strip{background:rgba(255,255,255,.08)}
+
+  /* ====== FONT/COLOR PALETTE ====== */
+  .palette-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .palette-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:12px}
+  .palette-card .name{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .palette-card .demo{font-size:34px;line-height:1;padding:18px 0}
+  .palette-card .swatches{display:flex;gap:6px}
+  .palette-card .swatches span{flex:1;height:32px;border-radius:8px;display:flex;align-items:flex-end;justify-content:flex-start;padding:4px 6px;font-size:9px;color:#fff;font-family:'Satoshi';font-weight:500}
+
+  /* ====== ONE COLOR vs TWO COLOR ====== */
+  .modes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .mode{background:#fff;border:1px solid var(--line);border-radius:18px;padding:32px 24px;text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;min-height:200px}
+  .mode small{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+  .mode.dark{background:var(--ink);color:#fff}
+  .mode.dark small{color:rgba(255,255,255,.5)}
+  .mode.print{background:#fff;border:1px dashed var(--ink)}
+
+  /* ====== FAVICON STRIP ====== */
+  .fav-row{display:flex;gap:24px;padding:24px;background:var(--bg);border:1px solid var(--line);border-radius:14px;align-items:flex-end;justify-content:space-around;flex-wrap:wrap}
+  .fav-row .fav{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .fav-row .fav small{font-size:10px;color:var(--muted)}
+  .fav-tile{background:var(--ink);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Clash Display',sans-serif;font-weight:600;letter-spacing:-.04em}
+  .fav-tile.cyan{background:var(--accent-cyan);color:var(--ink)}
+  .fav-tile.amber{background:var(--accent-amber);color:var(--ink)}
+
+  /* ====== NOTES ====== */
+  .designer-notes{margin-top:32px;background:var(--ink);color:#fff;border-radius:20px;padding:32px}
+  .designer-notes h3{color:#fff;margin-bottom:16px}
+  .designer-notes ul{margin:0;padding-left:18px;color:rgba(255,255,255,.75);font-size:14px;line-height:1.8}
+  .designer-notes code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px;font-family:'Satoshi Mono','SF Mono',monospace;font-size:12px;color:#fff}
+
+  .pick{position:sticky;bottom:16px;margin-top:48px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 20px 40px -10px rgba(0,0,0,.1)}
+  .pick .lbl{font-family:'Clash Display';font-weight:600;font-size:15px}
+  .pick .chip{padding:7px 14px;background:var(--bg);border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>trendMarga — Logo Studio</h1>
+  <p class="lede">Lowercase camelCase wordmark. The capital <strong>M</strong> is the pivot — the hero letter that holds the whole brand together. Short form: <strong>tMg</strong>. Four directions, each shown in one-color and two-color, with a font/palette explorer below.</p>
+
+  <!-- ================ CONCEPT 1 — PIVOT M ================ -->
+  <h2>01 · Pivot M  ·  Typography is the logo</h2>
+
+  <div class="grid-2">
+    <div class="concept">
+      <div class="c-head">
+        <div class="meta">
+          <h3>Pivot M · Violet underbar</h3>
+          <small>No separate icon. The capital M sits on a tiny accent bar — like a foundation stone. Clash Display, the most architectural display sans available. Reads as confident and editorial.</small>
+        </div>
+        <div class="tag">2-color</div>
+      </div>
+      <div class="stage">
+        <span class="c1-mark">trend<span class="pivot">M</span>arga</span>
+      </div>
+      <div class="row-stage">
+        <div class="dark" style="background:var(--ink)"><span class="c1-mark" style="color:#fff"><span style="color:#fff">trend</span><span class="pivot" style="color:#fff">M</span>arga</span></div>
+        <div class="brand" style="background:#2563EB;color:#fff"><span class="c1-mark" style="color:#fff"><span class="pivot" style="color:#fff">trend<span style="color:#fff">M</span>arga</span></span></div>
+        <div class="alt"><span class="c1-short">tMg</span></div>
+      </div>
+      <div class="apps">
+        <div class="app"><div class="sb"><span class="wm wm-clash" style="font-size:14px">trend<span class="accent-violet">M</span>arga</span></div><div class="strip"></div><div class="strip short"></div></div>
+        <div class="app dark"><div class="sb"><span class="wm wm-clash" style="font-size:14px;color:#fff">trend<span style="color:#A78BFA">M</span>arga</span></div><div class="strip"></div><div class="strip short"></div></div>
+      </div>
+    </div>
+
+  <!-- ================ CONCEPT 2 — tMg Tile ================ -->
+    <div class="concept">
+      <div class="c-head">
+        <div class="meta">
+          <h3>tMg Tile · Mono chip</h3>
+          <small>Short form lives as a 24px rounded chip. Works as favicon, app icon, business card emboss. Subtle ink gradient gives depth; cyan only on the M to mark the pivot. Linear / Vercel energy.</small>
+        </div>
+        <div class="tag">Short mark + wordmark</div>
+      </div>
+      <div class="stage" style="gap:24px">
+        <span class="tmg-tile">t<span class="accent">M</span>g</span>
+        <span class="wm wm-clash" style="font-size:42px">trend<span class="accent-cyan">M</span>arga</span>
+      </div>
+      <div class="row-stage">
+        <div class="dark" style="background:var(--ink)"><span class="tmg-tile light">t<span style="color:var(--accent-cyan)">M</span>g</span></div>
+        <div class="cream"><span class="tmg-tile cream">t<span style="color:var(--ink)">M</span>g</span></div>
+        <div class="brand" style="background:#2563EB"><span class="tmg-tile" style="background:rgba(255,255,255,.12);color:#fff;backdrop-filter:blur(8px)">t<span style="color:#fff">M</span>g</span></div>
+      </div>
+      <div class="apps">
+        <div class="app"><div class="sb"><span class="tmg-tile" style="width:28px;height:28px;font-size:13px;border-radius:7px">t<span class="accent">M</span>g</span><span class="wm wm-clash" style="font-size:14px">trend<span class="accent-cyan">M</span>arga</span></div><div class="strip"></div><div class="strip short"></div></div>
+        <div class="app dark"><div class="sb"><span class="tmg-tile" style="width:28px;height:28px;font-size:13px;border-radius:7px;background:#fff;color:var(--ink)">t<span style="color:var(--accent-cyan)">M</span>g</span><span class="wm wm-clash" style="font-size:14px;color:#fff">trend<span style="color:var(--accent-cyan)">M</span>arga</span></div><div class="strip"></div><div class="strip short"></div></div>
+      </div>
+    </div>
+
+  <!-- ================ CONCEPT 3 — PULSE DOT ================ -->
+    <div class="concept">
+      <div class="c-head">
+        <div class="meta">
+          <h3>Pulse Dot · Live marketplace</h3>
+          <small>Wordmark + a single emerald dot that pulses (animated in product, static in print). Reads as "live, transacting, breathing." Cabinet Grotesk — characterful, slightly warmer than Inter. The dot becomes the favicon.</small>
+        </div>
+        <div class="tag">1 or 2-color</div>
+      </div>
+      <div class="stage">
+        <span class="pulse"><span class="wm wm-cabinet" style="font-size:48px">trend<span class="accent-emerald">M</span>arga</span><span class="dot"></span></span>
+      </div>
+      <div class="row-stage">
+        <div class="dark" style="background:var(--ink)"><span class="pulse"><span class="wm wm-cabinet" style="font-size:36px;color:#fff">trend<span style="color:#34D399">M</span>arga</span><span class="dot"></span></span></div>
+        <div class="alt"><span class="wm wm-cabinet" style="font-size:36px;color:var(--ink)">trendMarga<span style="color:var(--accent-emerald)">.</span></span></div>
+        <div class="brand" style="background:#2563EB"><span class="pulse"><span class="wm wm-cabinet" style="font-size:36px;color:#fff">trend<span style="color:#fff">M</span>arga</span><span class="dot" style="background:#fff;box-shadow:none;animation:none"></span></span></div>
+      </div>
+      <div class="apps">
+        <div class="app"><div class="sb"><span class="dot" style="width:10px;height:10px;background:var(--accent-emerald);border-radius:50%;display:inline-block"></span><span class="wm wm-cabinet" style="font-size:14px">trend<span class="accent-emerald">M</span>arga</span></div><div class="strip"></div><div class="strip short"></div></div>
+        <div class="app dark"><div class="sb"><span class="dot" style="width:10px;height:10px;background:#34D399;border-radius:50%;display:inline-block"></span><span class="wm wm-cabinet" style="font-size:14px;color:#fff">trend<span style="color:#34D399">M</span>arga</span></div><div class="strip"></div><div class="strip short"></div></div>
+      </div>
+    </div>
+
+  <!-- ================ CONCEPT 4 — UNDERLINE PATH ================ -->
+    <div class="concept">
+      <div class="c-head">
+        <div class="meta">
+          <h3>Underline Path · Trajectory</h3>
+          <small>Wordmark with an arrow-tipped gradient underline that visualises "marga" (the path). Cabinet Grotesk, ultra-bold. Coral→amber gradient gives heat and African market warmth without being orange-y.</small>
+        </div>
+        <div class="tag">2-color (gradient)</div>
+      </div>
+      <div class="stage">
+        <div class="u-mark"><span class="word"><span class="cap">trend</span><span class="cap">M</span><span class="cap">arga</span></span><span class="underline"></span></div>
+      </div>
+      <div class="row-stage">
+        <div class="dark" style="background:var(--ink)"><div class="u-mark"><span class="word" style="color:#fff;font-size:36px">trend<span style="color:#fff">M</span>arga</span><span class="underline" style="background:linear-gradient(90deg,#F87171 0%,#FBBF24 100%)"></span></div></div>
+        <div class="cream"><div class="u-mark"><span class="word" style="color:var(--ink);font-size:36px">trend<span style="color:var(--ink)">M</span>arga</span><span class="underline" style="background:var(--ink)"></span></div></div>
+        <div class="brand" style="background:#2563EB"><div class="u-mark"><span class="word" style="color:#fff;font-size:36px">trend<span style="color:#fff">M</span>arga</span><span class="underline" style="background:#fff"></span></div></div>
+      </div>
+      <div class="apps">
+        <div class="app"><div class="sb"><span class="wm wm-cabinet" style="font-size:14px">trend<span class="accent-coral">M</span>arga</span></div><div class="strip" style="background:linear-gradient(90deg,var(--accent-coral),var(--accent-amber));width:50px;height:4px"></div></div>
+        <div class="app dark"><div class="sb"><span class="wm wm-cabinet" style="font-size:14px;color:#fff">trend<span style="color:#FBBF24">M</span>arga</span></div><div class="strip" style="background:linear-gradient(90deg,#F87171,#FBBF24);width:50px;height:4px"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================ ONE-COLOR vs TWO-COLOR ================ -->
+  <h2>02 · One-color vs two-color · Use any concept</h2>
+  <p class="lede">Every concept works in mono — for embroidery, embossing, single-color print, watermarks, and tiny UI. Two-color version is the primary brand. Mono is the fallback that proves the logo's bones.</p>
+
+  <div class="modes">
+    <div class="mode">
+      <small>Two-color (primary)</small>
+      <span class="wm wm-clash" style="font-size:32px">trend<span class="accent-violet">M</span>arga</span>
+    </div>
+    <div class="mode">
+      <small>One-color · ink</small>
+      <span class="wm wm-clash" style="font-size:32px">trendMarga</span>
+    </div>
+    <div class="mode dark">
+      <small>One-color · reversed</small>
+      <span class="wm wm-clash" style="font-size:32px;color:#fff">trendMarga</span>
+    </div>
+    <div class="mode print">
+      <small>Outline · embroidery</small>
+      <span class="wm wm-clash" style="font-size:32px;color:transparent;-webkit-text-stroke:1.5px var(--ink)">trendMarga</span>
+    </div>
+    <div class="mode">
+      <small>Short · two-color</small>
+      <span class="tmg-tile">t<span class="accent">M</span>g</span>
+    </div>
+    <div class="mode dark">
+      <small>Short · reversed</small>
+      <span class="tmg-tile light" style="background:#fff;color:var(--ink)">tMg</span>
+    </div>
+  </div>
+
+  <!-- ================ FONT EXPLORER ================ -->
+  <h2>03 · Font directions · Pick the personality</h2>
+  <p class="lede">Each concept above uses one of these. The font carries 70% of the brand's voice — pick the one that matches how TrendMarga should <em>sound</em>.</p>
+
+  <div class="palette-grid">
+    <div class="palette-card">
+      <div class="name">A · Clash Display</div>
+      <div class="demo wm wm-clash">trend<span class="accent-violet">M</span>arga</div>
+      <small style="color:var(--muted);font-size:13px;line-height:1.55">Editorial, architectural, confident. Think modern fashion + tech publication. <strong>Recommended for Pivot M + tMg Tile.</strong></small>
+    </div>
+    <div class="palette-card">
+      <div class="name">B · Cabinet Grotesk</div>
+      <div class="demo wm wm-cabinet">trend<span class="accent-emerald">M</span>arga</div>
+      <small style="color:var(--muted);font-size:13px;line-height:1.55">Warmer, slightly characterful, friendly authority. Great for retail. <strong>Recommended for Pulse Dot + Underline Path.</strong></small>
+    </div>
+    <div class="palette-card">
+      <div class="name">C · General Sans</div>
+      <div class="demo wm wm-general">trend<span class="accent-cyan">M</span>arga</div>
+      <small style="color:var(--muted);font-size:13px;line-height:1.55">Neutral geometric humanist. Stripe-meets-Notion vibe. Versatile, modern.</small>
+    </div>
+    <div class="palette-card">
+      <div class="name">D · Switzer</div>
+      <div class="demo wm wm-switzer">trend<span class="accent-amber">M</span>arga</div>
+      <small style="color:var(--muted);font-size:13px;line-height:1.55">Tighter, bolder grotesk. Most "product-tech-startup" feel. Great compressed.</small>
+    </div>
+  </div>
+
+  <!-- ================ COLOR DIRECTIONS ================ -->
+  <h2>04 · Two-color palettes · Ink + accent</h2>
+
+  <div class="palette-grid">
+    <div class="palette-card">
+      <div class="name">Violet on Ink · "Premium platform"</div>
+      <div class="demo wm wm-clash">trend<span style="color:var(--accent-violet)">M</span>arga</div>
+      <div class="swatches"><span style="background:#0A0B0F">#0A0B0F</span><span style="background:#6D28D9">#6D28D9</span><span style="background:#F5F3FF;color:var(--ink)">tint</span></div>
+    </div>
+    <div class="palette-card">
+      <div class="name">Cyan on Ink · "Fast tech"</div>
+      <div class="demo wm wm-clash">trend<span style="color:var(--accent-cyan)">M</span>arga</div>
+      <div class="swatches"><span style="background:#0A0B0F">#0A0B0F</span><span style="background:#06B6D4">#06B6D4</span><span style="background:#ECFEFF;color:var(--ink)">tint</span></div>
+    </div>
+    <div class="palette-card">
+      <div class="name">Emerald on Ink · "Live commerce"</div>
+      <div class="demo wm wm-clash">trend<span style="color:var(--accent-emerald)">M</span>arga</div>
+      <div class="swatches"><span style="background:#0A0B0F">#0A0B0F</span><span style="background:#059669">#059669</span><span style="background:#D1FAE5;color:var(--ink)">tint</span></div>
+    </div>
+    <div class="palette-card">
+      <div class="name">Amber on Ink · "Warm market"</div>
+      <div class="demo wm wm-clash">trend<span style="color:var(--accent-amber)">M</span>arga</div>
+      <div class="swatches"><span style="background:#0A0B0F">#0A0B0F</span><span style="background:#D97706">#D97706</span><span style="background:#FEF3C7;color:var(--ink)">tint</span></div>
+    </div>
+  </div>
+
+  <!-- ================ FAVICON / OS ICON ================ -->
+  <h2>05 · Favicon &amp; OS-icon set</h2>
+  <p class="lede">All four concepts can collapse to the <strong>tMg</strong> mark for tiny sizes. Below: how the icon reads from browser tab → app drawer → home screen.</p>
+  <div class="fav-row">
+    <div class="fav"><div class="fav-tile" style="width:16px;height:16px;font-size:7px;border-radius:3px">tMg</div><small>16</small></div>
+    <div class="fav"><div class="fav-tile" style="width:24px;height:24px;font-size:10px;border-radius:4px">t<span style="color:var(--accent-cyan)">M</span>g</div><small>24</small></div>
+    <div class="fav"><div class="fav-tile" style="width:32px;height:32px;font-size:14px;border-radius:6px">t<span style="color:var(--accent-cyan)">M</span>g</div><small>32</small></div>
+    <div class="fav"><div class="fav-tile" style="width:48px;height:48px;font-size:20px;border-radius:9px">t<span style="color:var(--accent-cyan)">M</span>g</div><small>48</small></div>
+    <div class="fav"><div class="fav-tile" style="width:64px;height:64px;font-size:26px;border-radius:12px">t<span style="color:var(--accent-cyan)">M</span>g</div><small>64</small></div>
+    <div class="fav"><div class="fav-tile" style="width:96px;height:96px;font-size:38px;border-radius:18px">t<span style="color:var(--accent-cyan)">M</span>g</div><small>96 (PWA)</small></div>
+    <div class="fav"><div class="fav-tile cyan" style="width:96px;height:96px;font-size:38px;border-radius:18px">t<span style="color:var(--ink)">M</span>g</div><small>cyan</small></div>
+    <div class="fav"><div class="fav-tile amber" style="width:96px;height:96px;font-size:38px;border-radius:18px">t<span style="color:var(--ink)">M</span>g</div><small>amber</small></div>
+  </div>
+
+  <!-- ================ DESIGNER NOTES ================ -->
+  <div class="designer-notes">
+    <h3>Designer notes</h3>
+    <ul>
+      <li><strong>Why lowercase + capital M?</strong> The camelCase wordmark is the rarest setting in fashion/commerce branding (eBay tried it; almost no one else). It signals tech-fluent, modern, and slightly disruptive. The capital M does triple duty: it's the pivot in the wordmark, it's the only short letter in <code>tMg</code>, and it becomes the favicon focal point.</li>
+      <li><strong>Why these fonts (not Inter)?</strong> Inter is the system default everywhere — it can never be <em>your</em> logo. Clash Display, Cabinet Grotesk, General Sans, and Switzer are all <strong>free for commercial use</strong> via Fontshare. They give TrendMarga a real voice while staying cheap to license.</li>
+      <li><strong>One vs two color?</strong> Brand primary is two-color (ink + accent on the M). One-color is a fallback — used for stamps, embroidery, print bleeds, tiny UI. Both must look complete on their own.</li>
+      <li><strong>Short form <code>tMg</code>:</strong> Used in favicons, app icons, social avatars, watermarks. Never used at large sizes where the full wordmark would fit.</li>
+      <li><strong>Clear space:</strong> Equal to the cap-height of "M" on all sides. Never tighter.</li>
+      <li><strong>Don't do:</strong> Don't rotate. Don't outline (except embroidery). Don't put the accent on any letter other than "M." Don't switch case.</li>
+    </ul>
+  </div>
+
+  <div class="pick">
+    <span class="lbl">Pick concept + font + palette →</span>
+    <span class="chip">01 Pivot M</span>
+    <span class="chip">02 tMg Tile</span>
+    <span class="chip">03 Pulse Dot</span>
+    <span class="chip">04 Underline Path</span>
+    <span class="chip">·</span>
+    <span class="chip">Clash · Cabinet · General · Switzer</span>
+    <span class="chip">Violet · Cyan · Emerald · Amber</span>
+  </div>
+
+</div>
+</body>
+</html>

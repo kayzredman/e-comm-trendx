@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TrendMarga — Logo Concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --blue:#2563EB; --blue-2:#1D4ED8; --blue-soft:#DBEAFE;
+    --ink:#0B1220; --ink-2:#1E293B; --muted:#64748B; --line:#E2E8F0;
+    --bg:#F8FAFC; --card:#FFFFFF;
+
+    --violet:#7C3AED; --violet-soft:#EDE9FE;
+    --emerald:#10B981; --emerald-soft:#D1FAE5;
+    --gold:#CA8A04; --gold-soft:#FEF3C7;
+    --cyan:#06B6D4; --cyan-soft:#CFFAFE;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .page{max-width:1280px;margin:0 auto;padding:48px 32px 96px}
+  h1{font-size:32px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+  h2{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:48px 0 16px}
+  h3{font-size:18px;font-weight:700;letter-spacing:-.01em;margin:0 0 4px}
+  p.lede{color:var(--muted);font-size:15px;margin:0 0 32px;max-width:680px;line-height:1.55}
+  .tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:3px 8px;background:var(--bg);border:1px solid var(--line);border-radius:999px}
+
+  /* Concept grid */
+  .concepts{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .concept{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:18px}
+  .concept-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  .concept-head .meta{display:flex;flex-direction:column;gap:4px}
+  .concept-head .meta small{font-size:12px;color:var(--muted);line-height:1.5;max-width:340px}
+  .stage{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:32px;display:flex;align-items:center;justify-content:center;min-height:200px}
+  .stage.dark{background:var(--ink);border-color:var(--ink-2)}
+  .stage.brand{background:var(--blue);border-color:var(--blue-2)}
+  .stage-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .stage-row .stage{padding:24px 16px;min-height:120px}
+  .lockup{display:flex;align-items:center;gap:14px}
+  .lockup .wordmark{font-weight:800;font-size:28px;letter-spacing:-.025em;color:var(--ink);white-space:nowrap}
+  .lockup .wordmark .accent{color:var(--accent,var(--violet))}
+  .stage.dark .lockup .wordmark{color:#fff}
+  .stage.dark .lockup .wordmark .accent{color:var(--accent-light,#fff)}
+  .stage.brand .lockup .wordmark{color:#fff}
+  .stage.brand .lockup .wordmark .accent{color:#fff;opacity:.92}
+
+  /* Scale strip */
+  .scale{display:flex;align-items:flex-end;gap:18px;padding:14px 8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;justify-content:space-around}
+  .scale .item{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .scale .item small{font-size:10px;color:var(--muted)}
+
+  /* Application mocks */
+  .apps{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .app{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+  .app .sb{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .app .sb .wordmark{font-weight:800;font-size:14px;letter-spacing:-.025em}
+  .app .sb .wordmark .accent{color:var(--accent,var(--violet))}
+  .app .body{padding:12px 14px;height:64px;background:linear-gradient(180deg,#fff 0%, #F8FAFC 100%)}
+  .app .nav{display:flex;gap:12px}
+  .app .nav span{height:6px;flex:1;background:#E2E8F0;border-radius:3px}
+  .app .nav span:first-child{background:var(--accent,var(--violet));opacity:.9;max-width:40px}
+
+  /* Palette explorer */
+  .palette-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .pal{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px}
+  .pal .swatch{height:6px;border-radius:3px}
+  .pal .name{font-weight:700;font-size:14px}
+  .pal .hex{font-size:11px;color:var(--muted);font-family:'JetBrains Mono','SF Mono',monospace}
+  .pal .stage{min-height:160px;padding:20px}
+  .pal .lockup .wordmark{font-size:22px}
+
+  /* Construction */
+  .construct{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+  .construct .step{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:18px;text-align:center}
+  .construct .step svg{width:100%;height:auto;max-width:120px}
+  .construct .step .lbl{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-top:8px;letter-spacing:.06em;text-transform:uppercase}
+
+  /* Notes */
+  .notes{margin-top:48px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px}
+  .notes ul{margin:8px 0 0;padding-left:18px;color:var(--ink-2);font-size:14px;line-height:1.7}
+  .notes strong{color:var(--ink)}
+
+  /* Footer pick row */
+  .picker{position:sticky;bottom:16px;margin-top:48px;background:#0B1220;color:#fff;border-radius:16px;padding:16px 22px;display:flex;align-items:center;gap:16px;box-shadow:0 20px 40px -10px rgba(11,18,32,.4)}
+  .picker .label{font-weight:700;font-size:14px}
+  .picker .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .picker .chip{padding:6px 12px;background:rgba(255,255,255,.08);border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.16)}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>TrendMarga — Logo Concepts</h1>
+  <p class="lede">Four distinct directions. Each concept built around the brand DNA: a marketplace platform with a sense of <em>path</em>, momentum, and trust. Primary brand blue <strong>#2563EB</strong> stays. Wordmark is two-tone: <strong>Trend</strong> in ink, <strong>Marga</strong> in accent.</p>
+
+  <!-- ============ CONCEPT 1 — M-Peak ============ -->
+  <h2>Concept 1 · M-Peak</h2>
+  <div class="concepts">
+    <div class="concept" style="--accent:var(--violet);--accent-light:#C4B5FD">
+      <div class="concept-head">
+        <div class="meta">
+          <h3>M-Peak <span class="tag">Geometric</span></h3>
+          <small>Capital M built from two ascending peaks. Reads as mountain / upward trend / Marga (path). Strong, masculine, infrastructural.</small>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="lockup">
+          <!-- M-Peak mark -->
+          <svg width="84" height="84" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="c1g" x1="0" y1="0" x2="120" y2="120">
+                <stop offset="0" stop-color="#2563EB"/>
+                <stop offset="1" stop-color="#7C3AED"/>
+              </linearGradient>
+            </defs>
+            <rect width="120" height="120" rx="24" fill="#F1F5F9"/>
+            <!-- Two peaks forming M -->
+            <path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="url(#c1g)"/>
+            <!-- ascending dot above right peak -->
+            <circle cx="78" cy="22" r="5" fill="#7C3AED"/>
+          </svg>
+          <div class="wordmark">Trend<span class="accent">Marga</span></div>
+        </div>
+      </div>
+
+      <div class="stage-row">
+        <div class="stage dark">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#fff"/>
+            <circle cx="78" cy="22" r="5" fill="#C4B5FD"/>
+          </svg>
+        </div>
+        <div class="stage brand">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#fff"/>
+            <circle cx="78" cy="22" r="5" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="stage">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#0B1220"/>
+            <circle cx="78" cy="22" r="5" fill="#7C3AED"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="scale">
+        <div class="item"><svg width="16" height="16" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/></svg><small>16</small></div>
+        <div class="item"><svg width="24" height="24" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/></svg><small>24</small></div>
+        <div class="item"><svg width="32" height="32" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/><circle cx="78" cy="22" r="5" fill="#7C3AED"/></svg><small>32</small></div>
+        <div class="item"><svg width="48" height="48" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/><circle cx="78" cy="22" r="5" fill="#7C3AED"/></svg><small>48</small></div>
+        <div class="item"><svg width="64" height="64" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/><circle cx="78" cy="22" r="5" fill="#7C3AED"/></svg><small>64</small></div>
+      </div>
+
+      <div class="apps">
+        <div class="app"><div class="sb"><svg width="20" height="20" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/></svg><div class="wordmark">Trend<span class="accent">Marga</span></div></div><div class="body"><div class="nav"><span></span><span></span><span></span><span></span></div></div></div>
+        <div class="app"><div class="sb"><svg width="20" height="20" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/></svg><div class="wordmark">Trend<span class="accent">Marga</span></div></div><div class="body" style="background:#F1F5F9"><div class="nav"><span></span><span></span><span></span><span></span></div></div></div>
+      </div>
+    </div>
+
+  <!-- ============ CONCEPT 2 — Path Arrow ============ -->
+    <div class="concept" style="--accent:var(--emerald);--accent-light:#6EE7B7">
+      <div class="concept-head">
+        <div class="meta">
+          <h3>Path Arrow <span class="tag">Symbolic</span></h3>
+          <small>"Marga" means path. An upward-curving arrow drawn as a road/route — momentum + commerce flow. Friendlier, more dynamic.</small>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="lockup">
+          <svg width="84" height="84" viewBox="0 0 120 120" fill="none">
+            <defs>
+              <linearGradient id="c2g" x1="0" y1="120" x2="120" y2="0">
+                <stop offset="0" stop-color="#2563EB"/>
+                <stop offset="1" stop-color="#10B981"/>
+              </linearGradient>
+            </defs>
+            <rect width="120" height="120" rx="24" fill="#F1F5F9"/>
+            <!-- Curved path -->
+            <path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="url(#c2g)" stroke-width="14" stroke-linecap="round" fill="none"/>
+            <!-- Arrowhead -->
+            <path d="M82 26 L98 32 L92 48 Z" fill="#10B981"/>
+          </svg>
+          <div class="wordmark">Trend<span class="accent">Marga</span></div>
+        </div>
+      </div>
+
+      <div class="stage-row">
+        <div class="stage dark">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="#fff" stroke-width="14" stroke-linecap="round" fill="none"/>
+            <path d="M82 26 L98 32 L92 48 Z" fill="#6EE7B7"/>
+          </svg>
+        </div>
+        <div class="stage brand">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="#fff" stroke-width="14" stroke-linecap="round" fill="none"/>
+            <path d="M82 26 L98 32 L92 48 Z" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="stage">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="#0B1220" stroke-width="14" stroke-linecap="round" fill="none"/>
+            <path d="M82 26 L98 32 L92 48 Z" fill="#10B981"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="scale">
+        <div class="item"><svg width="16" height="16" viewBox="0 0 120 120"><path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="#2563EB" stroke-width="18" stroke-linecap="round" fill="none"/></svg><small>16</small></div>
+        <div class="item"><svg width="24" height="24" viewBox="0 0 120 120"><path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="#2563EB" stroke-width="16" stroke-linecap="round" fill="none"/></svg><small>24</small></div>
+        <div class="item"><svg width="32" height="32" viewBox="0 0 120 120"><path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="#2563EB" stroke-width="14" stroke-linecap="round" fill="none"/><path d="M82 26 L98 32 L92 48 Z" fill="#10B981"/></svg><small>32</small></div>
+        <div class="item"><svg width="48" height="48" viewBox="0 0 120 120"><path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="#2563EB" stroke-width="14" stroke-linecap="round" fill="none"/><path d="M82 26 L98 32 L92 48 Z" fill="#10B981"/></svg><small>48</small></div>
+        <div class="item"><svg width="64" height="64" viewBox="0 0 120 120"><path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="#2563EB" stroke-width="14" stroke-linecap="round" fill="none"/><path d="M82 26 L98 32 L92 48 Z" fill="#10B981"/></svg><small>64</small></div>
+      </div>
+
+      <div class="apps">
+        <div class="app"><div class="sb"><svg width="20" height="20" viewBox="0 0 120 120"><path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="#2563EB" stroke-width="14" stroke-linecap="round" fill="none"/><path d="M82 26 L98 32 L92 48 Z" fill="#10B981"/></svg><div class="wordmark">Trend<span class="accent">Marga</span></div></div><div class="body"><div class="nav"><span></span><span></span><span></span><span></span></div></div></div>
+        <div class="app"><div class="sb"><svg width="20" height="20" viewBox="0 0 120 120"><path d="M22 92 Q42 92 60 70 Q78 48 88 38" stroke="#2563EB" stroke-width="14" stroke-linecap="round" fill="none"/><path d="M82 26 L98 32 L92 48 Z" fill="#10B981"/></svg><div class="wordmark">Trend<span class="accent">Marga</span></div></div><div class="body" style="background:#F1F5F9"><div class="nav"><span></span><span></span><span></span><span></span></div></div></div>
+      </div>
+    </div>
+
+  <!-- ============ CONCEPT 3 — TM Ligature ============ -->
+    <div class="concept" style="--accent:var(--gold);--accent-light:#FCD34D">
+      <div class="concept-head">
+        <div class="meta">
+          <h3>TM Ligature <span class="tag">Monogram</span></h3>
+          <small>Interlocked T+M built on a strict 8pt grid. Classic brand-mark style — works as favicon, app icon, embroidery. Most "marketplace" feeling.</small>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="lockup">
+          <svg width="84" height="84" viewBox="0 0 120 120" fill="none">
+            <defs>
+              <linearGradient id="c3g" x1="0" y1="0" x2="120" y2="120">
+                <stop offset="0" stop-color="#2563EB"/>
+                <stop offset="1" stop-color="#CA8A04"/>
+              </linearGradient>
+            </defs>
+            <rect width="120" height="120" rx="24" fill="url(#c3g)"/>
+            <!-- T crossbar -->
+            <rect x="28" y="30" width="64" height="12" rx="2" fill="#fff"/>
+            <!-- T stem -->
+            <rect x="54" y="30" width="12" height="40" rx="2" fill="#fff"/>
+            <!-- M legs -->
+            <rect x="28" y="58" width="12" height="34" rx="2" fill="#fff"/>
+            <rect x="80" y="58" width="12" height="34" rx="2" fill="#fff"/>
+            <!-- M middle V -->
+            <path d="M40 58 L60 86 L80 58" stroke="#fff" stroke-width="12" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <div class="wordmark">Trend<span class="accent">Marga</span></div>
+        </div>
+      </div>
+
+      <div class="stage-row">
+        <div class="stage dark">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <rect width="120" height="120" rx="24" fill="#1E293B"/>
+            <rect x="28" y="30" width="64" height="12" rx="2" fill="#FCD34D"/>
+            <rect x="54" y="30" width="12" height="40" rx="2" fill="#FCD34D"/>
+            <rect x="28" y="58" width="12" height="34" rx="2" fill="#FCD34D"/>
+            <rect x="80" y="58" width="12" height="34" rx="2" fill="#FCD34D"/>
+            <path d="M40 58 L60 86 L80 58" stroke="#FCD34D" stroke-width="12" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="stage brand">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <rect width="120" height="120" rx="24" fill="rgba(255,255,255,.12)"/>
+            <rect x="28" y="30" width="64" height="12" rx="2" fill="#fff"/>
+            <rect x="54" y="30" width="12" height="40" rx="2" fill="#fff"/>
+            <rect x="28" y="58" width="12" height="34" rx="2" fill="#fff"/>
+            <rect x="80" y="58" width="12" height="34" rx="2" fill="#fff"/>
+            <path d="M40 58 L60 86 L80 58" stroke="#fff" stroke-width="12" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="stage">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <rect width="120" height="120" rx="24" fill="#0B1220"/>
+            <rect x="28" y="30" width="64" height="12" rx="2" fill="#CA8A04"/>
+            <rect x="54" y="30" width="12" height="40" rx="2" fill="#CA8A04"/>
+            <rect x="28" y="58" width="12" height="34" rx="2" fill="#CA8A04"/>
+            <rect x="80" y="58" width="12" height="34" rx="2" fill="#CA8A04"/>
+            <path d="M40 58 L60 86 L80 58" stroke="#CA8A04" stroke-width="12" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="scale">
+        <div class="item"><svg width="16" height="16" viewBox="0 0 120 120"><rect width="120" height="120" rx="24" fill="#2563EB"/><rect x="28" y="30" width="64" height="12" rx="2" fill="#fff"/><rect x="54" y="30" width="12" height="40" rx="2" fill="#fff"/><rect x="28" y="58" width="12" height="34" rx="2" fill="#fff"/><rect x="80" y="58" width="12" height="34" rx="2" fill="#fff"/></svg><small>16</small></div>
+        <div class="item"><svg width="24" height="24" viewBox="0 0 120 120"><rect width="120" height="120" rx="24" fill="#2563EB"/><rect x="28" y="30" width="64" height="12" rx="2" fill="#fff"/><rect x="54" y="30" width="12" height="40" rx="2" fill="#fff"/><rect x="28" y="58" width="12" height="34" rx="2" fill="#fff"/><rect x="80" y="58" width="12" height="34" rx="2" fill="#fff"/><path d="M40 58 L60 86 L80 58" stroke="#fff" stroke-width="12" stroke-linejoin="round" fill="none"/></svg><small>24</small></div>
+        <div class="item"><svg width="32" height="32" viewBox="0 0 120 120"><rect width="120" height="120" rx="24" fill="#2563EB"/><rect x="28" y="30" width="64" height="12" rx="2" fill="#fff"/><rect x="54" y="30" width="12" height="40" rx="2" fill="#fff"/><rect x="28" y="58" width="12" height="34" rx="2" fill="#fff"/><rect x="80" y="58" width="12" height="34" rx="2" fill="#fff"/><path d="M40 58 L60 86 L80 58" stroke="#fff" stroke-width="12" stroke-linejoin="round" fill="none"/></svg><small>32</small></div>
+        <div class="item"><svg width="48" height="48" viewBox="0 0 120 120"><rect width="120" height="120" rx="24" fill="url(#c3g)"/><rect x="28" y="30" width="64" height="12" rx="2" fill="#fff"/><rect x="54" y="30" width="12" height="40" rx="2" fill="#fff"/><rect x="28" y="58" width="12" height="34" rx="2" fill="#fff"/><rect x="80" y="58" width="12" height="34" rx="2" fill="#fff"/><path d="M40 58 L60 86 L80 58" stroke="#fff" stroke-width="12" stroke-linejoin="round" fill="none"/></svg><small>48</small></div>
+        <div class="item"><svg width="64" height="64" viewBox="0 0 120 120"><rect width="120" height="120" rx="24" fill="url(#c3g)"/><rect x="28" y="30" width="64" height="12" rx="2" fill="#fff"/><rect x="54" y="30" width="12" height="40" rx="2" fill="#fff"/><rect x="28" y="58" width="12" height="34" rx="2" fill="#fff"/><rect x="80" y="58" width="12" height="34" rx="2" fill="#fff"/><path d="M40 58 L60 86 L80 58" stroke="#fff" stroke-width="12" stroke-linejoin="round" fill="none"/></svg><small>64</small></div>
+      </div>
+
+      <div class="apps">
+        <div class="app"><div class="sb"><svg width="22" height="22" viewBox="0 0 120 120"><rect width="120" height="120" rx="24" fill="#2563EB"/><rect x="28" y="30" width="64" height="12" rx="2" fill="#fff"/><rect x="54" y="30" width="12" height="40" rx="2" fill="#fff"/><rect x="28" y="58" width="12" height="34" rx="2" fill="#fff"/><rect x="80" y="58" width="12" height="34" rx="2" fill="#fff"/><path d="M40 58 L60 86 L80 58" stroke="#fff" stroke-width="12" stroke-linejoin="round" fill="none"/></svg><div class="wordmark">Trend<span class="accent">Marga</span></div></div><div class="body"><div class="nav"><span></span><span></span><span></span><span></span></div></div></div>
+        <div class="app"><div class="sb"><svg width="22" height="22" viewBox="0 0 120 120"><rect width="120" height="120" rx="24" fill="#2563EB"/><rect x="28" y="30" width="64" height="12" rx="2" fill="#fff"/><rect x="54" y="30" width="12" height="40" rx="2" fill="#fff"/><rect x="28" y="58" width="12" height="34" rx="2" fill="#fff"/><rect x="80" y="58" width="12" height="34" rx="2" fill="#fff"/><path d="M40 58 L60 86 L80 58" stroke="#fff" stroke-width="12" stroke-linejoin="round" fill="none"/></svg><div class="wordmark">Trend<span class="accent">Marga</span></div></div><div class="body" style="background:#F1F5F9"><div class="nav"><span></span><span></span><span></span><span></span></div></div></div>
+      </div>
+    </div>
+
+  <!-- ============ CONCEPT 4 — Compass Bloom ============ -->
+    <div class="concept" style="--accent:var(--cyan);--accent-light:#67E8F9">
+      <div class="concept-head">
+        <div class="meta">
+          <h3>Compass Bloom <span class="tag">Abstract</span></h3>
+          <small>Four converging arcs forming a compass/bloom — discovery + many merchants converging on one platform. Most distinctive, "platform" feel.</small>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="lockup">
+          <svg width="84" height="84" viewBox="0 0 120 120" fill="none">
+            <defs>
+              <linearGradient id="c4g" x1="0" y1="0" x2="120" y2="120">
+                <stop offset="0" stop-color="#2563EB"/>
+                <stop offset="1" stop-color="#06B6D4"/>
+              </linearGradient>
+            </defs>
+            <rect width="120" height="120" rx="24" fill="#F1F5F9"/>
+            <!-- 4 petals -->
+            <path d="M60 14 Q44 40 60 60 Q76 40 60 14 Z" fill="#2563EB"/>
+            <path d="M106 60 Q80 44 60 60 Q80 76 106 60 Z" fill="#06B6D4"/>
+            <path d="M60 106 Q76 80 60 60 Q44 80 60 106 Z" fill="#2563EB"/>
+            <path d="M14 60 Q40 76 60 60 Q40 44 14 60 Z" fill="#06B6D4"/>
+            <circle cx="60" cy="60" r="8" fill="#0B1220"/>
+          </svg>
+          <div class="wordmark">Trend<span class="accent">Marga</span></div>
+        </div>
+      </div>
+
+      <div class="stage-row">
+        <div class="stage dark">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <path d="M60 14 Q44 40 60 60 Q76 40 60 14 Z" fill="#fff"/>
+            <path d="M106 60 Q80 44 60 60 Q80 76 106 60 Z" fill="#67E8F9"/>
+            <path d="M60 106 Q76 80 60 60 Q44 80 60 106 Z" fill="#fff"/>
+            <path d="M14 60 Q40 76 60 60 Q40 44 14 60 Z" fill="#67E8F9"/>
+            <circle cx="60" cy="60" r="8" fill="#0B1220"/>
+          </svg>
+        </div>
+        <div class="stage brand">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <path d="M60 14 Q44 40 60 60 Q76 40 60 14 Z" fill="#fff"/>
+            <path d="M106 60 Q80 44 60 60 Q80 76 106 60 Z" fill="#fff" opacity=".85"/>
+            <path d="M60 106 Q76 80 60 60 Q44 80 60 106 Z" fill="#fff"/>
+            <path d="M14 60 Q40 76 60 60 Q40 44 14 60 Z" fill="#fff" opacity=".85"/>
+            <circle cx="60" cy="60" r="8" fill="#1D4ED8"/>
+          </svg>
+        </div>
+        <div class="stage">
+          <svg width="56" height="56" viewBox="0 0 120 120" fill="none">
+            <path d="M60 14 Q44 40 60 60 Q76 40 60 14 Z" fill="#0B1220"/>
+            <path d="M106 60 Q80 44 60 60 Q80 76 106 60 Z" fill="#06B6D4"/>
+            <path d="M60 106 Q76 80 60 60 Q44 80 60 106 Z" fill="#0B1220"/>
+            <path d="M14 60 Q40 76 60 60 Q40 44 14 60 Z" fill="#06B6D4"/>
+            <circle cx="60" cy="60" r="8" fill="#fff"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="scale">
+        <div class="item"><svg width="16" height="16" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="#2563EB"/></svg><small>16</small></div>
+        <div class="item"><svg width="24" height="24" viewBox="0 0 120 120"><path d="M60 14 Q44 40 60 60 Q76 40 60 14 Z" fill="#2563EB"/><path d="M106 60 Q80 44 60 60 Q80 76 106 60 Z" fill="#06B6D4"/><path d="M60 106 Q76 80 60 60 Q44 80 60 106 Z" fill="#2563EB"/><path d="M14 60 Q40 76 60 60 Q40 44 14 60 Z" fill="#06B6D4"/></svg><small>24</small></div>
+        <div class="item"><svg width="32" height="32" viewBox="0 0 120 120"><path d="M60 14 Q44 40 60 60 Q76 40 60 14 Z" fill="#2563EB"/><path d="M106 60 Q80 44 60 60 Q80 76 106 60 Z" fill="#06B6D4"/><path d="M60 106 Q76 80 60 60 Q44 80 60 106 Z" fill="#2563EB"/><path d="M14 60 Q40 76 60 60 Q40 44 14 60 Z" fill="#06B6D4"/><circle cx="60" cy="60" r="8" fill="#0B1220"/></svg><small>32</small></div>
+        <div class="item"><svg width="48" height="48" viewBox="0 0 120 120"><path d="M60 14 Q44 40 60 60 Q76 40 60 14 Z" fill="#2563EB"/><path d="M106 60 Q80 44 60 60 Q80 76 106 60 Z" fill="#06B6D4"/><path d="M60 106 Q76 80 60 60 Q44 80 60 106 Z" fill="#2563EB"/><path d="M14 60 Q40 76 60 60 Q40 44 14 60 Z" fill="#06B6D4"/><circle cx="60" cy="60" r="8" fill="#0B1220"/></svg><small>48</small></div>
+        <div class="item"><svg width="64" height="64" viewBox="0 0 120 120"><path d="M60 14 Q44 40 60 60 Q76 40 60 14 Z" fill="#2563EB"/><path d="M106 60 Q80 44 60 60 Q80 76 106 60 Z" fill="#06B6D4"/><path d="M60 106 Q76 80 60 60 Q44 80 60 106 Z" fill="#2563EB"/><path d="M14 60 Q40 76 60 60 Q40 44 14 60 Z" fill="#06B6D4"/><circle cx="60" cy="60" r="8" fill="#0B1220"/></svg><small>64</small></div>
+      </div>
+
+      <div class="apps">
+        <div class="app"><div class="sb"><svg width="22" height="22" viewBox="0 0 120 120"><path d="M60 14 Q44 40 60 60 Q76 40 60 14 Z" fill="#2563EB"/><path d="M106 60 Q80 44 60 60 Q80 76 106 60 Z" fill="#06B6D4"/><path d="M60 106 Q76 80 60 60 Q44 80 60 106 Z" fill="#2563EB"/><path d="M14 60 Q40 76 60 60 Q40 44 14 60 Z" fill="#06B6D4"/></svg><div class="wordmark">Trend<span class="accent">Marga</span></div></div><div class="body"><div class="nav"><span></span><span></span><span></span><span></span></div></div></div>
+        <div class="app"><div class="sb"><svg width="22" height="22" viewBox="0 0 120 120"><path d="M60 14 Q44 40 60 60 Q76 40 60 14 Z" fill="#2563EB"/><path d="M106 60 Q80 44 60 60 Q80 76 106 60 Z" fill="#06B6D4"/><path d="M60 106 Q76 80 60 60 Q44 80 60 106 Z" fill="#2563EB"/><path d="M14 60 Q40 76 60 60 Q40 44 14 60 Z" fill="#06B6D4"/></svg><div class="wordmark">Trend<span class="accent">Marga</span></div></div><div class="body" style="background:#F1F5F9"><div class="nav"><span></span><span></span><span></span><span></span></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PALETTE EXPLORER ============ -->
+  <h2>Palette explorer · Strongest mark in all 4 colors</h2>
+  <p class="lede">Whichever concept you pick, here's how the wordmark + mark feels in each accent palette. Primary blue <strong>#2563EB</strong> stays in every option.</p>
+
+  <div class="palette-grid">
+    <div class="pal">
+      <div class="swatch" style="background:#7C3AED"></div>
+      <div><div class="name">Violet</div><div class="hex">#7C3AED</div></div>
+      <div class="stage" style="--accent:#7C3AED">
+        <div class="lockup">
+          <svg width="44" height="44" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/><circle cx="78" cy="22" r="5" fill="#7C3AED"/></svg>
+          <div class="wordmark">Trend<span class="accent">Marga</span></div>
+        </div>
+      </div>
+      <small style="font-size:11px;color:var(--muted);line-height:1.5">Premium platform, modern marketplace, distinctive in African ecommerce.</small>
+    </div>
+    <div class="pal">
+      <div class="swatch" style="background:#10B981"></div>
+      <div><div class="name">Emerald</div><div class="hex">#10B981</div></div>
+      <div class="stage" style="--accent:#10B981">
+        <div class="lockup">
+          <svg width="44" height="44" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/><circle cx="78" cy="22" r="5" fill="#10B981"/></svg>
+          <div class="wordmark">Trend<span class="accent">Marga</span></div>
+        </div>
+      </div>
+      <small style="font-size:11px;color:var(--muted);line-height:1.5">Growth, money, transactional trust. Reads "go / approved".</small>
+    </div>
+    <div class="pal">
+      <div class="swatch" style="background:#CA8A04"></div>
+      <div><div class="name">Gold</div><div class="hex">#CA8A04</div></div>
+      <div class="stage" style="--accent:#CA8A04">
+        <div class="lockup">
+          <svg width="44" height="44" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/><circle cx="78" cy="22" r="5" fill="#CA8A04"/></svg>
+          <div class="wordmark">Trend<span class="accent">Marga</span></div>
+        </div>
+      </div>
+      <small style="font-size:11px;color:var(--muted);line-height:1.5">Premium, African cultural resonance, kente/jewelry tradition.</small>
+    </div>
+    <div class="pal">
+      <div class="swatch" style="background:#06B6D4"></div>
+      <div><div class="name">Cyan</div><div class="hex">#06B6D4</div></div>
+      <div class="stage" style="--accent:#06B6D4">
+        <div class="lockup">
+          <svg width="44" height="44" viewBox="0 0 120 120"><path d="M22 92 L42 32 L60 72 L78 32 L98 92 L86 92 L78 60 L66 92 L54 92 L42 60 L34 92 Z" fill="#2563EB"/><circle cx="78" cy="22" r="5" fill="#06B6D4"/></svg>
+          <div class="wordmark">Trend<span class="accent">Marga</span></div>
+        </div>
+      </div>
+      <small style="font-size:11px;color:var(--muted);line-height:1.5">Tech, speed, fresh. Reads "fast/digital-first".</small>
+    </div>
+  </div>
+
+  <!-- ============ NOTES ============ -->
+  <div class="notes">
+    <h3>Construction rules (apply to all concepts)</h3>
+    <ul>
+      <li><strong>Wordmark:</strong> Inter 800, tracking -0.025em. Two-tone: "Trend" in <code>#0B1220</code>, "Marga" in chosen accent.</li>
+      <li><strong>Mark on grid:</strong> 120×120 viewBox, 8pt construction grid, 24px corner radius for app-icon containers.</li>
+      <li><strong>Min size:</strong> Mark works down to 16px (decorative details drop out below 32px). Wordmark needs ≥80px width.</li>
+      <li><strong>Clear space:</strong> Equal to height of capital "T" in the wordmark on all sides.</li>
+      <li><strong>On color:</strong> Knockout to white on primary blue. Use accent-light tint on dark backgrounds (e.g. #C4B5FD on ink for violet).</li>
+      <li><strong>Favicon:</strong> Use mark only with solid blue background — no wordmark below 24px.</li>
+    </ul>
+  </div>
+
+  <div class="picker">
+    <div class="label">Pick to implement →</div>
+    <div class="chips">
+      <span class="chip">1 · M-Peak (Violet)</span>
+      <span class="chip">2 · Path Arrow (Emerald)</span>
+      <span class="chip">3 · TM Ligature (Gold)</span>
+      <span class="chip">4 · Compass Bloom (Cyan)</span>
+      <span class="chip">+ swap palette</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

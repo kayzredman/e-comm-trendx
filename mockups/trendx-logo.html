@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TrendX — Logo Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --blue: #2563EB;
+    --blue-2: #3B82F6;
+    --ink: #0F172A;
+    --muted: #64748B;
+    --border: #E2E8F0;
+    --page: #F8FAFC;
+    --surface: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--page);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 56px 32px 96px;
+  }
+
+  .heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  h1 { font-size: 40px; line-height: 1.1; letter-spacing: -0.02em; font-weight: 800; margin: 0 0 6px; }
+  .sub { color: var(--muted); font-size: 14px; line-height: 1.6; max-width: 640px; }
+  .legend {
+    display: inline-flex; gap: 6px; align-items: center;
+    padding: 6px 12px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 12px; font-weight: 600; color: var(--muted);
+  }
+  .legend .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); }
+
+  .variant {
+    margin-top: 56px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 1px 0 rgba(15,23,42,0.02), 0 1px 3px rgba(15,23,42,0.04);
+  }
+  .variant-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px; flex-wrap: wrap;
+  }
+  .variant-head .title {
+    display: flex; align-items: center; gap: 14px;
+    font-weight: 700; font-size: 17px;
+  }
+  .swatches { display: flex; align-items: center; gap: 10px; }
+  .swatch {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 10px 6px 6px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  .swatch .chip { width: 18px; height: 18px; border-radius: 50%; border: 1px solid rgba(15,23,42,0.08); }
+
+  /* Showcase grid */
+  .row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .row:last-child { border-bottom: 0; }
+  .cell {
+    padding: 36px 28px;
+    display: flex; flex-direction: column;
+    border-right: 1px solid var(--border);
+    min-height: 220px;
+  }
+  .cell:last-child { border-right: 0; }
+  .cell.dark { background: var(--ink); color: #fff; }
+  .cell.dark .cell-label { color: rgba(255,255,255,0.55); }
+  .cell.brand { background: var(--blue); color: #fff; }
+  .cell.brand .cell-label { color: rgba(255,255,255,0.7); }
+  .cell-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted); margin-bottom: 18px;
+  }
+  .cell-body { flex: 1; display: flex; align-items: center; justify-content: center; gap: 28px; flex-wrap: wrap; }
+
+  /* Wordmark */
+  .wordmark {
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    display: inline-flex; align-items: center; gap: 14px;
+  }
+  .wordmark .ink { color: var(--ink); }
+  .wordmark .accent { color: var(--accent); }
+  .on-dark .wordmark .ink, .on-brand .wordmark .ink { color: #fff; }
+
+  .stack {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .stack-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--muted); font-weight: 700;
+  }
+  .on-dark .stack-label, .on-brand .stack-label { color: rgba(255,255,255,0.6); }
+
+  /* Favicon / scale strip */
+  .scale-strip {
+    display: flex; align-items: end; gap: 28px; padding: 24px 28px;
+    border-top: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(248,250,252,0) 0%, var(--page) 100%);
+    flex-wrap: wrap;
+  }
+  .scale-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .scale-item .px { font-size: 10px; color: var(--muted); font-family: ui-monospace, monospace; }
+
+  /* Application examples */
+  .apps {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--border);
+  }
+  .app {
+    padding: 24px 28px;
+    border-right: 1px solid var(--border);
+  }
+  .app:last-child { border-right: 0; }
+  .app-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted); margin-bottom: 14px;
+  }
+  /* Mock sidebar */
+  .mock-sidebar {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+  }
+  .mock-sidebar .role {
+    margin-left: auto; font-size: 10px; padding: 4px 8px; border-radius: 999px;
+    background: var(--accent-soft); color: var(--accent); font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  /* Mock storefront header */
+  .mock-store {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px 18px; display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.04);
+  }
+  .mock-store .nav {
+    margin-left: 20px; display: flex; gap: 18px;
+    font-size: 13px; font-weight: 600; color: var(--muted);
+  }
+  .mock-store .nav span:first-child { color: var(--ink); }
+  .mock-store .cta {
+    margin-left: auto;
+    padding: 8px 16px; border-radius: 10px;
+    background: var(--accent); color: #fff;
+    font-size: 13px; font-weight: 700;
+  }
+
+  @media (max-width: 900px) {
+    .row { grid-template-columns: 1fr; }
+    .cell { border-right: 0; border-bottom: 1px solid var(--border); }
+    .apps { grid-template-columns: 1fr; }
+    .app { border-right: 0; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="heading">
+    <div>
+      <h1>TrendX — Logo Studio</h1>
+      <p class="sub">
+        Geometric <strong>X monogram</strong> across 4 candidate accent colors.
+        Primary blue stays <code style="font-family:ui-monospace,monospace;background:#EFF6FF;padding:1px 6px;border-radius:4px;">#2563EB</code>.
+        Pick your favorite and we'll ship it as a React component + SVG set + favicon pack.
+      </p>
+    </div>
+    <span class="legend"><span class="dot"></span>UI/UX Pro Max · 4 variants · ready to vote</span>
+  </div>
+
+  <!-- ============== TEMPLATE BLOCK ============== -->
+  <!-- We use the same SVG mark with different gradients per variant. -->
+
+  <!-- VARIANT A — Electric Cyan -->
+  <section class="variant" style="--accent:#06B6D4; --accent-soft:#CFFAFE;">
+    <div class="variant-head">
+      <div class="title">
+        <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#06B6D4; box-shadow:0 0 0 4px #CFFAFE;"></span>
+        Variant A — <span style="color:#06B6D4;">Electric Cyan</span>
+        <span style="color:var(--muted); font-weight:500; font-size:13px;">· tech · speed · fresh</span>
+      </div>
+      <div class="swatches">
+        <span class="swatch"><span class="chip" style="background:#2563EB;"></span>#2563EB</span>
+        <span class="swatch"><span class="chip" style="background:#06B6D4;"></span>#06B6D4</span>
+        <span class="swatch"><span class="chip" style="background:#0F172A;"></span>#0F172A</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="cell on-light">
+        <div class="cell-label">On light · full lockup</div>
+        <div class="cell-body">
+          <div class="stack">
+            <svg width="180" height="180" viewBox="0 0 120 120" fill="none">
+              <defs>
+                <linearGradient id="aGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#06B6D4"/></linearGradient>
+                <linearGradient id="aGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#06B6D4"/><stop offset="100%" stop-color="#2563EB"/></linearGradient>
+              </defs>
+              <rect x="0" y="0" width="120" height="120" rx="24" fill="#fff"/>
+              <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="url(#aGrad1)"/>
+              <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="url(#aGrad2)"/>
+              <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="url(#aGrad2)"/>
+              <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="url(#aGrad1)"/>
+              <circle cx="60" cy="60" r="4" fill="#0F172A"/>
+            </svg>
+            <span class="stack-label">Mark</span>
+          </div>
+          <div class="stack">
+            <div class="wordmark"><span class="ink">Trend</span><span class="accent">X</span></div>
+            <span class="stack-label">Wordmark</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell dark on-dark">
+        <div class="cell-label">On dark</div>
+        <div class="cell-body">
+          <svg width="100" height="100" viewBox="0 0 120 120" fill="none">
+            <defs>
+              <linearGradient id="aGradDark1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#22D3EE"/></linearGradient>
+              <linearGradient id="aGradDark2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#22D3EE"/><stop offset="100%" stop-color="#60A5FA"/></linearGradient>
+            </defs>
+            <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="url(#aGradDark1)"/>
+            <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="url(#aGradDark2)"/>
+            <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="url(#aGradDark2)"/>
+            <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="url(#aGradDark1)"/>
+            <circle cx="60" cy="60" r="4" fill="#fff"/>
+          </svg>
+          <div class="wordmark" style="font-size:26px;"><span class="ink">Trend</span><span class="accent" style="--accent:#22D3EE; color:#22D3EE;">X</span></div>
+        </div>
+      </div>
+
+      <div class="cell brand on-brand" style="background:#2563EB;">
+        <div class="cell-label">On brand blue</div>
+        <div class="cell-body">
+          <svg width="100" height="100" viewBox="0 0 120 120" fill="none">
+            <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="#fff"/>
+            <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="#CFFAFE"/>
+            <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="#CFFAFE"/>
+            <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="#fff"/>
+            <circle cx="60" cy="60" r="4" fill="#0F172A"/>
+          </svg>
+          <div class="wordmark" style="font-size:26px;"><span class="ink">Trend</span><span class="accent" style="--accent:#CFFAFE; color:#CFFAFE;">X</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scale-strip">
+      <span class="cell-label" style="margin:0 12px 0 0;">Scales →</span>
+      <div class="scale-item">
+        <svg width="16" height="16" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#06B6D4"/></svg>
+        <span class="px">16</span>
+      </div>
+      <div class="scale-item">
+        <svg width="24" height="24" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#06B6D4"/></svg>
+        <span class="px">24</span>
+      </div>
+      <div class="scale-item">
+        <svg width="32" height="32" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#06B6D4"/></svg>
+        <span class="px">32</span>
+      </div>
+      <div class="scale-item">
+        <svg width="48" height="48" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#06B6D4"/><circle cx="60" cy="60" r="4" fill="#0F172A"/></svg>
+        <span class="px">48</span>
+      </div>
+      <div class="scale-item">
+        <svg width="64" height="64" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#06B6D4"/><circle cx="60" cy="60" r="4" fill="#0F172A"/></svg>
+        <span class="px">64</span>
+      </div>
+    </div>
+
+    <div class="apps">
+      <div class="app">
+        <div class="app-label">CMS sidebar</div>
+        <div class="mock-sidebar">
+          <svg width="32" height="32" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#06B6D4"/></svg>
+          <div>
+            <div style="font-weight:800; font-size:15px; line-height:1;">TrendX</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:3px;">Back-office</div>
+          </div>
+          <span class="role">Owner</span>
+        </div>
+      </div>
+      <div class="app">
+        <div class="app-label">Storefront header</div>
+        <div class="mock-store">
+          <svg width="28" height="28" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#06B6D4"/></svg>
+          <div class="wordmark" style="font-size:18px;"><span class="ink">Trend</span><span class="accent">X</span></div>
+          <div class="nav"><span>Shop</span><span>Categories</span><span>Deals</span></div>
+          <div class="cta">Shop now</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VARIANT B — Violet -->
+  <section class="variant" style="--accent:#7C3AED; --accent-soft:#EDE9FE;">
+    <div class="variant-head">
+      <div class="title">
+        <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#7C3AED; box-shadow:0 0 0 4px #EDE9FE;"></span>
+        Variant B — <span style="color:#7C3AED;">Violet</span>
+        <span style="color:var(--muted); font-weight:500; font-size:13px;">· premium · platform · marketplace</span>
+      </div>
+      <div class="swatches">
+        <span class="swatch"><span class="chip" style="background:#2563EB;"></span>#2563EB</span>
+        <span class="swatch"><span class="chip" style="background:#7C3AED;"></span>#7C3AED</span>
+        <span class="swatch"><span class="chip" style="background:#0F172A;"></span>#0F172A</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="cell on-light">
+        <div class="cell-label">On light · full lockup</div>
+        <div class="cell-body">
+          <div class="stack">
+            <svg width="180" height="180" viewBox="0 0 120 120" fill="none">
+              <defs>
+                <linearGradient id="bGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#7C3AED"/></linearGradient>
+                <linearGradient id="bGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#2563EB"/></linearGradient>
+              </defs>
+              <rect x="0" y="0" width="120" height="120" rx="24" fill="#fff"/>
+              <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="url(#bGrad1)"/>
+              <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="url(#bGrad2)"/>
+              <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="url(#bGrad2)"/>
+              <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="url(#bGrad1)"/>
+              <circle cx="60" cy="60" r="4" fill="#0F172A"/>
+            </svg>
+            <span class="stack-label">Mark</span>
+          </div>
+          <div class="stack">
+            <div class="wordmark"><span class="ink">Trend</span><span class="accent">X</span></div>
+            <span class="stack-label">Wordmark</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell dark on-dark">
+        <div class="cell-label">On dark</div>
+        <div class="cell-body">
+          <svg width="100" height="100" viewBox="0 0 120 120" fill="none">
+            <defs>
+              <linearGradient id="bGradDark1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#A78BFA"/></linearGradient>
+              <linearGradient id="bGradDark2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#A78BFA"/><stop offset="100%" stop-color="#60A5FA"/></linearGradient>
+            </defs>
+            <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="url(#bGradDark1)"/>
+            <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="url(#bGradDark2)"/>
+            <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="url(#bGradDark2)"/>
+            <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="url(#bGradDark1)"/>
+            <circle cx="60" cy="60" r="4" fill="#fff"/>
+          </svg>
+          <div class="wordmark" style="font-size:26px;"><span class="ink">Trend</span><span class="accent" style="--accent:#A78BFA; color:#A78BFA;">X</span></div>
+        </div>
+      </div>
+
+      <div class="cell brand on-brand" style="background:#2563EB;">
+        <div class="cell-label">On brand blue</div>
+        <div class="cell-body">
+          <svg width="100" height="100" viewBox="0 0 120 120" fill="none">
+            <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="#fff"/>
+            <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="#EDE9FE"/>
+            <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="#EDE9FE"/>
+            <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="#fff"/>
+            <circle cx="60" cy="60" r="4" fill="#0F172A"/>
+          </svg>
+          <div class="wordmark" style="font-size:26px;"><span class="ink">Trend</span><span class="accent" style="--accent:#EDE9FE; color:#EDE9FE;">X</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scale-strip">
+      <span class="cell-label" style="margin:0 12px 0 0;">Scales →</span>
+      <div class="scale-item">
+        <svg width="16" height="16" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#7C3AED"/></svg>
+        <span class="px">16</span>
+      </div>
+      <div class="scale-item">
+        <svg width="24" height="24" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#7C3AED"/></svg>
+        <span class="px">24</span>
+      </div>
+      <div class="scale-item">
+        <svg width="32" height="32" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#7C3AED"/></svg>
+        <span class="px">32</span>
+      </div>
+      <div class="scale-item">
+        <svg width="48" height="48" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#7C3AED"/><circle cx="60" cy="60" r="4" fill="#0F172A"/></svg>
+        <span class="px">48</span>
+      </div>
+      <div class="scale-item">
+        <svg width="64" height="64" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#7C3AED"/><circle cx="60" cy="60" r="4" fill="#0F172A"/></svg>
+        <span class="px">64</span>
+      </div>
+    </div>
+
+    <div class="apps">
+      <div class="app">
+        <div class="app-label">CMS sidebar</div>
+        <div class="mock-sidebar">
+          <svg width="32" height="32" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#7C3AED"/></svg>
+          <div>
+            <div style="font-weight:800; font-size:15px; line-height:1;">TrendX</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:3px;">Back-office</div>
+          </div>
+          <span class="role">Owner</span>
+        </div>
+      </div>
+      <div class="app">
+        <div class="app-label">Storefront header</div>
+        <div class="mock-store">
+          <svg width="28" height="28" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#7C3AED"/></svg>
+          <div class="wordmark" style="font-size:18px;"><span class="ink">Trend</span><span class="accent">X</span></div>
+          <div class="nav"><span>Shop</span><span>Categories</span><span>Deals</span></div>
+          <div class="cta">Shop now</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VARIANT C — Gold -->
+  <section class="variant" style="--accent:#CA8A04; --accent-soft:#FEF3C7;">
+    <div class="variant-head">
+      <div class="title">
+        <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#CA8A04; box-shadow:0 0 0 4px #FEF3C7;"></span>
+        Variant C — <span style="color:#CA8A04;">Gold</span>
+        <span style="color:var(--muted); font-weight:500; font-size:13px;">· premium · trust · African cultural resonance</span>
+      </div>
+      <div class="swatches">
+        <span class="swatch"><span class="chip" style="background:#2563EB;"></span>#2563EB</span>
+        <span class="swatch"><span class="chip" style="background:#CA8A04;"></span>#CA8A04</span>
+        <span class="swatch"><span class="chip" style="background:#0F172A;"></span>#0F172A</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="cell on-light">
+        <div class="cell-label">On light · full lockup</div>
+        <div class="cell-body">
+          <div class="stack">
+            <svg width="180" height="180" viewBox="0 0 120 120" fill="none">
+              <defs>
+                <linearGradient id="cGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#CA8A04"/></linearGradient>
+                <linearGradient id="cGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#CA8A04"/><stop offset="100%" stop-color="#2563EB"/></linearGradient>
+              </defs>
+              <rect x="0" y="0" width="120" height="120" rx="24" fill="#fff"/>
+              <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="url(#cGrad1)"/>
+              <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="url(#cGrad2)"/>
+              <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="url(#cGrad2)"/>
+              <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="url(#cGrad1)"/>
+              <circle cx="60" cy="60" r="4" fill="#0F172A"/>
+            </svg>
+            <span class="stack-label">Mark</span>
+          </div>
+          <div class="stack">
+            <div class="wordmark"><span class="ink">Trend</span><span class="accent">X</span></div>
+            <span class="stack-label">Wordmark</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell dark on-dark">
+        <div class="cell-label">On dark</div>
+        <div class="cell-body">
+          <svg width="100" height="100" viewBox="0 0 120 120" fill="none">
+            <defs>
+              <linearGradient id="cGradDark1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#FBBF24"/></linearGradient>
+              <linearGradient id="cGradDark2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#60A5FA"/></linearGradient>
+            </defs>
+            <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="url(#cGradDark1)"/>
+            <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="url(#cGradDark2)"/>
+            <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="url(#cGradDark2)"/>
+            <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="url(#cGradDark1)"/>
+            <circle cx="60" cy="60" r="4" fill="#fff"/>
+          </svg>
+          <div class="wordmark" style="font-size:26px;"><span class="ink">Trend</span><span class="accent" style="--accent:#FBBF24; color:#FBBF24;">X</span></div>
+        </div>
+      </div>
+
+      <div class="cell brand on-brand" style="background:#2563EB;">
+        <div class="cell-label">On brand blue</div>
+        <div class="cell-body">
+          <svg width="100" height="100" viewBox="0 0 120 120" fill="none">
+            <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="#fff"/>
+            <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="#FBBF24"/>
+            <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="#FBBF24"/>
+            <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="#fff"/>
+            <circle cx="60" cy="60" r="4" fill="#0F172A"/>
+          </svg>
+          <div class="wordmark" style="font-size:26px;"><span class="ink">Trend</span><span class="accent" style="--accent:#FBBF24; color:#FBBF24;">X</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scale-strip">
+      <span class="cell-label" style="margin:0 12px 0 0;">Scales →</span>
+      <div class="scale-item">
+        <svg width="16" height="16" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#CA8A04"/></svg>
+        <span class="px">16</span>
+      </div>
+      <div class="scale-item">
+        <svg width="24" height="24" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#CA8A04"/></svg>
+        <span class="px">24</span>
+      </div>
+      <div class="scale-item">
+        <svg width="32" height="32" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#CA8A04"/></svg>
+        <span class="px">32</span>
+      </div>
+      <div class="scale-item">
+        <svg width="48" height="48" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#CA8A04"/><circle cx="60" cy="60" r="4" fill="#0F172A"/></svg>
+        <span class="px">48</span>
+      </div>
+      <div class="scale-item">
+        <svg width="64" height="64" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#CA8A04"/><circle cx="60" cy="60" r="4" fill="#0F172A"/></svg>
+        <span class="px">64</span>
+      </div>
+    </div>
+
+    <div class="apps">
+      <div class="app">
+        <div class="app-label">CMS sidebar</div>
+        <div class="mock-sidebar">
+          <svg width="32" height="32" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#CA8A04"/></svg>
+          <div>
+            <div style="font-weight:800; font-size:15px; line-height:1;">TrendX</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:3px;">Back-office</div>
+          </div>
+          <span class="role">Owner</span>
+        </div>
+      </div>
+      <div class="app">
+        <div class="app-label">Storefront header</div>
+        <div class="mock-store">
+          <svg width="28" height="28" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#CA8A04"/></svg>
+          <div class="wordmark" style="font-size:18px;"><span class="ink">Trend</span><span class="accent">X</span></div>
+          <div class="nav"><span>Shop</span><span>Categories</span><span>Deals</span></div>
+          <div class="cta">Shop now</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VARIANT D — Emerald -->
+  <section class="variant" style="--accent:#10B981; --accent-soft:#D1FAE5;">
+    <div class="variant-head">
+      <div class="title">
+        <span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#10B981; box-shadow:0 0 0 4px #D1FAE5;"></span>
+        Variant D — <span style="color:#10B981;">Emerald</span>
+        <span style="color:var(--muted); font-weight:500; font-size:13px;">· growth · transaction · trust</span>
+      </div>
+      <div class="swatches">
+        <span class="swatch"><span class="chip" style="background:#2563EB;"></span>#2563EB</span>
+        <span class="swatch"><span class="chip" style="background:#10B981;"></span>#10B981</span>
+        <span class="swatch"><span class="chip" style="background:#0F172A;"></span>#0F172A</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="cell on-light">
+        <div class="cell-label">On light · full lockup</div>
+        <div class="cell-body">
+          <div class="stack">
+            <svg width="180" height="180" viewBox="0 0 120 120" fill="none">
+              <defs>
+                <linearGradient id="dGrad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2563EB"/><stop offset="100%" stop-color="#10B981"/></linearGradient>
+                <linearGradient id="dGrad2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#10B981"/><stop offset="100%" stop-color="#2563EB"/></linearGradient>
+              </defs>
+              <rect x="0" y="0" width="120" height="120" rx="24" fill="#fff"/>
+              <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="url(#dGrad1)"/>
+              <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="url(#dGrad2)"/>
+              <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="url(#dGrad2)"/>
+              <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="url(#dGrad1)"/>
+              <circle cx="60" cy="60" r="4" fill="#0F172A"/>
+            </svg>
+            <span class="stack-label">Mark</span>
+          </div>
+          <div class="stack">
+            <div class="wordmark"><span class="ink">Trend</span><span class="accent">X</span></div>
+            <span class="stack-label">Wordmark</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="cell dark on-dark">
+        <div class="cell-label">On dark</div>
+        <div class="cell-body">
+          <svg width="100" height="100" viewBox="0 0 120 120" fill="none">
+            <defs>
+              <linearGradient id="dGradDark1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#60A5FA"/><stop offset="100%" stop-color="#34D399"/></linearGradient>
+              <linearGradient id="dGradDark2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#60A5FA"/></linearGradient>
+            </defs>
+            <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="url(#dGradDark1)"/>
+            <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="url(#dGradDark2)"/>
+            <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="url(#dGradDark2)"/>
+            <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="url(#dGradDark1)"/>
+            <circle cx="60" cy="60" r="4" fill="#fff"/>
+          </svg>
+          <div class="wordmark" style="font-size:26px;"><span class="ink">Trend</span><span class="accent" style="--accent:#34D399; color:#34D399;">X</span></div>
+        </div>
+      </div>
+
+      <div class="cell brand on-brand" style="background:#2563EB;">
+        <div class="cell-label">On brand blue</div>
+        <div class="cell-body">
+          <svg width="100" height="100" viewBox="0 0 120 120" fill="none">
+            <path d="M28 28 L60 60 L52 68 L20 36 Z" fill="#fff"/>
+            <path d="M92 28 L60 60 L68 68 L100 36 Z" fill="#D1FAE5"/>
+            <path d="M60 60 L92 92 L84 100 L52 68 Z" fill="#D1FAE5"/>
+            <path d="M60 60 L28 92 L36 100 L68 68 Z" fill="#fff"/>
+            <circle cx="60" cy="60" r="4" fill="#0F172A"/>
+          </svg>
+          <div class="wordmark" style="font-size:26px;"><span class="ink">Trend</span><span class="accent" style="--accent:#D1FAE5; color:#D1FAE5;">X</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scale-strip">
+      <span class="cell-label" style="margin:0 12px 0 0;">Scales →</span>
+      <div class="scale-item">
+        <svg width="16" height="16" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#10B981"/></svg>
+        <span class="px">16</span>
+      </div>
+      <div class="scale-item">
+        <svg width="24" height="24" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#10B981"/></svg>
+        <span class="px">24</span>
+      </div>
+      <div class="scale-item">
+        <svg width="32" height="32" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#10B981"/></svg>
+        <span class="px">32</span>
+      </div>
+      <div class="scale-item">
+        <svg width="48" height="48" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#10B981"/><circle cx="60" cy="60" r="4" fill="#0F172A"/></svg>
+        <span class="px">48</span>
+      </div>
+      <div class="scale-item">
+        <svg width="64" height="64" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#10B981"/><circle cx="60" cy="60" r="4" fill="#0F172A"/></svg>
+        <span class="px">64</span>
+      </div>
+    </div>
+
+    <div class="apps">
+      <div class="app">
+        <div class="app-label">CMS sidebar</div>
+        <div class="mock-sidebar">
+          <svg width="32" height="32" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#10B981"/></svg>
+          <div>
+            <div style="font-weight:800; font-size:15px; line-height:1;">TrendX</div>
+            <div style="font-size:11px; color:var(--muted); margin-top:3px;">Back-office</div>
+          </div>
+          <span class="role">Owner</span>
+        </div>
+      </div>
+      <div class="app">
+        <div class="app-label">Storefront header</div>
+        <div class="mock-store">
+          <svg width="28" height="28" viewBox="0 0 120 120"><path d="M28 28 L60 60 L52 68 L20 36 Z M60 60 L28 92 L36 100 L68 68 Z" fill="#2563EB"/><path d="M92 28 L60 60 L68 68 L100 36 Z M60 60 L92 92 L84 100 L52 68 Z" fill="#10B981"/></svg>
+          <div class="wordmark" style="font-size:18px;"><span class="ink">Trend</span><span class="accent">X</span></div>
+          <div class="nav"><span>Shop</span><span>Categories</span><span>Deals</span></div>
+          <div class="cta">Shop now</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div style="margin-top:48px; padding:24px 28px; background:var(--surface); border:1px solid var(--border); border-radius:16px;">
+    <div style="font-weight:700; margin-bottom:8px;">Construction notes (same across all variants)</div>
+    <ul style="margin:0; padding-left:18px; color:var(--muted); font-size:14px; line-height:1.8;">
+      <li>Four chevrons meeting at a single 4px ink-dot center — reads as both an <strong>X</strong> and a <strong>compass/crossroad</strong> (commerce + trend).</li>
+      <li>Two diagonal pairs use opposing gradients so the X has visual depth at large sizes and resolves to two flat colors at 16px.</li>
+      <li>Wordmark: Inter 800, tight tracking (-0.025em). Final letter inherits the accent color so the lockup feels intentional, not decorative.</li>
+      <li>Center dot drops out at &lt;32px to keep the silhouette crisp on favicons.</li>
+      <li>App icon padding: 24px radius rounded square = iOS/Android-safe. </li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>
