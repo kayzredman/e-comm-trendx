@@ -86,7 +86,7 @@ export default function AnimatedStatCard({
         </div>
         <div className="relative">
           <p
-            className="font-black leading-none"
+            className="font-black leading-none font-mono tabular-nums"
             style={{ color: '#0F172A', fontSize: '28px', letterSpacing: '-1px' }}
           >
             {value}
