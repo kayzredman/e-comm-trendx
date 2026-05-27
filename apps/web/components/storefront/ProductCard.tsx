@@ -39,7 +39,7 @@ export default function ProductCard({ product }: { product: Product }) {
               alt={product.name}
               className="w-full h-full object-cover"
               animate={{ scale: hovered ? 1.07 : 1 }}
-              transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
+              transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] as const }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>

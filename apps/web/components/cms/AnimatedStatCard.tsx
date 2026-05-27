@@ -18,7 +18,7 @@ export default function AnimatedStatCard({ label, value, icon: Icon, href, gradi
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] as const }}
       whileHover={{ y: -4, boxShadow: '0 16px 40px rgba(0,0,0,0.10)' }}
     >
       <Link
