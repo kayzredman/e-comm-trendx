@@ -6,8 +6,8 @@ import AddToCartButton from '@/components/storefront/AddToCartButton'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "What's New — TrendMarga",
-  description: 'Discover the latest arrivals on TrendMarga',
+  title: "What's New — trendMarga",
+  description: 'Discover the latest arrivals on trendMarga',
 }
 
 export const dynamic = 'force-dynamic'
@@ -73,7 +73,7 @@ export default async function WhatsNewPage() {
             <Sparkles size={28} />
             <h1 className="text-3xl font-extrabold">What&apos;s New</h1>
           </div>
-          <p className="text-sm opacity-90">The freshest arrivals — just landed on TrendMarga</p>
+          <p className="text-sm opacity-90">The freshest arrivals — just landed on trendMarga</p>
         </div>
       </div>
 

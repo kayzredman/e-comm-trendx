@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let cat: Category | null = null
   try { cat = await categoriesApi.getBySlug(slug) } catch {}
   if (!cat) return { title: 'Category not found' }
-  return { title: `${cat.name} — TrendMarga`, description: `Shop all ${cat.name} products on TrendMarga` }
+  return { title: `${cat.name} — trendMarga`, description: `Shop all ${cat.name} products on trendMarga` }
 }
 
 export const dynamic = 'force-dynamic'

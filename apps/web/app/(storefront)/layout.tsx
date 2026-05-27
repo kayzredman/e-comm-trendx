@@ -5,7 +5,7 @@ import CartDrawer from '@/components/storefront/CartDrawer'
 import { categoriesApi, type Category } from '@/lib/api'
 
 export const metadata: Metadata = {
-  title: 'TrendMarga — Shop Online',
+  title: 'trendMarga — Shop Online',
   description: 'Shop the latest trends — fast delivery across Ghana',
 }
 

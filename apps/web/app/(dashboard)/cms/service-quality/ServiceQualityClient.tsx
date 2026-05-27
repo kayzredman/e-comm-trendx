@@ -633,7 +633,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
             Service Quality
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-            Real-time monitoring & control plane for all TrendMarga services
+            Real-time monitoring & control plane for all trendMarga services
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>

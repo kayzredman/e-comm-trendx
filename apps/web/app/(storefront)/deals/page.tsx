@@ -6,8 +6,8 @@ import AddToCartButton from '@/components/storefront/AddToCartButton'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Hot Deals — TrendMarga',
-  description: 'Shop the best deals and discounts on TrendMarga',
+  title: 'Hot Deals — trendMarga',
+  description: 'Shop the best deals and discounts on trendMarga',
 }
 
 export const dynamic = 'force-dynamic'
