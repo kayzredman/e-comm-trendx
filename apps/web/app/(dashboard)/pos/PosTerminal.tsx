@@ -33,6 +33,7 @@ import {
   type Order,
 } from '@/lib/api'
 import { usePosCart, selectPosSubtotal, selectPosItemCount } from '@/lib/pos-cart-store'
+import { Logo } from '@/components/brand/Logo'
 
 type PaymentMethod = 'CASH' | 'MOBILE_MONEY' | 'CARD'
 
@@ -201,10 +202,24 @@ export default function PosTerminal({
               <Receipt size={18} />
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-.01em' }}>
-                TrendX POS
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, letterSpacing: '-.01em' }}>
+                <Logo variant="wordmark" size={15} />
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: '0.06em',
+                    color: 'var(--color-text-muted)',
+                    background: 'var(--color-surface-muted)',
+                    border: '1px solid var(--color-border)',
+                    padding: '2px 6px',
+                    borderRadius: 4,
+                  }}
+                >
+                  POS
+                </span>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 500 }}>
+              <div style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 500, marginTop: 2 }}>
                 {shift.register?.name ?? 'Register'} · {cashier.name}
               </div>
             </div>
@@ -1352,7 +1367,9 @@ function ReceiptModal({ order, onClose }: { order: Order; onClose: () => void })
           }}
         >
           <div style={{ textAlign: 'center', marginBottom: 10 }}>
-            <div style={{ fontWeight: 800 }}>TrendX Store</div>
+            <div style={{ marginBottom: 4 }}>
+              <Logo variant="wordmark" size={18} withPulse={false} />
+            </div>
             <div style={{ color: 'var(--color-text-muted)' }}>
               {new Date(order.createdAt).toLocaleString()}
             </div>
@@ -1419,6 +1436,10 @@ function ReceiptModal({ order, onClose }: { order: Order; onClose: () => void })
               <span>{fmt(Number(order.changeAmount ?? 0))}</span>
             </div>
           )}
+          <div style={{ borderTop: '1px dashed var(--color-border)', margin: '10px 0 6px' }} />
+          <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 11 }}>
+            Thank you for shopping with trendMarga
+          </div>
         </div>
         <div className="pos-modal-foot">
           <button
