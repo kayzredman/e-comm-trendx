@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 // Dashboard and CMS routes require authentication
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/cms(.*)'])
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/cms(.*)', '/pos(.*)'])
 
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {

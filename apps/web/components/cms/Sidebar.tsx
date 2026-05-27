@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
   LayoutDashboard, Package, Tag, ShoppingCart, BarChart3,
-  Users, FileText, Truck, Menu, X, LogOut, UserCog, Activity, Flag,
+  Users, FileText, Truck, Menu, X, LogOut, UserCog, Activity, Flag, ScanLine,
 } from 'lucide-react'
 import { useClerk, useUser } from '@clerk/nextjs'
 import type { UserRole } from '@/lib/api'
@@ -38,9 +38,10 @@ const sections: NavSection[] = [
   {
     title: 'Store',
     items: [
-      { label: 'Customers', href: '/cms/customers', icon: Users,    roles: ['OWNER', 'MANAGER', 'ORDER_MANAGER', 'VIEWER'] },
-      { label: 'Delivery',  href: '/cms/delivery',  icon: Truck,    roles: ['OWNER', 'MANAGER', 'ORDER_MANAGER'] },
-      { label: 'CMS Pages', href: '/cms/content',   icon: FileText, roles: ['OWNER', 'MANAGER', 'CONTENT_EDITOR'] },
+      { label: 'POS Terminal', href: '/pos',          icon: ScanLine, roles: ['OWNER', 'MANAGER', 'CASHIER'], badge: { text: 'New', kind: 'brand' } },
+      { label: 'Customers',    href: '/cms/customers', icon: Users,    roles: ['OWNER', 'MANAGER', 'ORDER_MANAGER', 'VIEWER'] },
+      { label: 'Delivery',     href: '/cms/delivery',  icon: Truck,    roles: ['OWNER', 'MANAGER', 'ORDER_MANAGER'] },
+      { label: 'CMS Pages',    href: '/cms/content',   icon: FileText, roles: ['OWNER', 'MANAGER', 'CONTENT_EDITOR'] },
     ],
   },
   {

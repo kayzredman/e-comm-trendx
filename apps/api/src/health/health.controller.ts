@@ -1,6 +1,6 @@
-import { Controller, Get, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
-import { HealthService } from './health.service'
+import { HealthService, RestartTarget } from './health.service'
 import { ClerkGuard } from '../auth/clerk.guard'
 import { RolesGuard } from '../auth/roles.guard'
 import { Roles } from '../auth/roles.decorator'
@@ -25,15 +25,40 @@ export class HealthController {
     return this.healthService.getReport()
   }
 
-  // ── Manual DB reconnect trigger ──────────────────────────────────────────
+  // ── Re-run a single check ────────────────────────────────────────────────
+  @Post('services/:name/recheck')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER', 'MANAGER')
+  recheck(@Param('name') name: string) {
+    return this.healthService.recheck(decodeURIComponent(name))
+  }
+
+  // ── Tear down the DB pool and reopen ─────────────────────────────────────
   @Post('services/reconnect-db')
   @ApiBearerAuth()
   @UseGuards(ClerkGuard, RolesGuard)
   @Roles('OWNER', 'MANAGER')
   async reconnectDb() {
-    // Re-run the DB check and return latest result
-    const report = await this.healthService.getReport()
-    const dbService = report.services.find(s => s.name === 'PostgreSQL')
-    return { triggered: true, result: dbService }
+    const result = await this.healthService.reconnectDatabase()
+    return { triggered: true, result }
+  }
+
+  // ── Force a V8 garbage collection (only if started with --expose-gc) ────
+  @Post('services/gc')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER', 'MANAGER')
+  forceGc() {
+    return this.healthService.forceGc()
+  }
+
+  // ── Restart a service (api | web) ────────────────────────────────────────
+  @Post('services/restart')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER')
+  restart(@Body() body: { target: RestartTarget }) {
+    return this.healthService.restart(body?.target)
   }
 }

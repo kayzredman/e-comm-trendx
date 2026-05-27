@@ -38,6 +38,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.schema = void 0;
 exports.getDb = getDb;
+exports.reconnectDb = reconnectDb;
 const postgres_js_1 = require("drizzle-orm/postgres-js");
 const postgres_1 = __importDefault(require("postgres"));
 const schema = __importStar(require("./schema"));
@@ -53,5 +54,20 @@ function getDb() {
     _client = (0, postgres_1.default)(url, { max: 10 });
     _db = (0, postgres_js_1.drizzle)(_client, { schema });
     return _db;
+}
+/**
+ * Force-close the existing Postgres pool and create a fresh one.
+ * Use to recover from a broken pool (network blip, restart, etc.).
+ */
+async function reconnectDb() {
+    if (_client) {
+        try {
+            await _client.end({ timeout: 5 });
+        }
+        catch { /* ignore */ }
+    }
+    _client = null;
+    _db = null;
+    getDb();
 }
 //# sourceMappingURL=client.js.map

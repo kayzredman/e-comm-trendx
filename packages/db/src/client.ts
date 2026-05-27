@@ -14,5 +14,18 @@ export function getDb() {
   return _db
 }
 
+/**
+ * Force-close the existing Postgres pool and create a fresh one.
+ * Use to recover from a broken pool (network blip, restart, etc.).
+ */
+export async function reconnectDb(): Promise<void> {
+  if (_client) {
+    try { await _client.end({ timeout: 5 }) } catch { /* ignore */ }
+  }
+  _client = null
+  _db = null
+  getDb()
+}
+
 export type Db = ReturnType<typeof getDb>
 export { schema }

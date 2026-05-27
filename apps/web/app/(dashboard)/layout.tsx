@@ -27,8 +27,8 @@ export default async function DashboardLayout({
   return (
     <div className="flex h-full min-h-screen" style={{ background: 'var(--color-page)' }}>
       <Sidebar role={role} />
-      {/* Main content — offset for mobile header bar */}
-      <main className="flex-1 flex flex-col min-h-screen pt-14 md:pt-0">
+      {/* Main content — offset for mobile header bar. min-w-0 lets flex children shrink below intrinsic width (critical for POS grid). */}
+      <main className="flex-1 flex flex-col min-h-screen min-w-0 pt-14 md:pt-0">
         {children}
       </main>
     </div>
