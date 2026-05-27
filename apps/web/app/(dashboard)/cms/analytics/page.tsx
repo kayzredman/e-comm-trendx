@@ -119,7 +119,7 @@ export default async function AnalyticsPage() {
             </div>
             <TrendingUp size={18} style={{ color: 'var(--color-primary)', marginTop: 2 }} />
           </div>
-          <RevenueChart data={stats?.revenueByDay ?? []} />
+          <RevenueChart data={stats?.revenueByDay ?? []} height={280} showBrush />
         </div>
 
         <div className="rounded-2xl p-4" style={{ background: 'var(--color-surface)', border: '1.5px solid var(--color-border)' }}>
@@ -167,42 +167,62 @@ export default async function AnalyticsPage() {
         <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--color-surface)', border: '1.5px solid var(--color-border)' }}>
           <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1.5px solid var(--color-border)' }}>
             <h2 className="font-extrabold flex items-center gap-2" style={{ color: 'var(--color-text)', fontSize: '15px' }}>
-              <Trophy size={15} style={{ color: '#F59E0B' }} /> Top products by revenue
+              <Trophy size={15} style={{ color: '#F97316' }} /> Top products by revenue
             </h2>
             <Link href="/cms/products" className="text-xs font-semibold" style={{ color: 'var(--color-primary)' }}>All →</Link>
           </div>
           {!stats?.topProducts?.length ? (
             <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>No sales data yet</p>
-          ) : (
+          ) : (() => {
+            const maxRev = Math.max(...stats.topProducts.map(p => Number(p.totalRevenue) || 0), 1)
+            return (
             <div>
-              {stats.topProducts.map((p, i) => (
+              {stats.topProducts.map((p, i) => {
+                const rev = Number(p.totalRevenue) || 0
+                const pct = Math.max(4, Math.round((rev / maxRev) * 100))
+                return (
                 <div
                   key={p.productId}
-                  className="flex items-center justify-between px-5 py-3"
+                  className="px-5 py-3 hover:bg-blue-50/40 transition-colors"
                   style={{ borderBottom: i === stats.topProducts.length - 1 ? 'none' : '1px solid var(--color-border)' }}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 font-mono"
-                      style={{
-                        background: i === 0 ? '#FFEDD5' : 'var(--color-surface-muted)',
-                        color: i === 0 ? '#9A3412' : 'var(--color-text-muted)',
-                      }}
-                    >
-                      {i + 1}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 font-mono"
+                        style={{
+                          background: i === 0 ? '#FFEDD5' : 'var(--color-surface-muted)',
+                          color: i === 0 ? '#9A3412' : 'var(--color-text-muted)',
+                        }}
+                      >
+                        {i + 1}
+                      </div>
+                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>{p.productName}</p>
                     </div>
-                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>{p.productName}</p>
+                    <div className="text-right shrink-0 ml-4">
+                      <p className="text-sm font-bold font-mono tabular-nums" style={{ color: 'var(--color-text)' }}>
+                        GH₵ {Number(p.totalRevenue).toFixed(2)}
+                      </p>
+                      <p className="text-xs font-mono tabular-nums" style={{ color: 'var(--color-text-muted)' }}>{p.unitsSold} sold</p>
+                    </div>
                   </div>
-                  <div className="text-right shrink-0 ml-4">
-                    <p className="text-sm font-bold font-mono tabular-nums" style={{ color: 'var(--color-text)' }}>
-                      GH₵ {Number(p.totalRevenue).toFixed(2)}
-                    </p>
-                    <p className="text-xs font-mono tabular-nums" style={{ color: 'var(--color-text-muted)' }}>{p.unitsSold} sold</p>
+                  <div className="mt-2 ml-10 h-1.5 rounded-full overflow-hidden" style={{ background: '#EFF6FF' }}>
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${pct}%`,
+                        background: i === 0
+                          ? 'linear-gradient(90deg, #F97316, #FB923C)'
+                          : 'linear-gradient(90deg, #2563EB, #3B82F6)',
+                      }}
+                    />
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
-          )}
+            )
+          })()}
         </div>
       </div>
 
