@@ -6,6 +6,7 @@ import { ShoppingBag, Menu, X, Search, ChevronDown, Truck, Sparkles, Tag, User, 
 import { usePathname, useRouter } from 'next/navigation'
 import type { Category } from '@/lib/api'
 import { useCartStore, selectItemCount } from '@/lib/cart-store'
+import { publicFeatures } from '@trendmarga/config'
 
 type Props = { categories: Category[] }
 
@@ -116,7 +117,8 @@ export default function StorefrontHeader({ categories }: Props) {
           ))}
         </nav>
 
-        {/* Search bar */}
+        {/* Search bar — gated by FEATURE_SEARCH */}
+        {publicFeatures.search ? (
         <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-sm mx-auto relative">
           <input
             value={searchQuery}
@@ -135,6 +137,7 @@ export default function StorefrontHeader({ categories }: Props) {
             <Search size={16} />
           </button>
         </form>
+        ) : <div className="hidden md:flex flex-1" />}
 
         {/* Right icons */}
         <div className="flex items-center gap-2 ml-auto md:ml-0">
@@ -195,7 +198,8 @@ export default function StorefrontHeader({ categories }: Props) {
       {/* Mobile menu */}
       {menuOpen && (
         <div className="md:hidden border-t px-4 py-3 space-y-1" style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(20px)', borderColor: 'var(--color-border)' }}>
-          {/* Mobile search */}
+          {/* Mobile search — gated by FEATURE_SEARCH */}
+          {publicFeatures.search && (
           <form onSubmit={handleSearch} className="relative mb-3">
             <input
               value={searchQuery}
@@ -208,6 +212,7 @@ export default function StorefrontHeader({ categories }: Props) {
               <Search size={16} />
             </button>
           </form>
+          )}
           <Link href="/products" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
             <LayoutGrid size={16} /> All Products
           </Link>

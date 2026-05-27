@@ -12,6 +12,9 @@ import { StorefrontModule } from './storefront/storefront.module'
 import { AnalyticsModule } from './analytics/analytics.module'
 import { UsersModule } from './users/users.module'
 import { HealthModule } from './health/health.module'
+import { ReviewsModule } from './reviews/reviews.module'
+import { DiscountsModule } from './discounts/discounts.module'
+import { NotificationsModule } from './notifications/notifications.module'
 
 @Module({
   imports: [
@@ -28,6 +31,9 @@ import { HealthModule } from './health/health.module'
     StorefrontModule,
     AnalyticsModule,
     HealthModule,
+    ReviewsModule,
+    DiscountsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}
