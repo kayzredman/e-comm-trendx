@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { DbService } from '../db/db.service'
 import { products, categories } from '@trendmarga/db'
-import { eq, desc, like, and } from 'drizzle-orm'
+import { eq, desc, ilike, or, and } from 'drizzle-orm'
 
 @Injectable()
 export class ProductsService {
@@ -11,7 +11,11 @@ export class ProductsService {
     const conditions = []
     if (opts?.status) conditions.push(eq(products.status, opts.status as any))
     if (opts?.categoryId) conditions.push(eq(products.categoryId, opts.categoryId))
-    if (opts?.search) conditions.push(like(products.name, `%${opts.search}%`))
+    if (opts?.search) {
+      const term = `%${opts.search.trim()}%`
+      const searchExpr = or(ilike(products.name, term), ilike(products.sku, term), ilike(products.description, term))
+      if (searchExpr) conditions.push(searchExpr)
+    }
 
     return this.db.client.query.products.findMany({
       where: conditions.length ? and(...conditions) : undefined,

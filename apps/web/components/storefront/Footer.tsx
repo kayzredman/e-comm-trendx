@@ -29,8 +29,8 @@ export default function StorefrontFooter() {
         <div>
           <p className="font-bold text-sm mb-4" style={{ color: 'rgba(255,255,255,0.9)' }}>Shop</p>
           <ul className="space-y-2.5">
-            {[['All Products', '/products'], ["New Arrivals", '/new'], ['Hot Deals', '/deals'], ['Categories', '/products']].map(([label, href]) => (
-              <li key={href}>
+            {[['All Products', '/products'], ['New Arrivals', '/new'], ['Hot Deals', '/deals'], ['Categories', '/categories']].map(([label, href]) => (
+              <li key={label}>
                 <Link href={href} className="text-sm transition-colors hover:opacity-100" style={{ color: 'rgba(255,255,255,0.45)' }}>{label}</Link>
               </li>
             ))}
@@ -42,7 +42,7 @@ export default function StorefrontFooter() {
           <p className="font-bold text-sm mb-4" style={{ color: 'rgba(255,255,255,0.9)' }}>Help</p>
           <ul className="space-y-2.5">
             {[['Track Order', '/track'], ['Delivery Info', '/delivery'], ['Returns', '/returns'], ['Contact Us', '/contact']].map(([label, href]) => (
-              <li key={href}>
+              <li key={label}>
                 <Link href={href} className="text-sm transition-colors hover:opacity-100" style={{ color: 'rgba(255,255,255,0.45)' }}>{label}</Link>
               </li>
             ))}

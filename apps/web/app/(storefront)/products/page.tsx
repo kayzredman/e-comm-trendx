@@ -14,7 +14,7 @@ export default async function ProductsPage({ searchParams }: Props) {
   let categories: Category[] = []
   try {
     ;[products, categories] = await Promise.all([
-      productsApi.list({ status: 'ACTIVE' }),
+      productsApi.list({ status: 'ACTIVE', search: q, categoryId }),
       categoriesApi.list(),
     ])
   } catch { /* API not running */ }
@@ -23,6 +23,7 @@ export default async function ProductsPage({ searchParams }: Props) {
     <div className="max-w-6xl mx-auto px-4 py-8" style={{ background: 'var(--color-page)' }}>
       <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--color-text)' }}>All Products</h1>
       <ProductGrid
+        key={`${q ?? ''}::${categoryId ?? ''}`}
         initialProducts={products}
         categories={categories}
         initialCategoryId={categoryId}

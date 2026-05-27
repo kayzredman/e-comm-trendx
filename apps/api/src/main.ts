@@ -24,14 +24,14 @@ async function bootstrap() {
 
   // CORS — allow web app origin(s)
   const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
     ...(process.env.WEB_URL ? [process.env.WEB_URL] : []),
   ]
   app.enableCors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (curl, Postman, server-side)
+      // Allow requests with no origin (curl, Postman, server-side fetches)
       if (!origin) return callback(null, true)
+      // Allow any localhost port in dev
+      if (/^http:\/\/localhost:\d+$/.test(origin)) return callback(null, true)
       // Allow any *.up.railway.app subdomain (staging / prod previews)
       if (allowedOrigins.includes(origin) || /^https:\/\/[^.]+\.up\.railway\.app$/.test(origin)) {
         return callback(null, true)

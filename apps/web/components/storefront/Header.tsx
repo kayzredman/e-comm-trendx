@@ -18,6 +18,7 @@ export default function StorefrontHeader({ categories }: Props) {
   const router = useRouter()
   const catRef = useRef<HTMLDivElement>(null)
   const cartCount = useCartStore(selectItemCount)
+  const openDrawer = useCartStore((s) => s.openDrawer)
 
   useEffect(() => setMounted(true), [])
 
@@ -150,7 +151,7 @@ export default function StorefrontHeader({ categories }: Props) {
           >
             <User size={15} /> Sign In
           </Link>
-          <Link href="/cart" className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors relative" style={{ color: 'var(--color-text-muted)' }}>
+          <Link href="/cart" className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors relative sm:hidden" style={{ color: 'var(--color-text-muted)' }}>
             <div className="relative">
               <ShoppingBag size={20} />
               {mounted && cartCount > 0 && (
@@ -164,6 +165,26 @@ export default function StorefrontHeader({ categories }: Props) {
             </div>
             <span className="text-xs leading-none">Cart</span>
           </Link>
+          <button
+            type="button"
+            onClick={openDrawer}
+            aria-label="Open cart"
+            className="hidden sm:flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors relative"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            <div className="relative">
+              <ShoppingBag size={20} />
+              {mounted && cartCount > 0 && (
+                <span
+                  className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 rounded-full flex items-center justify-center text-white font-bold"
+                  style={{ fontSize: '10px', background: 'var(--color-primary)', padding: '0 3px' }}
+                >
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </div>
+            <span className="text-xs leading-none">Cart</span>
+          </button>
           {/* Mobile menu toggle */}
           <button className="md:hidden p-2 rounded-lg" onClick={() => setMenuOpen(o => !o)} style={{ color: 'var(--color-text)' }}>
             {menuOpen ? <X size={22} /> : <Menu size={22} />}

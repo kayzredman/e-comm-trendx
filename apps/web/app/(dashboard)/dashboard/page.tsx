@@ -3,10 +3,10 @@ import { analyticsApi, type DashboardStats } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Package, ShoppingCart, Users, TrendingUp, AlertTriangle, CheckCircle, BarChart2 } from 'lucide-react'
+import { TrendingUp, AlertTriangle } from 'lucide-react'
 import RevenueChart from './RevenueChart'
 import OrdersDonut from './OrdersDonut'
-import AnimatedStatCard from '@/components/cms/AnimatedStatCard'
+import AnimatedStatCard, { type StatAccent, type StatIcon } from '@/components/cms/AnimatedStatCard'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,48 +33,34 @@ export default async function DashboardHome() {
     if (token) stats = await analyticsApi.dashboard(token)
   } catch { /* API not running */ }
 
-  const statCards = [
+  const statCards: Array<{ label: string; value: string | number; icon: StatIcon; href: string; accent: StatAccent }> = [
     {
-      label: 'Active products',
-      value: stats?.totalProducts ?? '—',
-      icon: Package,
-      href: '/cms/products',
-      gradient: 'linear-gradient(135deg,#2563EB,#3B82F6)',
+      label: 'Revenue (30 days)',
+      value: stats ? `GH₵ ${Number(stats.revenue30d).toFixed(2)}` : '—',
+      icon: 'revenue',
+      href: '/cms/orders',
+      accent: 'blue',
     },
     {
       label: 'Total orders',
       value: stats?.totalOrders ?? '—',
-      icon: ShoppingCart,
+      icon: 'orders',
       href: '/cms/orders',
-      gradient: 'linear-gradient(135deg,#7C3AED,#A78BFA)',
+      accent: 'green',
     },
     {
       label: 'Customers',
       value: stats?.totalCustomers ?? '—',
-      icon: Users,
+      icon: 'customers',
       href: '/cms/customers',
-      gradient: 'linear-gradient(135deg,#059669,#34D399)',
+      accent: 'purple',
     },
     {
-      label: 'Revenue (30 days)',
-      value: stats ? `GH₵ ${Number(stats.revenue30d).toFixed(2)}` : '—',
-      icon: TrendingUp,
-      href: '/cms/orders',
-      gradient: 'linear-gradient(135deg,#EA580C,#FB923C)',
-    },
-    {
-      label: 'Avg order value',
-      value: stats ? `GH₵ ${Number(stats.avgOrderValue).toFixed(2)}` : '—',
-      icon: BarChart2,
-      href: '/cms/orders',
-      gradient: 'linear-gradient(135deg,#0891B2,#22D3EE)',
-    },
-    {
-      label: 'Completion rate',
-      value: stats ? `${stats.completionRate}%` : '—',
-      icon: CheckCircle,
-      href: '/cms/orders',
-      gradient: 'linear-gradient(135deg,#16A34A,#4ADE80)',
+      label: 'Active products',
+      value: stats?.totalProducts ?? '—',
+      icon: 'products',
+      href: '/cms/products',
+      accent: 'amber',
     },
   ]
 
@@ -90,96 +76,55 @@ export default async function DashboardHome() {
         </p>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6 mb-6">
-        {statCards.map(({ label, value, icon, href, gradient }, i) => (
+      {/* Stat cards (V2 hero row — 4 across) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {statCards.map(({ label, value, icon, href, accent }, i) => (
           <AnimatedStatCard
             key={label}
             label={label}
             value={value}
             icon={icon}
             href={href}
-            gradient={gradient}
+            accent={accent}
             index={i}
           />
         ))}
       </div>
 
-      {/* Revenue chart */}
-      <div
-        className="rounded-xl border p-5 mb-6"
-        style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-      >
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h2 className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>Revenue — last 14 days</h2>
-            {stats && (
-              <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-                All-time: <strong style={{ color: 'var(--color-text)' }}>GH₵ {Number(stats.revenueAll).toFixed(2)}</strong>
-              </p>
-            )}
-          </div>
-          <TrendingUp size={18} style={{ color: 'var(--color-primary)', marginTop: 2 }} />
-        </div>
-        <RevenueChart data={stats?.revenueByDay ?? []} />
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2 mb-6">
-        {/* Orders by status */}
+      {/* Chart row: revenue (2fr) + donut (1fr) */}
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr] mb-6">
         <div
-          className="rounded-xl border p-5"
-          style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+          className="rounded-2xl p-5"
+          style={{ background: '#FFFFFF', border: '1.5px solid rgba(226,232,240,0.8)' }}
         >
-          <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--color-text)' }}>Orders by status</h2>
-          <OrdersDonut data={stats?.ordersByStatus ?? {}} />
-        </div>
-
-        {/* Top products by revenue */}
-        <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-          <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-muted)' }}>
-            <h2 className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>Top products by revenue</h2>
-            <Link href="/cms/products" className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>View all →</Link>
-          </div>
-          {!stats?.topProducts?.length ? (
-            <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>No sales data yet</p>
-          ) : (
+          <div className="flex items-start justify-between mb-1">
             <div>
-              {stats.topProducts.map((p, i) => {
-                const maxRev = Number(stats.topProducts[0].totalRevenue)
-                const pct = maxRev > 0 ? (Number(p.totalRevenue) / maxRev) * 100 : 0
-                return (
-                  <div
-                    key={p.productId}
-                    className="flex items-center gap-3 px-5 py-3 border-b last:border-0"
-                    style={{ borderColor: 'var(--color-border)' }}
-                  >
-                    <span className="text-xs font-bold w-5 shrink-0" style={{ color: 'var(--color-text-muted)' }}>
-                      {i + 1}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>{p.productName}</p>
-                      <div className="mt-1 h-1.5 rounded-full" style={{ background: 'var(--color-border)' }}>
-                        <div className="h-1.5 rounded-full" style={{ width: `${pct}%`, background: 'var(--color-primary)' }} />
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>GH₵ {Number(p.totalRevenue).toFixed(0)}</p>
-                      <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{p.unitsSold} sold</p>
-                    </div>
-                  </div>
-                )
-              })}
+              <h2 className="font-extrabold" style={{ color: '#0F172A', fontSize: '15px' }}>Revenue — last 14 days</h2>
+              {stats && (
+                <p className="text-xs mt-1" style={{ color: '#94A3B8' }}>
+                  All-time: <strong style={{ color: '#1E293B' }}>GH₵ {Number(stats.revenueAll).toFixed(2)}</strong>
+                </p>
+              )}
             </div>
-          )}
+            <TrendingUp size={18} style={{ color: 'var(--color-primary)', marginTop: 2 }} />
+          </div>
+          <RevenueChart data={stats?.revenueByDay ?? []} />
+        </div>
+        <div
+          className="rounded-2xl p-5"
+          style={{ background: '#FFFFFF', border: '1.5px solid rgba(226,232,240,0.8)' }}
+        >
+          <h2 className="font-extrabold mb-4" style={{ color: '#0F172A', fontSize: '15px' }}>Orders by status</h2>
+          <OrdersDonut data={stats?.ordersByStatus ?? {}} />
         </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Recent orders */}
-        <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-          <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-muted)' }}>
-            <h2 className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>Recent orders</h2>
-            <Link href="/cms/orders" className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>View all →</Link>
+        <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', border: '1.5px solid rgba(226,232,240,0.8)' }}>
+          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1.5px solid #F1F5F9' }}>
+            <h2 className="font-extrabold" style={{ color: '#0F172A', fontSize: '15px' }}>Recent orders</h2>
+            <Link href="/cms/orders" className="text-xs font-semibold" style={{ color: 'var(--color-primary)' }}>View all →</Link>
           </div>
           {!stats?.recentOrders?.length ? (
             <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>No orders yet</p>
@@ -191,8 +136,8 @@ export default async function DashboardHome() {
                   <Link
                     key={order.id}
                     href={`/cms/orders/${order.id}`}
-                    className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors border-b last:border-0"
-                    style={{ borderColor: 'var(--color-border)' }}
+                    className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
+                    style={{ borderBottom: '1px solid #F8FAFC' }}
                   >
                     <div>
                       <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
@@ -216,12 +161,12 @@ export default async function DashboardHome() {
         </div>
 
         {/* Low stock */}
-        <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
-          <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-muted)' }}>
-            <h2 className="font-semibold text-sm flex items-center gap-2" style={{ color: 'var(--color-text)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', border: '1.5px solid rgba(226,232,240,0.8)' }}>
+          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1.5px solid #F1F5F9' }}>
+            <h2 className="font-extrabold flex items-center gap-2" style={{ color: '#0F172A', fontSize: '15px' }}>
               <AlertTriangle size={15} style={{ color: 'var(--color-warning)' }} /> Low stock
             </h2>
-            <Link href="/cms/products" className="text-xs font-medium" style={{ color: 'var(--color-primary)' }}>View all →</Link>
+            <Link href="/cms/products" className="text-xs font-semibold" style={{ color: 'var(--color-primary)' }}>View all →</Link>
           </div>
           {!stats?.lowStockProducts?.length ? (
             <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>All products are well stocked</p>

@@ -12,16 +12,24 @@ export type CartItem = {
 
 type CartStore = {
   items: CartItem[]
+  drawerOpen: boolean
   addItem: (product: Omit<CartItem, 'quantity'>, qty?: number) => void
   removeItem: (id: string) => void
   updateQty: (id: string, qty: number) => void
   clearCart: () => void
+  openDrawer: () => void
+  closeDrawer: () => void
+  toggleDrawer: () => void
 }
 
 export const useCartStore = create<CartStore>()(
   persist(
     (set) => ({
       items: [],
+      drawerOpen: false,
+      openDrawer: () => set({ drawerOpen: true }),
+      closeDrawer: () => set({ drawerOpen: false }),
+      toggleDrawer: () => set((s) => ({ drawerOpen: !s.drawerOpen })),
 
       addItem: (product, qty = 1) =>
         set((state) => {
@@ -47,7 +55,10 @@ export const useCartStore = create<CartStore>()(
 
       clearCart: () => set({ items: [] }),
     }),
-    { name: 'trendmarga-cart' },
+    {
+      name: 'trendmarga-cart',
+      partialize: (state) => ({ items: state.items }) as CartStore,
+    },
   ),
 )
 

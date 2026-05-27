@@ -87,6 +87,14 @@ body {
   0%   { background-position: -400px 0; }
   100% { background-position: 400px 0; }
 }
+@keyframes float-card {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
 
 /* ── Utility helpers ───────────────────────────────────────── */
 .animate-fade-up   { animation: fadeInUp  .5s ease both; }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import StorefrontHeader from '@/components/storefront/Header'
 import StorefrontFooter from '@/components/storefront/Footer'
+import CartDrawer from '@/components/storefront/CartDrawer'
 import { categoriesApi, type Category } from '@/lib/api'
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default async function StorefrontLayout({
       <StorefrontHeader categories={categories} />
       <main className="flex-1">{children}</main>
       <StorefrontFooter />
+      <CartDrawer />
     </div>
   )
 }
