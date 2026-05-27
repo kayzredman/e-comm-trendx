@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
   LayoutDashboard, Package, Tag, ShoppingCart, BarChart3,
-  Users, FileText, Truck, Menu, X, LogOut, UserCog, Activity,
+  Users, FileText, Truck, Menu, X, LogOut, UserCog, Activity, Flag,
 } from 'lucide-react'
 import { useClerk, useUser } from '@clerk/nextjs'
 import type { UserRole } from '@/lib/api'
@@ -49,6 +49,7 @@ const sections: NavSection[] = [
       { label: 'Team',            href: '/cms/users',           icon: UserCog,  roles: ['OWNER'] },
       { label: 'Service Quality', href: '/cms/service-quality', icon: Activity, roles: ['OWNER', 'MANAGER'] },
       { label: 'Analytics',       href: '/cms/analytics',       icon: BarChart3, roles: ['OWNER', 'MANAGER'] },
+      { label: 'Feature flags',   href: '/cms/feature-flags',   icon: Flag,     roles: ['OWNER'] },
     ],
   },
 ]

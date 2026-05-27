@@ -109,10 +109,12 @@ const SLIDES: Slide[] = [
 export default function HeroV2() {
   const [current, setCurrent] = useState(0)
 
+  // Re-run interval whenever `current` changes so manual clicks reset the 7s timer.
   useEffect(() => {
-    const t = setInterval(() => setCurrent((c) => (c + 1) % SLIDES.length), 7000)
-    return () => clearInterval(t)
-  }, [])
+    const t = setTimeout(() => setCurrent((c) => (c + 1) % SLIDES.length), 7000)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current])
 
   const slide = SLIDES[current]
 
