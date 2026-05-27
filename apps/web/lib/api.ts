@@ -109,13 +109,22 @@ export type OrderItem = {
 
 export type Order = {
   id: string
-  customerId: string
+  customerId: string | null
   status: OrderStatus
+  source?: 'ONLINE' | 'POS'
   subtotal: string
   deliveryFee: string
+  discountAmount?: string
+  taxAmount?: string
   total: string
   notes: string | null
-  paymentMethod: 'CASH_ON_DELIVERY' | 'MOBILE_MONEY' | 'CARD'
+  paymentMethod: 'CASH_ON_DELIVERY' | 'MOBILE_MONEY' | 'CARD' | 'CASH'
+  cashierId?: string | null
+  shiftId?: string | null
+  registerId?: string | null
+  tenderedAmount?: string | null
+  changeAmount?: string | null
+  receiptNumber?: string | null
   createdAt: string
   updatedAt: string
   customer?: Customer
@@ -214,20 +223,47 @@ export const analyticsApi = {
 // ─── Health / Service Quality ─────────────────────────────────────────────────
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down'
+export type ServiceKind = 'database' | 'self' | 'http' | 'auth'
+export type RestartTarget = 'api' | 'web'
+export type RestartMethod = 'railway' | 'tsx-watch' | 'next-watch' | 'unsupported'
+export type ServiceAction = 'reconnect' | 'recheck' | 'restart' | 'gc'
 
 export interface ServiceCheck {
   name: string
+  kind: ServiceKind
   status: ServiceStatus
   latencyMs: number | null
   message: string
   checkedAt: string
+  url?: string
+  actions?: ServiceAction[]
+  details?: Record<string, string | number | boolean>
 }
 
 export interface HealthReport {
   overall: ServiceStatus
   services: ServiceCheck[]
   serverUptimeSeconds: number
-  memoryMB: { used: number; total: number; percent: number }
+  memoryMB: { used: number; total: number; percent: number; rssMB: number; externalMB: number; arrayBuffersMB: number }
+  cpu: { user: number; system: number; loadAvg1: number; loadAvg5: number; loadAvg15: number; coreCount: number }
+  eventLoop: { lagMeanMs: number; lagP99Ms: number; lagMaxMs: number }
+  process: {
+    nodeVersion: string
+    pid: number
+    env: string
+    platform: string
+    arch: string
+    apiVersion: string
+    startedAt: string
+    activeHandles: number
+    activeRequests: number
+  }
+  capabilities: {
+    canRestartApi: RestartMethod
+    canRestartWeb: RestartMethod
+    canForceGc: boolean
+    canReconnectDb: boolean
+  }
   checkedAt: string
 }
 
@@ -238,11 +274,17 @@ export const healthApi = {
     apiFetch('/health/services', { token }),
   reconnectDb: (token: string): Promise<{ triggered: boolean; result: ServiceCheck }> =>
     apiFetch('/health/services/reconnect-db', { method: 'POST', body: '{}', token }),
+  recheck: (token: string, name: string): Promise<ServiceCheck> =>
+    apiFetch(`/health/services/${encodeURIComponent(name)}/recheck`, { method: 'POST', body: '{}', token }),
+  gc: (token: string): Promise<{ ran: boolean; before: number; after: number }> =>
+    apiFetch('/health/services/gc', { method: 'POST', body: '{}', token }),
+  restart: (token: string, target: RestartTarget): Promise<{ ok: boolean; method: RestartMethod; message: string }> =>
+    apiFetch('/health/services/restart', { method: 'POST', body: JSON.stringify({ target }), token }),
 }
 
 // ─── Users / RBAC ─────────────────────────────────────────────────────────────
 
-export type UserRole = 'OWNER' | 'MANAGER' | 'CONTENT_EDITOR' | 'ORDER_MANAGER' | 'VIEWER' | 'STAFF'
+export type UserRole = 'OWNER' | 'MANAGER' | 'CONTENT_EDITOR' | 'ORDER_MANAGER' | 'VIEWER' | 'STAFF' | 'CASHIER'
 
 export type StaffUser = {
   id: string
@@ -321,4 +363,101 @@ export const storefrontApi = {
     apiFetch('/v1/orders', { method: 'POST', body: JSON.stringify(body) }),
   getOrder: (id: string): Promise<Order & { customer?: Customer; items?: OrderItem[] }> =>
     apiFetch(`/v1/orders/${id}`),
+}
+
+// ─── POS ──────────────────────────────────────────────────────────────────────
+
+export type PosRegister = {
+  id: string
+  name: string
+  location: string | null
+  isActive: boolean
+  createdAt: string
+}
+
+export type PosShift = {
+  id: string
+  registerId: string
+  cashierId: string
+  status: 'OPEN' | 'CLOSED'
+  openingFloat: string
+  closingCash: string | null
+  expectedCash: string | null
+  cashVariance: string | null
+  notes: string | null
+  openedAt: string
+  closedAt: string | null
+  register?: PosRegister
+}
+
+export type PosHoldCart = {
+  items: Array<{ productId: string; productName: string; unitPrice: string; quantity: number }>
+  discountAmount?: string
+  discountReason?: string
+  notes?: string
+}
+
+export type PosHold = {
+  id: string
+  shiftId: string
+  cashierId: string
+  customerId: string | null
+  label: string | null
+  cart: PosHoldCart
+  status: 'HELD' | 'RESUMED' | 'VOIDED'
+  createdAt: string
+  customer?: Customer | null
+}
+
+export type PosCheckoutInput = {
+  shiftId: string
+  registerId: string
+  items: Array<{ productId: string; productName: string; unitPrice: string; quantity: number }>
+  customerId?: string | null
+  paymentMethod: 'CASH' | 'MOBILE_MONEY' | 'CARD'
+  tenderedAmount?: number
+  momoReference?: string
+  cardLast4?: string
+  discountAmount?: number
+  discountReason?: string
+  taxAmount?: number
+  notes?: string
+}
+
+export type PosShiftSummary = {
+  shift: PosShift
+  totals: { orders: number; gross: string; discounts: string }
+  byMethod: Array<{ method: string; count: number; total: string }>
+}
+
+export const posApi = {
+  listRegisters: (token: string): Promise<PosRegister[]> =>
+    apiFetch('/pos/registers', { token }),
+  createRegister: (data: { name: string; location?: string }, token: string): Promise<PosRegister> =>
+    apiFetch('/pos/registers', { method: 'POST', body: JSON.stringify(data), token }),
+
+  currentShift: (token: string): Promise<PosShift | null> =>
+    apiFetch<PosShift | null>('/pos/shifts/current', { token }).catch(() => null),
+  openShift: (data: { registerId: string; openingFloat?: number }, token: string): Promise<PosShift> =>
+    apiFetch('/pos/shifts/open', { method: 'POST', body: JSON.stringify(data), token }),
+  closeShift: (id: string, data: { closingCash?: number; notes?: string }, token: string): Promise<PosShift> =>
+    apiFetch(`/pos/shifts/${id}/close`, { method: 'POST', body: JSON.stringify(data), token }),
+  shiftSummary: (id: string, token: string): Promise<PosShiftSummary> =>
+    apiFetch(`/pos/shifts/${id}/summary`, { token }),
+  shiftOrders: (id: string, token: string, limit = 20): Promise<Order[]> =>
+    apiFetch(`/pos/shifts/${id}/orders?limit=${limit}`, { token }),
+
+  listHolds: (shiftId: string, token: string): Promise<PosHold[]> =>
+    apiFetch(`/pos/holds?shiftId=${shiftId}`, { token }),
+  hold: (
+    data: { shiftId: string; label?: string; customerId?: string | null; cart: PosHoldCart },
+    token: string,
+  ): Promise<PosHold> => apiFetch('/pos/holds', { method: 'POST', body: JSON.stringify(data), token }),
+  resumeHold: (id: string, token: string): Promise<PosHold> =>
+    apiFetch(`/pos/holds/${id}/resume`, { method: 'POST', body: '{}', token }),
+  voidHold: (id: string, token: string): Promise<{ ok: true }> =>
+    apiFetch(`/pos/holds/${id}/void`, { method: 'POST', body: '{}', token }),
+
+  checkout: (data: PosCheckoutInput, token: string): Promise<Order> =>
+    apiFetch('/pos/checkout', { method: 'POST', body: JSON.stringify(data), token }),
 }

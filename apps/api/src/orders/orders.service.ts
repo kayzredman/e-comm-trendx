@@ -44,7 +44,7 @@ export class OrdersService {
 
     // Notify customer on lifecycle transitions (no-ops unless FEATURE_NOTIFICATIONS=true)
     const template = STATUS_TO_TEMPLATE[status as keyof typeof STATUS_TO_TEMPLATE]
-    if (template) {
+    if (template && order.customerId) {
       const cust = await this.db.client.query.customers.findFirst({
         where: eq(customers.id, order.customerId),
       })
@@ -88,22 +88,24 @@ export class OrdersService {
     })
 
     // Fire order-placed notification (no-op unless flag enabled)
-    const cust = await this.db.client.query.customers.findFirst({
-      where: eq(customers.id, result.customerId),
-    })
-    if (cust) {
-      await this.notifications.dispatch({
-        template: 'orderPlaced',
-        orderId: result.id,
-        customerId: cust.id,
-        phone: cust.phone,
-        email: cust.email ?? undefined,
-        data: {
-          orderId: result.id,
-          customerName: cust.name,
-          total: result.total,
-        },
+    if (result.customerId) {
+      const cust = await this.db.client.query.customers.findFirst({
+        where: eq(customers.id, result.customerId),
       })
+      if (cust) {
+        await this.notifications.dispatch({
+          template: 'orderPlaced',
+          orderId: result.id,
+          customerId: cust.id,
+          phone: cust.phone,
+          email: cust.email ?? undefined,
+          data: {
+            orderId: result.id,
+            customerName: cust.name,
+            total: result.total,
+          },
+        })
+      }
     }
 
     return result

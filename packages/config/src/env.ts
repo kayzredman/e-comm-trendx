@@ -12,6 +12,16 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
   API_PORT: z.coerce.number().default(4000),
 
+  // Service quality / health monitoring (optional)
+  WEB_URL: z.string().url().optional(),
+  STOREFRONT_URL: z.string().url().optional(),
+
+  // Railway redeploy integration (optional — used by /health/services/restart in prod)
+  RAILWAY_API_TOKEN: z.string().optional(),
+  RAILWAY_ENVIRONMENT_ID: z.string().optional(),
+  RAILWAY_API_SERVICE_ID: z.string().optional(),
+  RAILWAY_WEB_SERVICE_ID: z.string().optional(),
+
   // Google Maps (optional in Phase 1)
   GOOGLE_MAPS_API_KEY: z.string().optional(),
 

@@ -14,8 +14,9 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDb = void 0;
+exports.reconnectDb = exports.getDb = void 0;
 var client_1 = require("./client");
 Object.defineProperty(exports, "getDb", { enumerable: true, get: function () { return client_1.getDb; } });
+Object.defineProperty(exports, "reconnectDb", { enumerable: true, get: function () { return client_1.reconnectDb; } });
 __exportStar(require("./schema"), exports);
 //# sourceMappingURL=index.js.map

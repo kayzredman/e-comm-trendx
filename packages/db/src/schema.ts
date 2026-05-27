@@ -3,12 +3,15 @@ import { relations } from 'drizzle-orm'
 import { createId } from '@paralleldrive/cuid2'
 
 // ── Enums ─────────────────────────────────────────────────────────────────────
-export const userRoleEnum = pgEnum('user_role', ['OWNER', 'MANAGER', 'CONTENT_EDITOR', 'ORDER_MANAGER', 'VIEWER', 'STAFF'])
+export const userRoleEnum = pgEnum('user_role', ['OWNER', 'MANAGER', 'CONTENT_EDITOR', 'ORDER_MANAGER', 'VIEWER', 'STAFF', 'CASHIER'])
 export const productStatusEnum = pgEnum('product_status', ['ACTIVE', 'DRAFT', 'ARCHIVED'])
 export const orderStatusEnum = pgEnum('order_status', [
   'PENDING', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',
 ])
-export const paymentMethodEnum = pgEnum('payment_method', ['CASH_ON_DELIVERY', 'MOBILE_MONEY', 'CARD'])
+export const paymentMethodEnum = pgEnum('payment_method', ['CASH_ON_DELIVERY', 'MOBILE_MONEY', 'CARD', 'CASH'])
+export const orderSourceEnum = pgEnum('order_source', ['ONLINE', 'POS'])
+export const posShiftStatusEnum = pgEnum('pos_shift_status', ['OPEN', 'CLOSED'])
+export const posHoldStatusEnum = pgEnum('pos_hold_status', ['HELD', 'RESUMED', 'VOIDED'])
 export const feeStrategyEnum = pgEnum('fee_strategy', ['FLAT', 'DISTANCE_BASED', 'FREE_THRESHOLD', 'COMBINED'])
 export const sectionTypeEnum = pgEnum('section_type', ['HERO', 'FEATURED', 'BANNER', 'ANNOUNCEMENT'])
 export const sectionPageEnum = pgEnum('section_page', ['HOME'])
@@ -70,13 +73,26 @@ export const customers = pgTable('customers', {
 // ── Orders ────────────────────────────────────────────────────────────────────
 export const orders = pgTable('orders', {
   id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
-  customerId: varchar('customer_id', { length: 128 }).notNull(),
+  customerId: varchar('customer_id', { length: 128 }),
   status: orderStatusEnum('status').notNull().default('PENDING'),
+  source: orderSourceEnum('source').notNull().default('ONLINE'),
   subtotal: numeric('subtotal', { precision: 12, scale: 2 }).notNull(),
   deliveryFee: numeric('delivery_fee', { precision: 12, scale: 2 }).notNull().default('0'),
+  discountAmount: numeric('discount_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  discountReason: varchar('discount_reason', { length: 255 }),
+  taxAmount: numeric('tax_amount', { precision: 12, scale: 2 }).notNull().default('0'),
   total: numeric('total', { precision: 12, scale: 2 }).notNull(),
   notes: text('notes'),
   paymentMethod: paymentMethodEnum('payment_method').notNull().default('CASH_ON_DELIVERY'),
+  // POS-specific
+  cashierId: varchar('cashier_id', { length: 128 }),
+  shiftId: varchar('shift_id', { length: 128 }),
+  registerId: varchar('register_id', { length: 128 }),
+  tenderedAmount: numeric('tendered_amount', { precision: 12, scale: 2 }),
+  changeAmount: numeric('change_amount', { precision: 12, scale: 2 }),
+  momoReference: varchar('momo_reference', { length: 64 }),
+  cardLast4: varchar('card_last4', { length: 4 }),
+  receiptNumber: varchar('receipt_number', { length: 32 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
@@ -200,4 +216,64 @@ export const notificationLog = pgTable('notification_log', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   sentAt: timestamp('sent_at'),
 })
+
+// ── POS Registers ─────────────────────────────────────────────────────────────
+export const posRegisters = pgTable('pos_registers', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  name: varchar('name', { length: 100 }).notNull(),
+  location: varchar('location', { length: 255 }),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// ── POS Shifts (clock in/out per cashier per register) ───────────────────────
+export const posShifts = pgTable('pos_shifts', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  registerId: varchar('register_id', { length: 128 }).notNull(),
+  cashierId: varchar('cashier_id', { length: 128 }).notNull(),
+  status: posShiftStatusEnum('status').notNull().default('OPEN'),
+  openingFloat: numeric('opening_float', { precision: 12, scale: 2 }).notNull().default('0'),
+  closingCash: numeric('closing_cash', { precision: 12, scale: 2 }),
+  expectedCash: numeric('expected_cash', { precision: 12, scale: 2 }),
+  cashVariance: numeric('cash_variance', { precision: 12, scale: 2 }),
+  notes: text('notes'),
+  openedAt: timestamp('opened_at').notNull().defaultNow(),
+  closedAt: timestamp('closed_at'),
+})
+
+// ── POS Held Carts (suspended sales) ─────────────────────────────────────────
+export const posHolds = pgTable('pos_holds', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  shiftId: varchar('shift_id', { length: 128 }).notNull(),
+  cashierId: varchar('cashier_id', { length: 128 }).notNull(),
+  customerId: varchar('customer_id', { length: 128 }),
+  label: varchar('label', { length: 100 }),
+  cart: jsonb('cart').$type<{
+    items: Array<{ productId: string; productName: string; unitPrice: string; quantity: number }>
+    discountAmount?: string
+    discountReason?: string
+    notes?: string
+  }>().notNull(),
+  status: posHoldStatusEnum('status').notNull().default('HELD'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  resolvedAt: timestamp('resolved_at'),
+})
+
+// ── POS Relations ─────────────────────────────────────────────────────────────
+export const posRegistersRelations = relations(posRegisters, ({ many }) => ({
+  shifts: many(posShifts),
+}))
+
+export const posShiftsRelations = relations(posShifts, ({ one, many }) => ({
+  register: one(posRegisters, { fields: [posShifts.registerId], references: [posRegisters.id] }),
+  cashier: one(users, { fields: [posShifts.cashierId], references: [users.id] }),
+  orders: many(orders),
+  holds: many(posHolds),
+}))
+
+export const posHoldsRelations = relations(posHolds, ({ one }) => ({
+  shift: one(posShifts, { fields: [posHolds.shiftId], references: [posShifts.id] }),
+  cashier: one(users, { fields: [posHolds.cashierId], references: [users.id] }),
+  customer: one(customers, { fields: [posHolds.customerId], references: [customers.id] }),
+}))
 

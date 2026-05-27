@@ -5,6 +5,12 @@ declare const envSchema: z.ZodObject<{
     CLERK_WEBHOOK_SECRET: z.ZodOptional<z.ZodString>;
     NODE_ENV: z.ZodDefault<z.ZodEnum<["development", "staging", "production"]>>;
     API_PORT: z.ZodDefault<z.ZodNumber>;
+    WEB_URL: z.ZodOptional<z.ZodString>;
+    STOREFRONT_URL: z.ZodOptional<z.ZodString>;
+    RAILWAY_API_TOKEN: z.ZodOptional<z.ZodString>;
+    RAILWAY_ENVIRONMENT_ID: z.ZodOptional<z.ZodString>;
+    RAILWAY_API_SERVICE_ID: z.ZodOptional<z.ZodString>;
+    RAILWAY_WEB_SERVICE_ID: z.ZodOptional<z.ZodString>;
     GOOGLE_MAPS_API_KEY: z.ZodOptional<z.ZodString>;
     REDIS_URL: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
@@ -13,6 +19,12 @@ declare const envSchema: z.ZodObject<{
     NODE_ENV: "development" | "staging" | "production";
     API_PORT: number;
     CLERK_WEBHOOK_SECRET?: string | undefined;
+    WEB_URL?: string | undefined;
+    STOREFRONT_URL?: string | undefined;
+    RAILWAY_API_TOKEN?: string | undefined;
+    RAILWAY_ENVIRONMENT_ID?: string | undefined;
+    RAILWAY_API_SERVICE_ID?: string | undefined;
+    RAILWAY_WEB_SERVICE_ID?: string | undefined;
     GOOGLE_MAPS_API_KEY?: string | undefined;
     REDIS_URL?: string | undefined;
 }, {
@@ -21,6 +33,12 @@ declare const envSchema: z.ZodObject<{
     CLERK_WEBHOOK_SECRET?: string | undefined;
     NODE_ENV?: "development" | "staging" | "production" | undefined;
     API_PORT?: number | undefined;
+    WEB_URL?: string | undefined;
+    STOREFRONT_URL?: string | undefined;
+    RAILWAY_API_TOKEN?: string | undefined;
+    RAILWAY_ENVIRONMENT_ID?: string | undefined;
+    RAILWAY_API_SERVICE_ID?: string | undefined;
+    RAILWAY_WEB_SERVICE_ID?: string | undefined;
     GOOGLE_MAPS_API_KEY?: string | undefined;
     REDIS_URL?: string | undefined;
 }>;

@@ -70,6 +70,7 @@ trendX/
 │   │   │   │   └── orders/[id]/    # Order confirmation + live status tracker
 │   │   │   └── (dashboard)/        # Clerk-gated (admin/staff)
 │   │   │       ├── dashboard/      # Analytics overview (6 stats, charts, tables)
+│   │   │       ├── pos/            # POS Terminal (in-store sales, shifts, holds)
 │   │   │       └── cms/
 │   │   │           ├── products/   # Product CRUD
 │   │   │           ├── categories/ # Category CRUD
@@ -95,6 +96,7 @@ trendX/
 │           ├── delivery/           # Delivery zones + fee calculation
 │           ├── storefront/         # Public REST (no auth) — Phase 2 React Native ready
 │           ├── health/             # Service health checks + proactive reconnect
+│           ├── pos/                # POS module (orders, shifts, holds, registers)
 │           └── users/              # Admin user management, Clerk webhook sync
 ├── packages/
 │   ├── db/                         # Drizzle ORM schema + migrations
@@ -112,7 +114,7 @@ trendX/
 ## Database Schema
 
 ```
-users           — admin/staff (Clerk-synced), role: OWNER | MANAGER | STAFF | VIEWER
+users           — admin/staff (Clerk-synced), role: OWNER | MANAGER | CONTENT_EDITOR | ORDER_MANAGER | STAFF | CASHIER | VIEWER
 categories      — id, name, slug, parent_id, image_url
 products        — id, name, slug, description, price, compare_price, sku, inventory,
                   category_id, images[], status (ACTIVE | DRAFT | ARCHIVED)
@@ -141,6 +143,7 @@ PENDING → CONFIRMED → PROCESSING → OUT_FOR_DELIVERY → DELIVERED
 | `OWNER` | Full access — all CMS, team management, service quality, settings |
 | `MANAGER` | Dashboard, all CMS modules, service quality — no team management |
 | `STAFF` | Orders, customers, delivery — operational access |
+| `CASHIER` | POS terminal only — in-store sales, shifts, holds |
 | `VIEWER` | Dashboard + read-only views |
 
 ---
@@ -159,6 +162,7 @@ PENDING → CONFIRMED → PROCESSING → OUT_FOR_DELIVERY → DELIVERED
 | Delivery | `/delivery` | ClerkGuard + RolesGuard | Zones + fee calculator |
 | Storefront | `/v1` | **Public** | Guest browse + place order (REST for Phase 2 RN) |
 | Health | `/health` | Public ping / OWNER+MANAGER for services | Service health checks |
+| POS | `/pos` | ClerkGuard + RolesGuard (OWNER/MANAGER/CASHIER) | In-store orders, shifts, holds, registers |
 
 ---
 

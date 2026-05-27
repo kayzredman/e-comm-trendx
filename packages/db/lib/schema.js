@@ -1,16 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.paymentMethodEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
+exports.posHoldsRelations = exports.posShiftsRelations = exports.posRegistersRelations = exports.posHolds = exports.posShifts = exports.posRegisters = exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.posHoldStatusEnum = exports.posShiftStatusEnum = exports.orderSourceEnum = exports.paymentMethodEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 const drizzle_orm_1 = require("drizzle-orm");
 const cuid2_1 = require("@paralleldrive/cuid2");
 // ── Enums ─────────────────────────────────────────────────────────────────────
-exports.userRoleEnum = (0, pg_core_1.pgEnum)('user_role', ['OWNER', 'MANAGER', 'CONTENT_EDITOR', 'ORDER_MANAGER', 'VIEWER', 'STAFF']);
+exports.userRoleEnum = (0, pg_core_1.pgEnum)('user_role', ['OWNER', 'MANAGER', 'CONTENT_EDITOR', 'ORDER_MANAGER', 'VIEWER', 'STAFF', 'CASHIER']);
 exports.productStatusEnum = (0, pg_core_1.pgEnum)('product_status', ['ACTIVE', 'DRAFT', 'ARCHIVED']);
 exports.orderStatusEnum = (0, pg_core_1.pgEnum)('order_status', [
     'PENDING', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',
 ]);
-exports.paymentMethodEnum = (0, pg_core_1.pgEnum)('payment_method', ['CASH_ON_DELIVERY', 'MOBILE_MONEY', 'CARD']);
+exports.paymentMethodEnum = (0, pg_core_1.pgEnum)('payment_method', ['CASH_ON_DELIVERY', 'MOBILE_MONEY', 'CARD', 'CASH']);
+exports.orderSourceEnum = (0, pg_core_1.pgEnum)('order_source', ['ONLINE', 'POS']);
+exports.posShiftStatusEnum = (0, pg_core_1.pgEnum)('pos_shift_status', ['OPEN', 'CLOSED']);
+exports.posHoldStatusEnum = (0, pg_core_1.pgEnum)('pos_hold_status', ['HELD', 'RESUMED', 'VOIDED']);
 exports.feeStrategyEnum = (0, pg_core_1.pgEnum)('fee_strategy', ['FLAT', 'DISTANCE_BASED', 'FREE_THRESHOLD', 'COMBINED']);
 exports.sectionTypeEnum = (0, pg_core_1.pgEnum)('section_type', ['HERO', 'FEATURED', 'BANNER', 'ANNOUNCEMENT']);
 exports.sectionPageEnum = (0, pg_core_1.pgEnum)('section_page', ['HOME']);
@@ -61,13 +64,26 @@ exports.customers = (0, pg_core_1.pgTable)('customers', {
 // ── Orders ────────────────────────────────────────────────────────────────────
 exports.orders = (0, pg_core_1.pgTable)('orders', {
     id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
-    customerId: (0, pg_core_1.varchar)('customer_id', { length: 128 }).notNull(),
+    customerId: (0, pg_core_1.varchar)('customer_id', { length: 128 }),
     status: (0, exports.orderStatusEnum)('status').notNull().default('PENDING'),
+    source: (0, exports.orderSourceEnum)('source').notNull().default('ONLINE'),
     subtotal: (0, pg_core_1.numeric)('subtotal', { precision: 12, scale: 2 }).notNull(),
     deliveryFee: (0, pg_core_1.numeric)('delivery_fee', { precision: 12, scale: 2 }).notNull().default('0'),
+    discountAmount: (0, pg_core_1.numeric)('discount_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+    discountReason: (0, pg_core_1.varchar)('discount_reason', { length: 255 }),
+    taxAmount: (0, pg_core_1.numeric)('tax_amount', { precision: 12, scale: 2 }).notNull().default('0'),
     total: (0, pg_core_1.numeric)('total', { precision: 12, scale: 2 }).notNull(),
     notes: (0, pg_core_1.text)('notes'),
     paymentMethod: (0, exports.paymentMethodEnum)('payment_method').notNull().default('CASH_ON_DELIVERY'),
+    // POS-specific
+    cashierId: (0, pg_core_1.varchar)('cashier_id', { length: 128 }),
+    shiftId: (0, pg_core_1.varchar)('shift_id', { length: 128 }),
+    registerId: (0, pg_core_1.varchar)('register_id', { length: 128 }),
+    tenderedAmount: (0, pg_core_1.numeric)('tendered_amount', { precision: 12, scale: 2 }),
+    changeAmount: (0, pg_core_1.numeric)('change_amount', { precision: 12, scale: 2 }),
+    momoReference: (0, pg_core_1.varchar)('momo_reference', { length: 64 }),
+    cardLast4: (0, pg_core_1.varchar)('card_last4', { length: 4 }),
+    receiptNumber: (0, pg_core_1.varchar)('receipt_number', { length: 32 }),
     createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
     updatedAt: (0, pg_core_1.timestamp)('updated_at').notNull().defaultNow(),
 });
@@ -175,4 +191,53 @@ exports.notificationLog = (0, pg_core_1.pgTable)('notification_log', {
     createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
     sentAt: (0, pg_core_1.timestamp)('sent_at'),
 });
+// ── POS Registers ─────────────────────────────────────────────────────────────
+exports.posRegisters = (0, pg_core_1.pgTable)('pos_registers', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    name: (0, pg_core_1.varchar)('name', { length: 100 }).notNull(),
+    location: (0, pg_core_1.varchar)('location', { length: 255 }),
+    isActive: (0, pg_core_1.boolean)('is_active').notNull().default(true),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+});
+// ── POS Shifts (clock in/out per cashier per register) ───────────────────────
+exports.posShifts = (0, pg_core_1.pgTable)('pos_shifts', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    registerId: (0, pg_core_1.varchar)('register_id', { length: 128 }).notNull(),
+    cashierId: (0, pg_core_1.varchar)('cashier_id', { length: 128 }).notNull(),
+    status: (0, exports.posShiftStatusEnum)('status').notNull().default('OPEN'),
+    openingFloat: (0, pg_core_1.numeric)('opening_float', { precision: 12, scale: 2 }).notNull().default('0'),
+    closingCash: (0, pg_core_1.numeric)('closing_cash', { precision: 12, scale: 2 }),
+    expectedCash: (0, pg_core_1.numeric)('expected_cash', { precision: 12, scale: 2 }),
+    cashVariance: (0, pg_core_1.numeric)('cash_variance', { precision: 12, scale: 2 }),
+    notes: (0, pg_core_1.text)('notes'),
+    openedAt: (0, pg_core_1.timestamp)('opened_at').notNull().defaultNow(),
+    closedAt: (0, pg_core_1.timestamp)('closed_at'),
+});
+// ── POS Held Carts (suspended sales) ─────────────────────────────────────────
+exports.posHolds = (0, pg_core_1.pgTable)('pos_holds', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    shiftId: (0, pg_core_1.varchar)('shift_id', { length: 128 }).notNull(),
+    cashierId: (0, pg_core_1.varchar)('cashier_id', { length: 128 }).notNull(),
+    customerId: (0, pg_core_1.varchar)('customer_id', { length: 128 }),
+    label: (0, pg_core_1.varchar)('label', { length: 100 }),
+    cart: (0, pg_core_1.jsonb)('cart').$type().notNull(),
+    status: (0, exports.posHoldStatusEnum)('status').notNull().default('HELD'),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+    resolvedAt: (0, pg_core_1.timestamp)('resolved_at'),
+});
+// ── POS Relations ─────────────────────────────────────────────────────────────
+exports.posRegistersRelations = (0, drizzle_orm_1.relations)(exports.posRegisters, ({ many }) => ({
+    shifts: many(exports.posShifts),
+}));
+exports.posShiftsRelations = (0, drizzle_orm_1.relations)(exports.posShifts, ({ one, many }) => ({
+    register: one(exports.posRegisters, { fields: [exports.posShifts.registerId], references: [exports.posRegisters.id] }),
+    cashier: one(exports.users, { fields: [exports.posShifts.cashierId], references: [exports.users.id] }),
+    orders: many(exports.orders),
+    holds: many(exports.posHolds),
+}));
+exports.posHoldsRelations = (0, drizzle_orm_1.relations)(exports.posHolds, ({ one }) => ({
+    shift: one(exports.posShifts, { fields: [exports.posHolds.shiftId], references: [exports.posShifts.id] }),
+    cashier: one(exports.users, { fields: [exports.posHolds.cashierId], references: [exports.users.id] }),
+    customer: one(exports.customers, { fields: [exports.posHolds.customerId], references: [exports.customers.id] }),
+}));
 //# sourceMappingURL=schema.js.map
