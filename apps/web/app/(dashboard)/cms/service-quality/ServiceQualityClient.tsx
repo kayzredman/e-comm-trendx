@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef, useMemo, type ReactNode } from 'react'
+import { useAuth } from '@clerk/nextjs'
 import {
   healthApi,
   type HealthReport,
@@ -828,6 +829,17 @@ function SummaryChip({ label, count, total, color, bg }: {
 }
 
 export default function ServiceQualityClient({ initialReport, token, currentRole }: Props) {
+  const { getToken } = useAuth()
+  // Always fetch a fresh Clerk token before each call. The SSR `token` prop is a one-shot
+  // snapshot — Clerk tokens expire (~60s), so reusing it causes 401 on subsequent actions.
+  const freshToken = useCallback(async (): Promise<string> => {
+    try {
+      const t = await getToken()
+      return t ?? token
+    } catch {
+      return token
+    }
+  }, [getToken, token])
   const [report, setReport] = useState<HealthReport | null>(initialReport)
   const [loading, setLoading] = useState(false)
   const [busyAction, setBusyAction] = useState<string | null>(null)
@@ -880,7 +892,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
   const refresh = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await healthApi.services(token)
+      const data = await healthApi.services(await freshToken())
       setReport(data)
       setLastRefresh(new Date())
       setCountdown(30)
@@ -889,7 +901,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
     } finally {
       setLoading(false)
     }
-  }, [token])
+  }, [freshToken])
 
   // Auto-refresh every 30s
   useEffect(() => {
@@ -921,7 +933,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
   const handleReconnectDb = (service: ServiceCheck) =>
     runWithBusy(`${service.name}:reconnect`, async () => {
       try {
-        const res = await healthApi.reconnectDb(token)
+        const res = await healthApi.reconnectDb(await freshToken())
         updateSingleService(res.result)
         pushFeedback({ service: service.name, ok: res.result.status !== 'down',
           message: `Reconnected — ${res.result.message}` })
@@ -933,7 +945,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
   const handleRecheck = (service: ServiceCheck) =>
     runWithBusy(`${service.name}:recheck`, async () => {
       try {
-        const res = await healthApi.recheck(token, service.name)
+        const res = await healthApi.recheck(await freshToken(), service.name)
         updateSingleService(res)
         pushFeedback({ service: service.name, ok: res.status !== 'down', message: `Rechecked — ${res.message}` })
       } catch (err: unknown) {
@@ -944,7 +956,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
   const handleGc = (service: ServiceCheck) =>
     runWithBusy(`${service.name}:gc`, async () => {
       try {
-        const res = await healthApi.gc(token)
+        const res = await healthApi.gc(await freshToken())
         pushFeedback({
           service: service.name,
           ok: res.ran,
@@ -962,7 +974,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
     runWithBusy(`${service.name}:restart`, async () => {
       if (!confirm(`Restart ${service.name}? This will briefly take the service offline.`)) return
       try {
-        const res = await healthApi.restart(token, target)
+        const res = await healthApi.restart(await freshToken(), target)
         pushFeedback({
           service: service.name,
           ok: res.ok,
@@ -980,7 +992,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
     setDiagOpen(true)
     setDiagError(null)
     try {
-      const res = await healthApi.diagnostics(token)
+      const res = await healthApi.diagnostics(await freshToken())
       setDiagnostics(res)
       pushFeedback({
         service: 'Diagnostics',
