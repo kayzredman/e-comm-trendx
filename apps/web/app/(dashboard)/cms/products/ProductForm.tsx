@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
-import { productsApi, imagesApi, uploadToPresignedUrl, type Category, type ProductInput, type ProductImage } from '@/lib/api'
+import { productsApi, imagesApi, variantsApi, uploadToPresignedUrl, type Category, type ProductInput, type ProductImage, type ProductVariant, type ProductVariantInput } from '@/lib/api'
 import { resolveProductImage } from '@/lib/api'
 import { slugify, formatPrice } from '@/lib/utils'
-import { Loader2, ArrowLeft, Package, Tag, Hash, Layers, ImageIcon, CheckCircle2, X, Upload } from 'lucide-react'
+import { Loader2, ArrowLeft, Package, Tag, Hash, Layers, ImageIcon, CheckCircle2, X, Upload, Plus, Trash2, Sparkles, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import ImageUploader from './ImageUploader'
@@ -28,6 +28,7 @@ type Props = {
     categoryId: string | null
     images: string[]
     imageAssets?: ProductImage[]
+    variants?: ProductVariant[]
     status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
   }
 }
@@ -59,6 +60,9 @@ export default function ProductForm({ categories, product }: Props) {
   /** Files queued during create flow — uploaded after the product is created. */
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [uploadStatus, setUploadStatus] = useState<string | null>(null)
+  const [variants, setVariants] = useState<VariantDraft[]>(
+    () => (product?.variants ?? []).map(toDraft),
+  )
 
   function setField(key: keyof typeof form, value: string) {
     setForm(prev => {
@@ -93,6 +97,8 @@ export default function ProductForm({ categories, product }: Props) {
 
       if (isEdit) {
         await productsApi.update(product.id, payload, token)
+        const freshV = (await getToken()) ?? token
+        await variantsApi.replaceAll(product.id, variants.map(fromDraft), freshV)
       } else {
         const created = await productsApi.create(payload, token) as { id: string }
         // Upload any queued images now that we have a product ID
@@ -116,6 +122,12 @@ export default function ProductForm({ categories, product }: Props) {
               console.error('Image upload failed', uploadErr)
             }
           }
+          setUploadStatus(null)
+        }
+        if (variants.length > 0) {
+          setUploadStatus('Saving variants…')
+          const freshV = (await getToken()) ?? token
+          await variantsApi.replaceAll(created.id, variants.map(fromDraft), freshV)
           setUploadStatus(null)
         }
       }
@@ -328,6 +340,17 @@ export default function ProductForm({ categories, product }: Props) {
               </div>
             </SectionCard>
 
+            <SectionCard
+              title="Variants"
+              subtitle={
+                variants.length > 0
+                  ? `${variants.length} variant${variants.length === 1 ? '' : 's'} — variant stock & price override the product-level fields.`
+                  : 'Optional. Add sizes, colours, or any other axis shoppers can pick from.'
+              }
+            >
+              <VariantsEditor variants={variants} onChange={setVariants} basePrice={form.price} />
+            </SectionCard>
+
             <SectionCard title="Images" subtitle="Drag to reorder. First image is the primary shown on cards.">
               {isEdit && product ? (
                 <ImageUploader productId={product.id} />
@@ -407,6 +430,18 @@ export default function ProductForm({ categories, product }: Props) {
                   />
                 </Field>
               </div>
+              {variants.length > 0 && (
+                <div
+                  className="mt-3 flex items-start gap-2 rounded-lg px-3 py-2 text-[11px]"
+                  style={{ background: '#FEF3C7', color: '#92400E' }}
+                >
+                  <AlertCircle size={13} className="mt-0.5 flex-shrink-0" />
+                  <span>
+                    This product has {variants.length} variant{variants.length === 1 ? '' : 's'}. The
+                    stock and price above are ignored — variant rows take over.
+                  </span>
+                </div>
+              )}
             </SectionCard>
           </div>
         </div>
@@ -629,6 +664,386 @@ function PendingTile({ file, onRemove }: { file: File; onRemove: () => void }) {
         title={file.name}
       >
         {file.name}
+      </div>
+    </div>
+  )
+}
+
+/* ── Variants editor ───────────────────────────── */
+
+type VariantDraft = {
+  /** Server-assigned id; undefined for newly-added rows. */
+  id?: string
+  size: string
+  color: string
+  colorHex: string
+  sku: string
+  priceOverride: string
+  inventory: string
+  isActive: boolean
+}
+
+function toDraft(v: ProductVariant): VariantDraft {
+  return {
+    id: v.id,
+    size: v.size ?? '',
+    color: v.color ?? '',
+    colorHex: v.colorHex ?? '',
+    sku: v.sku ?? '',
+    priceOverride: v.priceOverride ?? '',
+    inventory: String(v.inventory ?? 0),
+    isActive: v.isActive,
+  }
+}
+
+function fromDraft(d: VariantDraft, idx: number): ProductVariantInput {
+  return {
+    id: d.id,
+    size: d.size.trim() || null,
+    color: d.color.trim() || null,
+    colorHex: d.colorHex.trim() || null,
+    sku: d.sku.trim() || null,
+    priceOverride: d.priceOverride.trim() ? d.priceOverride.trim() : null,
+    inventory: parseInt(d.inventory, 10) || 0,
+    sortOrder: idx,
+    isActive: d.isActive,
+  }
+}
+
+function emptyDraft(): VariantDraft {
+  return { size: '', color: '', colorHex: '', sku: '', priceOverride: '', inventory: '0', isActive: true }
+}
+
+function VariantsEditor({
+  variants,
+  onChange,
+  basePrice,
+}: {
+  variants: VariantDraft[]
+  onChange: (next: VariantDraft[]) => void
+  basePrice: string
+}) {
+  const [showGenerator, setShowGenerator] = useState(false)
+
+  function update(i: number, patch: Partial<VariantDraft>) {
+    onChange(variants.map((v, idx) => (idx === i ? { ...v, ...patch } : v)))
+  }
+  function remove(i: number) {
+    onChange(variants.filter((_, idx) => idx !== i))
+  }
+  function add() {
+    onChange([...variants, emptyDraft()])
+  }
+
+  if (variants.length === 0 && !showGenerator) {
+    return (
+      <div
+        className="rounded-xl border-2 border-dashed px-5 py-8 text-center"
+        style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface-muted)' }}
+      >
+        <Layers size={28} className="mx-auto mb-2" style={{ color: 'var(--color-text-subtle)' }} />
+        <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+          No variants yet
+        </p>
+        <p className="text-xs mt-1 mb-4" style={{ color: 'var(--color-text-subtle)' }}>
+          Add sizes, colours, or any combination. Skip if this product is sold as a single SKU.
+        </p>
+        <div className="flex gap-2 justify-center flex-wrap">
+          <button
+            type="button"
+            onClick={add}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }}
+          >
+            <Plus size={13} /> Add one variant
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowGenerator(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-white"
+            style={{ background: 'var(--color-primary)' }}
+          >
+            <Sparkles size={13} /> Bulk generate (sizes × colours)
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {showGenerator && (
+        <BulkGenerator
+          onCancel={() => setShowGenerator(false)}
+          onGenerate={(rows) => {
+            onChange([...variants, ...rows])
+            setShowGenerator(false)
+          }}
+        />
+      )}
+
+      {variants.length > 0 && (
+        <div className="overflow-x-auto -mx-5 px-5">
+          <table className="w-full text-sm" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+            <thead>
+              <tr style={{ color: 'var(--color-text-muted)' }}>
+                {['Size', 'Color', 'Hex', 'SKU', `Price (${basePrice ? 'override' : 'GH₵'})`, 'Stock', 'Active', ''].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left text-[10px] font-bold uppercase tracking-wider pb-2 pr-2"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {variants.map((v, i) => (
+                <tr key={v.id ?? `new-${i}`} style={{ borderTop: '1px solid var(--color-border)' }}>
+                  <td className="py-2 pr-2">
+                    <input
+                      value={v.size}
+                      onChange={(e) => update(i, { size: e.target.value })}
+                      placeholder="M"
+                      className="w-20 rounded-md border px-2 py-1.5 text-sm"
+                      style={{ borderColor: 'var(--color-border)' }}
+                    />
+                  </td>
+                  <td className="py-2 pr-2">
+                    <input
+                      value={v.color}
+                      onChange={(e) => update(i, { color: e.target.value })}
+                      placeholder="Black"
+                      className="w-28 rounded-md border px-2 py-1.5 text-sm"
+                      style={{ borderColor: 'var(--color-border)' }}
+                    />
+                  </td>
+                  <td className="py-2 pr-2">
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="color"
+                        value={v.colorHex || '#000000'}
+                        onChange={(e) => update(i, { colorHex: e.target.value })}
+                        className="w-8 h-8 rounded-md border cursor-pointer"
+                        style={{ borderColor: 'var(--color-border)', padding: 0 }}
+                        title="Swatch colour"
+                      />
+                      <input
+                        value={v.colorHex}
+                        onChange={(e) => update(i, { colorHex: e.target.value })}
+                        placeholder="#000000"
+                        className="w-24 rounded-md border px-2 py-1.5 text-xs font-mono"
+                        style={{ borderColor: 'var(--color-border)' }}
+                      />
+                    </div>
+                  </td>
+                  <td className="py-2 pr-2">
+                    <input
+                      value={v.sku}
+                      onChange={(e) => update(i, { sku: e.target.value })}
+                      placeholder="auto"
+                      className="w-32 rounded-md border px-2 py-1.5 text-sm font-mono"
+                      style={{ borderColor: 'var(--color-border)' }}
+                    />
+                  </td>
+                  <td className="py-2 pr-2">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={v.priceOverride}
+                      onChange={(e) => update(i, { priceOverride: e.target.value })}
+                      placeholder={basePrice || '—'}
+                      className="w-24 rounded-md border px-2 py-1.5 text-sm"
+                      style={{ borderColor: 'var(--color-border)' }}
+                    />
+                  </td>
+                  <td className="py-2 pr-2">
+                    <input
+                      type="number"
+                      min="0"
+                      value={v.inventory}
+                      onChange={(e) => update(i, { inventory: e.target.value })}
+                      className="w-20 rounded-md border px-2 py-1.5 text-sm"
+                      style={{ borderColor: 'var(--color-border)' }}
+                    />
+                  </td>
+                  <td className="py-2 pr-2">
+                    <button
+                      type="button"
+                      onClick={() => update(i, { isActive: !v.isActive })}
+                      className="relative w-10 h-6 rounded-full transition-colors"
+                      style={{ background: v.isActive ? 'var(--color-primary)' : '#CBD5E1' }}
+                      title={v.isActive ? 'Active' : 'Disabled'}
+                    >
+                      <span
+                        className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all"
+                        style={{ left: v.isActive ? '18px' : '2px' }}
+                      />
+                    </button>
+                  </td>
+                  <td className="py-2">
+                    <button
+                      type="button"
+                      onClick={() => remove(i)}
+                      className="p-1.5 rounded-md hover:bg-red-50 transition-colors"
+                      style={{ color: 'var(--color-error)' }}
+                      title="Remove"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="flex gap-2 mt-4 flex-wrap">
+        <button
+          type="button"
+          onClick={add}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border"
+          style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }}
+        >
+          <Plus size={13} /> Add variant
+        </button>
+        {!showGenerator && (
+          <button
+            type="button"
+            onClick={() => setShowGenerator(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border"
+            style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text)' }}
+          >
+            <Sparkles size={13} /> Bulk add
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function BulkGenerator({
+  onCancel,
+  onGenerate,
+}: {
+  onCancel: () => void
+  onGenerate: (rows: VariantDraft[]) => void
+}) {
+  const [sizes, setSizes] = useState('S, M, L, XL')
+  const [colors, setColors] = useState('Black:#111111, White:#FFFFFF')
+  const [inventory, setInventory] = useState('0')
+
+  function parseColors(raw: string): Array<{ name: string; hex: string }> {
+    return raw
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .map((c) => {
+        const [name, hex] = c.split(':').map((s) => s.trim())
+        return { name: name ?? '', hex: hex ?? '' }
+      })
+  }
+  function parseSizes(raw: string): string[] {
+    return raw.split(',').map((s) => s.trim()).filter(Boolean)
+  }
+
+  const sizeList = parseSizes(sizes)
+  const colorList = parseColors(colors)
+  const count = Math.max(sizeList.length, 1) * Math.max(colorList.length, 1)
+
+  function generate() {
+    const rows: VariantDraft[] = []
+    const sList = sizeList.length ? sizeList : ['']
+    const cList = colorList.length ? colorList : [{ name: '', hex: '' }]
+    for (const c of cList) {
+      for (const s of sList) {
+        rows.push({
+          size: s,
+          color: c.name,
+          colorHex: c.hex,
+          sku: '',
+          priceOverride: '',
+          inventory: inventory || '0',
+          isActive: true,
+        })
+      }
+    }
+    onGenerate(rows)
+  }
+
+  return (
+    <div
+      className="rounded-xl border p-4 mb-4"
+      style={{ background: 'var(--color-surface-muted)', borderColor: 'var(--color-border)' }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
+          <Sparkles size={14} className="inline mr-1.5" style={{ color: 'var(--color-primary)' }} />
+          Bulk generate variants
+        </p>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="p-1 rounded-md hover:bg-white"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          <X size={14} />
+        </button>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <label className="block">
+          <span className="block text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>
+            Sizes (comma-separated)
+          </span>
+          <input
+            value={sizes}
+            onChange={(e) => setSizes(e.target.value)}
+            className="w-full rounded-md border px-2 py-1.5 text-sm"
+            style={{ borderColor: 'var(--color-border)' }}
+            placeholder="S, M, L, XL"
+          />
+        </label>
+        <label className="block">
+          <span className="block text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>
+            Colours (Name:#hex, …)
+          </span>
+          <input
+            value={colors}
+            onChange={(e) => setColors(e.target.value)}
+            className="w-full rounded-md border px-2 py-1.5 text-sm"
+            style={{ borderColor: 'var(--color-border)' }}
+            placeholder="Black:#111, White:#fff"
+          />
+        </label>
+        <label className="block">
+          <span className="block text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-muted)' }}>
+            Stock per row
+          </span>
+          <input
+            type="number"
+            min="0"
+            value={inventory}
+            onChange={(e) => setInventory(e.target.value)}
+            className="w-full rounded-md border px-2 py-1.5 text-sm"
+            style={{ borderColor: 'var(--color-border)' }}
+          />
+        </label>
+      </div>
+      <div className="flex items-center justify-between mt-3">
+        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+          Will create <strong>{count}</strong> variant{count === 1 ? '' : 's'}.
+        </p>
+        <button
+          type="button"
+          onClick={generate}
+          disabled={count === 0}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50"
+          style={{ background: 'var(--color-primary)' }}
+        >
+          Generate
+        </button>
       </div>
     </div>
   )

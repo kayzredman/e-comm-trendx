@@ -63,6 +63,8 @@ export type Product = {
   images: string[]
   /** Structured image data, ordered by sortOrder. Empty array if none. */
   imageAssets?: ProductImage[]
+  /** Purchasable SKU variants. Empty array means this product is sold as a single SKU. */
+  variants?: ProductVariant[]
   status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
   createdAt: string
   updatedAt: string
@@ -95,6 +97,55 @@ export const productsApi = {
     apiFetch(`/products/${id}`, { method: 'PATCH', body: JSON.stringify(data), token }),
   delete: (id: string, token: string) =>
     apiFetch(`/products/${id}`, { method: 'DELETE', token }),
+}
+
+// ─── Product variants ────────────────────────────────────────────────────────
+
+export type ProductVariant = {
+  id: string
+  productId: string
+  size: string | null
+  color: string | null
+  colorHex: string | null
+  attributes: Record<string, string>
+  sku: string | null
+  priceOverride: string | null
+  inventory: number
+  sortOrder: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type ProductVariantInput = {
+  id?: string
+  size?: string | null
+  color?: string | null
+  colorHex?: string | null
+  attributes?: Record<string, string>
+  sku?: string | null
+  priceOverride?: string | null
+  inventory?: number
+  sortOrder?: number
+  isActive?: boolean
+}
+
+export const variantsApi = {
+  list: (productId: string): Promise<ProductVariant[]> =>
+    apiFetch(`/products/${productId}/variants`),
+  replaceAll: (productId: string, variants: ProductVariantInput[], token: string): Promise<ProductVariant[]> =>
+    apiFetch(`/products/${productId}/variants`, {
+      method: 'PUT',
+      body: JSON.stringify({ variants }),
+      token,
+      timeoutMs: 30000,
+    }),
+  create: (productId: string, data: ProductVariantInput, token: string): Promise<ProductVariant> =>
+    apiFetch(`/products/${productId}/variants`, { method: 'POST', body: JSON.stringify(data), token }),
+  update: (productId: string, variantId: string, data: ProductVariantInput, token: string): Promise<ProductVariant> =>
+    apiFetch(`/products/${productId}/variants/${variantId}`, { method: 'PATCH', body: JSON.stringify(data), token }),
+  delete: (productId: string, variantId: string, token: string) =>
+    apiFetch(`/products/${productId}/variants/${variantId}`, { method: 'DELETE', token }),
 }
 
 // ─── Product images ───────────────────────────────────────────────────────────
