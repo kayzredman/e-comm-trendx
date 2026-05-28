@@ -7,6 +7,7 @@ import { productsApi, type Category, type ProductInput } from '@/lib/api'
 import { slugify } from '@/lib/utils'
 import { Loader2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import ImageUploader from './ImageUploader'
 
 type Props = {
   categories: Category[]
@@ -75,7 +76,9 @@ export default function ProductForm({ categories, product }: Props) {
         sku: form.sku || undefined,
         inventory: parseInt(form.inventory, 10) || 0,
         categoryId: form.categoryId || undefined,
-        images: form.images ? form.images.split(',').map(s => s.trim()).filter(Boolean) : [],
+        // Images are managed via the ImageUploader → product_images table.
+        // We intentionally don't touch the legacy products.images[] column here
+        // so existing URL strings are preserved until the migration script runs.
         status: form.status,
       }
 
@@ -257,23 +260,12 @@ export default function ProductForm({ categories, product }: Props) {
         {/* Images */}
         <div className="rounded-xl border p-5" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
           <h2 className="font-semibold mb-4 text-sm uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>Images</h2>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text)' }}>
-            Image URLs <span className="font-normal" style={{ color: 'var(--color-text-subtle)' }}>(comma-separated)</span>
-          </label>
-          <textarea
-            rows={2}
-            value={form.images}
-            onChange={e => setForm(f => ({ ...f, images: e.target.value }))}
-            placeholder="https://cdn.example.com/img1.jpg, https://..."
-            className={inputCls}
-            style={{ borderColor: 'var(--color-border)', resize: 'vertical' }}
-          />
-          {form.images && (
-            <div className="flex gap-2 mt-3 flex-wrap">
-              {form.images.split(',').map(u => u.trim()).filter(Boolean).map((url, i) => (
-                <img key={i} src={url} alt="" className="w-16 h-16 rounded-lg object-cover border" style={{ borderColor: 'var(--color-border)' }} />
-              ))}
-            </div>
+          {isEdit && product ? (
+            <ImageUploader productId={product.id} />
+          ) : (
+            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              Save the product first, then upload images on the edit screen.
+            </p>
           )}
         </div>
 

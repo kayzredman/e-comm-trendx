@@ -14,10 +14,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let product: Product | null = null
   try { product = await productsApi.getBySlug(slug) } catch {}
   if (!product) return { title: 'Product not found' }
+  const ogImage =
+    product.imageAssets?.find((a) => a.isPrimary)?.urls.detail ??
+    product.imageAssets?.[0]?.urls.detail ??
+    product.images?.[0]
   return {
     title: `${product.name} — trendMarga`,
     description: product.description ?? `Buy ${product.name} on trendMarga`,
-    openGraph: { images: product.images?.[0] ? [product.images[0]] : [] },
+    openGraph: { images: ogImage ? [ogImage] : [] },
   }
 }
 
@@ -59,7 +63,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
         {/* Gallery — client component for thumbnail click */}
-        <ProductGallery images={product.images ?? []} name={product.name} />
+        <ProductGallery product={product} />
 
         {/* Info */}
         <div>

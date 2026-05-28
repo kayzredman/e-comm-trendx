@@ -29,6 +29,13 @@
       "when": 1779902777499,
       "tag": "0003_pos_feature",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779979273524,
+      "tag": "0004_product_images",
+      "breakpoints": true
     }
   ]
 }

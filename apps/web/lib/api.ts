@@ -2,16 +2,16 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4001'
 
 async function apiFetch<T = unknown>(
   path: string,
-  opts?: RequestInit & { token?: string | null },
+  opts?: RequestInit & { token?: string | null; timeoutMs?: number },
 ): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (opts?.token) headers['Authorization'] = `Bearer ${opts.token}`
 
-  const { token: _token, ...rest } = opts ?? {}
+  const { token: _token, timeoutMs, ...rest } = opts ?? {}
   const res = await fetch(`${API}${path}`, {
     ...rest,
     headers,
-    signal: rest.signal ?? AbortSignal.timeout(8000),
+    signal: rest.signal ?? AbortSignal.timeout(timeoutMs ?? 8000),
   })
 
   if (!res.ok) {
@@ -59,7 +59,10 @@ export type Product = {
   sku: string | null
   inventory: number
   categoryId: string | null
+  /** Legacy URL list (still populated for back-compat). Use imageAssets for new code. */
   images: string[]
+  /** Structured image data, ordered by sortOrder. Empty array if none. */
+  imageAssets?: ProductImage[]
   status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED'
   createdAt: string
   updatedAt: string
@@ -92,6 +95,130 @@ export const productsApi = {
     apiFetch(`/products/${id}`, { method: 'PATCH', body: JSON.stringify(data), token }),
   delete: (id: string, token: string) =>
     apiFetch(`/products/${id}`, { method: 'DELETE', token }),
+}
+
+// ─── Product images ───────────────────────────────────────────────────────────
+
+export type ImageVariantName = 'thumb' | 'grid' | 'detail' | 'zoom' | 'original'
+
+export type ProductImage = {
+  id: string
+  productId: string
+  source: 'upload' | 'external'
+  alt: string | null
+  width: number | null
+  height: number | null
+  sortOrder: number
+  isPrimary: boolean
+  blurDataUrl: string | null
+  url: string | null
+  urls: Record<ImageVariantName, string | null>
+}
+
+export type PresignResponse = {
+  uploadUrl: string
+  key: string
+  headers: Record<string, string>
+  driver: 'r2' | 'local'
+  maxBytes: number
+}
+
+export const imagesApi = {
+  list: (productId: string): Promise<ProductImage[]> =>
+    apiFetch(`/images?productId=${encodeURIComponent(productId)}`),
+  presign: (
+    body: { productId: string; contentType: string; size: number },
+    token: string,
+  ): Promise<PresignResponse> =>
+    apiFetch('/images/presign', { method: 'POST', body: JSON.stringify(body), token }),
+  finalize: (
+    body: { productId: string; tempKey: string; alt?: string; isPrimary?: boolean },
+    token: string,
+  ): Promise<ProductImage> =>
+    apiFetch('/images/finalize', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      token,
+      timeoutMs: 60000,
+    }),
+  addExternal: (
+    body: { productId: string; url: string; alt?: string },
+    token: string,
+  ): Promise<ProductImage> =>
+    apiFetch('/images/external', { method: 'POST', body: JSON.stringify(body), token }),
+  patch: (
+    id: string,
+    body: { alt?: string; sortOrder?: number; isPrimary?: boolean },
+    token: string,
+  ): Promise<ProductImage> =>
+    apiFetch(`/images/${id}`, { method: 'PATCH', body: JSON.stringify(body), token }),
+  reorder: (
+    body: { productId: string; ids: string[] },
+    token: string,
+  ): Promise<ProductImage[]> =>
+    apiFetch('/images/reorder', { method: 'POST', body: JSON.stringify(body), token }),
+  delete: (id: string, token: string) =>
+    apiFetch(`/images/${id}`, { method: 'DELETE', token }),
+}
+
+/**
+ * Direct binary upload to the presigned URL.
+ * Uses XHR so we get upload progress events.
+ */
+export function uploadToPresignedUrl(
+  presigned: PresignResponse,
+  file: File,
+  onProgress?: (pct: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('PUT', presigned.uploadUrl, true)
+    for (const [k, v] of Object.entries(presigned.headers)) xhr.setRequestHeader(k, v)
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100))
+    }
+    xhr.onerror = () => reject(new Error('Network error during upload'))
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve()
+      else reject(new Error(`Upload failed: HTTP ${xhr.status} ${xhr.responseText.slice(0, 200)}`))
+    }
+    xhr.send(file)
+  })
+}
+
+/**
+ * Resolve the best image URL for a product at a given variant.
+ *
+ * Strategy:
+ *   1. If the product has structured `imageAssets`, pick the primary (or
+ *      first by sortOrder) and return the requested variant URL.
+ *   2. Otherwise fall back to the legacy `images[0]` URL.
+ *   3. Returns null if the product has no images.
+ *
+ * Also returns the blur placeholder + dimensions (when known) so callers can
+ * pass them to next/image.
+ */
+export function resolveProductImage(
+  product: Pick<Product, 'images' | 'imageAssets' | 'name'>,
+  variant: ImageVariantName = 'grid',
+): { url: string; alt: string; blurDataUrl?: string; width?: number; height?: number } | null {
+  const assets = product.imageAssets ?? []
+  if (assets.length > 0) {
+    const primary = assets.find((a) => a.isPrimary) ?? assets[0]
+    const url = primary.urls[variant] ?? primary.urls.detail ?? primary.url
+    if (url) {
+      return {
+        url,
+        alt: primary.alt ?? product.name,
+        blurDataUrl: primary.blurDataUrl ?? undefined,
+        width: primary.width ?? undefined,
+        height: primary.height ?? undefined,
+      }
+    }
+  }
+  const legacy = product.images?.[0]
+  if (legacy) return { url: legacy, alt: product.name }
+  return null
 }
 
 // ─── Orders ───────────────────────────────────────────────────────────────────

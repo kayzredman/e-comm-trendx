@@ -1,11 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Heart, ShoppingCart, Eye } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
-import type { Product } from '@/lib/api'
+import { resolveProductImage, type Product } from '@/lib/api'
 import AddToCartButton from './AddToCartButton'
 import { publicFeatures } from '@trendmarga/config'
 
@@ -40,17 +41,29 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* Image area */}
       <div className="relative overflow-hidden" style={{ background: 'var(--color-surface-muted)', aspectRatio: '1' }}>
         <Link href={`/products/${product.slug}`}>
-          {product.images?.[0] ? (
-            <motion.img
-              src={product.images[0]}
-              alt={product.name}
-              className="w-full h-full object-cover"
-              animate={{ scale: hovered ? 1.07 : 1 }}
-              transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] as const }}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
-          )}
+          {(() => {
+            const img = resolveProductImage(product, 'grid')
+            if (!img) {
+              return <div className="w-full h-full flex items-center justify-center text-5xl">📦</div>
+            }
+            return (
+              <motion.div
+                className="w-full h-full relative"
+                animate={{ scale: hovered ? 1.07 : 1 }}
+                transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] as const }}
+              >
+                <Image
+                  src={img.url}
+                  alt={img.alt}
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  placeholder={img.blurDataUrl ? 'blur' : 'empty'}
+                  blurDataURL={img.blurDataUrl}
+                  className="object-cover"
+                />
+              </motion.div>
+            )
+          })()}
         </Link>
 
         {/* Badges */}

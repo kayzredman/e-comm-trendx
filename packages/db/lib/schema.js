@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.posHoldsRelations = exports.posShiftsRelations = exports.posRegistersRelations = exports.posHolds = exports.posShifts = exports.posRegisters = exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.posHoldStatusEnum = exports.posShiftStatusEnum = exports.orderSourceEnum = exports.paymentMethodEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
+exports.productImagesRelations = exports.productImages = exports.imageSourceEnum = exports.posHoldsRelations = exports.posShiftsRelations = exports.posRegistersRelations = exports.posHolds = exports.posShifts = exports.posRegisters = exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.posHoldStatusEnum = exports.posShiftStatusEnum = exports.orderSourceEnum = exports.paymentMethodEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 const drizzle_orm_1 = require("drizzle-orm");
 const cuid2_1 = require("@paralleldrive/cuid2");
@@ -130,6 +130,7 @@ exports.categoriesRelations = (0, drizzle_orm_1.relations)(exports.categories, (
 exports.productsRelations = (0, drizzle_orm_1.relations)(exports.products, ({ one, many }) => ({
     category: one(exports.categories, { fields: [exports.products.categoryId], references: [exports.categories.id] }),
     orderItems: many(exports.orderItems),
+    imageAssets: many(exports.productImages),
 }));
 exports.ordersRelations = (0, drizzle_orm_1.relations)(exports.orders, ({ one, many }) => ({
     customer: one(exports.customers, { fields: [exports.orders.customerId], references: [exports.customers.id] }),
@@ -239,5 +240,33 @@ exports.posHoldsRelations = (0, drizzle_orm_1.relations)(exports.posHolds, ({ on
     shift: one(exports.posShifts, { fields: [exports.posHolds.shiftId], references: [exports.posShifts.id] }),
     cashier: one(exports.users, { fields: [exports.posHolds.cashierId], references: [exports.users.id] }),
     customer: one(exports.customers, { fields: [exports.posHolds.customerId], references: [exports.customers.id] }),
+}));
+// ── Product images (FEATURE_IMAGE_UPLOAD) ────────────────────────────────────
+// Per-image metadata for uploaded product photos. URL-only images (legacy
+// products.images[] strings, or merchant-pasted external URLs) live as
+// rows with source='external' and storageKey=NULL.
+exports.imageSourceEnum = (0, pg_core_1.pgEnum)('image_source', ['upload', 'external']);
+exports.productImages = (0, pg_core_1.pgTable)('product_images', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    productId: (0, pg_core_1.varchar)('product_id', { length: 128 }).notNull(),
+    source: (0, exports.imageSourceEnum)('source').notNull().default('upload'),
+    /** R2/local object key (e.g. "products/abc/9f3.../original.jpg"). NULL for source='external'. */
+    storageKey: (0, pg_core_1.text)('storage_key'),
+    /** For external images: the raw URL. For uploads: NULL (URL is computed from storageKey + variant). */
+    externalUrl: (0, pg_core_1.text)('external_url'),
+    /** Original file metadata. */
+    width: (0, pg_core_1.integer)('width'),
+    height: (0, pg_core_1.integer)('height'),
+    format: (0, pg_core_1.varchar)('format', { length: 16 }),
+    byteSize: (0, pg_core_1.integer)('byte_size'),
+    /** Tiny base64 placeholder for next/image blur, e.g. "data:image/webp;base64,...". */
+    blurDataUrl: (0, pg_core_1.text)('blur_data_url'),
+    alt: (0, pg_core_1.varchar)('alt', { length: 255 }),
+    sortOrder: (0, pg_core_1.integer)('sort_order').notNull().default(0),
+    isPrimary: (0, pg_core_1.boolean)('is_primary').notNull().default(false),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+});
+exports.productImagesRelations = (0, drizzle_orm_1.relations)(exports.productImages, ({ one }) => ({
+    product: one(exports.products, { fields: [exports.productImages.productId], references: [exports.products.id] }),
 }));
 //# sourceMappingURL=schema.js.map
