@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <rect width="100" height="100" rx="22" fill="#0A0A0B"/>
+  <!-- bold flat-bottom t: viewBox 0 0 44 92, placed at left -->
+  <g transform="translate(18 19) scale(0.59)">
+    <path d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z" fill="#FFFFFF"/>
+  </g>
+  <!-- bold capital M in cobalt -->
+  <text x="56" y="71" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="58" letter-spacing="-4" fill="#1E40AF" text-anchor="middle">M</text>
+  <!-- pulse dot -->
+  <circle cx="84" cy="22" r="7" fill="#10B981"/>
+</svg>

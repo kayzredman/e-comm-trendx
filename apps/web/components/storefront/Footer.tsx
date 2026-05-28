@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Logo } from '@/components/brand/Logo'
 
 export default function StorefrontFooter() {
   return (
@@ -6,7 +7,9 @@ export default function StorefrontFooter() {
       <div className="max-w-6xl mx-auto px-4 py-12 grid gap-8 sm:grid-cols-4">
         {/* Brand */}
         <div className="sm:col-span-1">
-          <p className="font-extrabold text-xl mb-3 grad-text">TrendMarga</p>
+          <div className="mb-3">
+            <Logo variant="wordmark" tone="light" size={22} />
+          </div>
           <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
             Shop the latest trends — fast delivery across Ghana.
           </p>
@@ -75,7 +78,7 @@ export default function StorefrontFooter() {
         className="border-t py-4 text-center text-xs"
         style={{ borderColor: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.25)' }}
       >
-        © {new Date().getFullYear()} TrendMarga. All rights reserved.
+        © {new Date().getFullYear()} trendMarga. All rights reserved.
       </div>
     </footer>
   )

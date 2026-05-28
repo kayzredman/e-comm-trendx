@@ -101,6 +101,7 @@ One interface manages everything: products, categories, orders, customers, site 
 
 ## Design
 
+- **Brand system (May 2026)**: `trendMarga` wordmark — lowercase camelCase, custom flat-bottom `t` SVG + bold `M` pivot + emerald pulse. Cobalt `#1E40AF` (`trendM`) + Ash `#9CA3AF` (`arga`) + Emerald `#10B981` (pulse) on Ink `#0A0A0B`. Display font: Clash Display via Fontshare. Implemented as `apps/web/components/brand/Logo.tsx` (`<Logo />`, `<LogoMark />`) with full favicon set in `apps/web/public/`.
 - Tailwind CSS + ShadCN/UI
 - Tremor charts for dashboard analytics
 - Mobile-first, fully responsive storefront (PWA-ready)

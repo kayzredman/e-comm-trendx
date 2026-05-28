@@ -13,7 +13,7 @@ import PosTerminal from './PosTerminal'
 const POS_ROLES: UserRole[] = ['OWNER', 'MANAGER', 'CASHIER']
 
 export const metadata = {
-  title: 'POS Terminal · TrendX',
+  title: 'POS Terminal · trendMarga',
 }
 
 export default async function PosPage() {

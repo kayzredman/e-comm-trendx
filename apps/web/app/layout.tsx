@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from '@clerk/nextjs'
 import "./globals.css";
@@ -10,22 +10,31 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "TrendMarga",
+  title: "trendMarga",
   description: "Shop the latest trends — fast delivery across Ghana",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    title: "TrendMarga",
-    statusBarStyle: "default",
+    title: "trendMarga",
+    statusBarStyle: "black-translucent",
   },
   openGraph: {
-    title: "TrendMarga",
+    title: "trendMarga",
     description: "Shop the latest trends — fast delivery across Ghana",
     type: "website",
   },
   icons: {
-    apple: "/icons/icon-192.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.svg", sizes: "180x180", type: "image/svg+xml" },
+    ],
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0A0A0B",
 };
 
 export default function RootLayout({
@@ -37,8 +46,14 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className={`${inter.variable} h-full`}>
         <head>
-          <meta name="theme-color" content="#1A1A2E" />
+          {/* Clash Display — brand display font (Fontshare CDN) */}
+          <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="" />
+          <link
+            rel="stylesheet"
+            href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap"
+          />
           <meta name="mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         </head>
         <body className="min-h-full flex flex-col" suppressHydrationWarning>{children}</body>
       </html>

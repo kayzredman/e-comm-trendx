@@ -15,8 +15,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try { product = await productsApi.getBySlug(slug) } catch {}
   if (!product) return { title: 'Product not found' }
   return {
-    title: `${product.name} — TrendMarga`,
-    description: product.description ?? `Buy ${product.name} on TrendMarga`,
+    title: `${product.name} — trendMarga`,
+    description: product.description ?? `Buy ${product.name} on trendMarga`,
     openGraph: { images: product.images?.[0] ? [product.images[0]] : [] },
   }
 }

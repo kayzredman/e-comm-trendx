@@ -1,6 +1,28 @@
-# TrendMarga
+# trendMarga
 
 Single-tenant B2C e-commerce platform built for the Ghanaian market. Mobile-first storefront, unified CMS back-office, analytics dashboard, and real-time service health monitoring. Built to scale into Phase 2 with payments, POS, courier tracking, and a React Native mobile app.
+
+---
+
+## Brand System (May 2026)
+
+**Wordmark**: `trendMarga` — lowercase camelCase with custom flat-bottom `t` glyph + emphasized capital `M` pivot + animated emerald pulse dot.
+
+| Token              | Hex        | Usage                              |
+|--------------------|------------|------------------------------------|
+| Cobalt (primary)   | `#1E40AF`  | `trendM` portion of wordmark, brand surfaces |
+| Cobalt-light (dark)| `#60A5FA`  | Wordmark on dark backgrounds       |
+| Ash                | `#9CA3AF`  | `arga` portion of wordmark         |
+| Ink                | `#0A0A0B`  | Favicon tile, `theme-color`, app shell |
+| Pulse (emerald)    | `#10B981`  | Pulse dot only — do not reuse for UI |
+
+**Font**: [Clash Display](https://www.fontshare.com/fonts/clash-display) weights 500/600/700 via Fontshare CDN (loaded in `apps/web/app/layout.tsx`). Inter remains the body font.
+
+**Component**: `apps/web/components/brand/Logo.tsx` — `<Logo variant="wordmark|mark|letter" tone="auto|light|dark|mono" withPulse?>` and `<LogoMark />` for the favicon tile. Always use the component — never typeset "trendMarga" by hand.
+
+**Favicon set**: `apps/web/public/{favicon.svg,apple-touch-icon.svg,icons/icon-{192,512}.svg}` — ink tile + bold flat-bottom `t` + cobalt `M` + emerald dot (dot drops below 24px).
+
+**Scope**: brand surfaces only. The `@trendmarga/*` workspace package names and `trendmarga.com` domain are intentionally preserved. Hubtel SMS `HUBTEL_SENDER_ID` also kept (pre-registered with Ghana telcos).
 
 ---
 
@@ -25,6 +47,7 @@ Single-tenant B2C e-commerce platform built for the Ghanaian market. Mobile-firs
 | [Recharts](https://recharts.org) | 3.8.x | Dashboard charts (line, pie/donut) |
 | [Lucide React](https://lucide.dev) | 0.469.x | Icon library |
 | [Zustand](https://zustand-demo.pmnd.rs) | 5.x | Cart state (persisted to localStorage) |
+| [Clash Display](https://www.fontshare.com/fonts/clash-display) | Fontshare CDN | Brand display font (wordmark + favicon) |
 
 ### Backend — `apps/api`
 

@@ -2,7 +2,7 @@ import { Truck, Clock, MapPin, Package, CheckCircle, Phone } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Delivery Info — TrendMarga',
+  title: 'Delivery Info — trendMarga',
   description: 'Learn about our delivery options, zones, and timeframes',
 }
 

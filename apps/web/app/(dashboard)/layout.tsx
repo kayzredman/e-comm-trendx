@@ -4,7 +4,7 @@ import Sidebar from '@/components/cms/Sidebar'
 import { usersApi, type UserRole } from '@/lib/api'
 
 export const metadata: Metadata = {
-  title: 'TrendMarga Dashboard',
+  title: 'trendMarga Dashboard',
 }
 
 export default async function DashboardLayout({

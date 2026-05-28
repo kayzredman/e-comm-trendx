@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>trendMarga — v5 · trendM blue + arga ash</title>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=satoshi@400,500,700&f[]=space-grotesk@500,700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0A0A0B;
+    --ash:#9CA3AF;
+    --ash-2:#D1D5DB;
+    --ash-3:#F3F4F6;
+    --line:#E5E7EB;
+    --bg:#FAFAFA;
+    --card:#FFFFFF;
+    /* Default blue */
+    --blue:#2563EB;
+    --blue-soft:rgba(37,99,235,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Satoshi',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .page{max-width:1280px;margin:0 auto;padding:56px 32px 120px}
+  h1{font-family:'Clash Display';font-weight:600;font-size:38px;letter-spacing:-.025em;margin:0 0 6px}
+  .lede{color:#6B7280;font-size:15px;line-height:1.6;max-width:680px;margin:0 0 8px}
+  h2{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#6B7280;margin:64px 0 20px;display:flex;align-items:center;gap:12px}
+  h2::before{content:"";display:inline-block;width:8px;height:8px;background:var(--ink);border-radius:50%}
+
+  /* ============ WORDMARK ============ */
+  .mark{display:inline-flex;align-items:flex-end;gap:0;font-family:'Clash Display';font-weight:600;letter-spacing:-.035em;line-height:1}
+  .mark .rest{font-family:'Clash Display';font-weight:600;line-height:1}
+  .mark .blue-half{color:var(--blue)}
+  .mark .M{font-weight:700;color:var(--blue)}
+  .mark .ash-half{color:var(--ash)}
+  .mark .pulse{display:inline-block;width:.18em;height:.18em;border-radius:50%;margin-left:.14em;margin-bottom:.06em;align-self:flex-end;background:var(--pulse,#10B981);box-shadow:0 0 0 0 var(--pulse-soft,rgba(16,185,129,.5));animation:pulse 2.2s ease-in-out infinite}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 var(--pulse-soft,rgba(16,185,129,.5))}
+    70%{box-shadow:0 0 0 .6em transparent}
+    100%{box-shadow:0 0 0 0 transparent}
+  }
+  .glyph-t{display:inline-block;height:.92em;width:.42em;margin-right:-.02em;vertical-align:baseline;position:relative;top:.04em}
+  .glyph-t svg{display:block;height:100%;width:100%;overflow:visible}
+  .glyph-t .stroke{fill:currentColor}
+
+  /* ============ HERO ============ */
+  .hero{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:80px 48px;display:flex;align-items:center;justify-content:center;font-size:96px}
+  .hero.dark{background:var(--ink);color:#fff}
+
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+  .stage{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:56px 32px;display:flex;align-items:center;justify-content:center;font-size:56px;min-height:180px}
+  .stage.dark{background:var(--ink);color:#fff}
+  .stage.ash{background:var(--ash-3)}
+  .stage .label{position:absolute;top:14px;left:18px;font-family:'Satoshi';font-weight:600;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#9CA3AF}
+  .stage.relative{position:relative}
+
+  /* ============ BLUE PICKER ============ */
+  .blue-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .blue-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;cursor:pointer;transition:transform .15s,border-color .15s}
+  .blue-card:hover{transform:translateY(-2px);border-color:var(--ink)}
+  .blue-card .swatch{width:100%;height:48px;border-radius:10px}
+  .blue-card .demo{font-size:34px;line-height:1}
+  .blue-card .meta{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .blue-card .meta .name{font-family:'Clash Display';font-weight:600;font-size:14px}
+  .blue-card .meta .hex{font-family:'Satoshi';font-size:11px;color:#9CA3AF;font-weight:500}
+  .blue-card .meta .vibe{font-family:'Satoshi';font-size:11px;color:#6B7280;text-align:center;margin-top:4px;line-height:1.4;max-width:180px}
+
+  /* ============ FAVICON TILE ============ */
+  .fav-strip{display:flex;align-items:flex-end;gap:28px;padding:28px;background:var(--card);border:1px solid var(--line);border-radius:14px;justify-content:space-around;flex-wrap:wrap}
+  .fav-strip .fav{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .fav-strip .fav small{font-size:10px;color:#9CA3AF;font-family:'Satoshi'}
+
+  /* Variant B — Inline pulse · "tM•" */
+  .tm-tile{background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;gap:.04em;font-family:'Clash Display';font-weight:700;letter-spacing:-.05em;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,.08);position:relative}
+  .tm-tile .t-glyph{display:inline-block;height:.82em;width:.46em;color:currentColor;position:relative;top:.04em}
+  .tm-tile .t-glyph svg{display:block;width:100%;height:100%}
+  .tm-tile .M-letter{display:inline-block}
+  .tm-tile .dot-inline{display:inline-block;border-radius:50%;background:var(--pulse,#10B981);align-self:flex-end;margin-left:.08em;margin-bottom:.1em}
+
+  /* Variant B with blue M */
+  .tm-tile.blue-m .t-glyph{color:#fff}
+  .tm-tile.blue-m .M-letter{color:var(--blue)}
+
+  .fav-style-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:20px}
+  .fav-style-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .fav-style-card .meta{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .fav-style-card .meta .name{font-family:'Clash Display';font-weight:600;font-size:14px}
+  .fav-style-card .meta .desc{font-family:'Satoshi';font-size:11px;color:#6B7280;text-align:center;line-height:1.4;max-width:180px}
+
+  /* ============ PULSE OPTIONS ============ */
+  .pulse-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .pulse-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .pulse-card .swatch{width:14px;height:14px;border-radius:50%}
+  .pulse-card .name{font-family:'Clash Display';font-weight:600;font-size:14px}
+  .pulse-card .hex{font-family:'Satoshi';font-size:10px;color:#9CA3AF}
+  .pulse-card .demo{font-size:26px;text-align:center}
+
+  /* ============ APPS ============ */
+  .apps{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px}
+  .app{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+  .app .sb{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .app .body{padding:16px 18px;height:80px;background:linear-gradient(180deg,#fff,var(--ash-3))}
+  .app.dark{background:var(--ink)}
+  .app.dark .sb{border-bottom-color:rgba(255,255,255,.08)}
+  .app.dark .body{background:linear-gradient(180deg,var(--ink),#15161B)}
+  .app .pill{height:6px;background:var(--ash-2);border-radius:3px;width:60%;margin-bottom:6px}
+  .app .pill.short{width:35%}
+  .app.dark .pill{background:rgba(255,255,255,.1)}
+  .app .cta{padding:5px 12px;background:var(--blue);color:#fff;border-radius:6px;font-size:11px;font-weight:600;font-family:'Satoshi'}
+
+  /* ============ NOTES ============ */
+  .notes{margin-top:32px;background:var(--ink);color:#fff;border-radius:20px;padding:32px}
+  .notes h3{font-family:'Clash Display';font-weight:600;font-size:18px;margin:0 0 14px;color:#fff}
+  .notes ul{margin:0;padding-left:18px;color:rgba(255,255,255,.75);font-size:14px;line-height:1.85}
+  .notes code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px;color:#fff}
+
+  .pick{position:sticky;bottom:16px;margin-top:48px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 20px 40px -10px rgba(0,0,0,.12)}
+  .pick .lbl{font-family:'Clash Display';font-weight:600;font-size:14px}
+  .pick .chip{padding:6px 12px;background:var(--ash-3);border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--line);font-family:'Satoshi'}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>trendMarga — v5 · trendM blue, arga ash</h1>
+  <p class="lede">Variant B (inline pulse · <code>tM•</code>) carried into the wordmark. <strong>trendM</strong> shifts into a "nice blue" + the capital <strong>M</strong>, then <strong>arga</strong> drops into ash. The pulse dot replaces the period at the end. Pick the blue (and the pulse color) below.</p>
+
+  <!-- ============ HERO ============ -->
+  <h2>The wordmark · default cobalt + emerald pulse</h2>
+  <div class="hero">
+    <span class="mark" style="--blue:#1E40AF;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5)">
+      <span class="glyph-t blue-half" style="color:#1E40AF"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+    </span>
+  </div>
+
+  <div class="duo">
+    <div class="stage dark relative">
+      <span class="label" style="color:rgba(255,255,255,.45)">on ink</span>
+      <span class="mark" style="--blue:#60A5FA;--pulse:#34D399;--pulse-soft:rgba(52,211,153,.5)">
+        <span class="glyph-t blue-half" style="color:#60A5FA"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest" style="color:#9CA3AF">arga</span><span class="pulse"></span>
+      </span>
+    </div>
+    <div class="stage ash relative">
+      <span class="label">on ash</span>
+      <span class="mark" style="--blue:#1E40AF;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5)">
+        <span class="glyph-t blue-half" style="color:#1E40AF"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest" style="color:#6B7280">arga</span><span class="pulse"></span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ============ BLUE PICKER ============ -->
+  <h2>Pick the blue · "trendM" wears it</h2>
+  <div class="blue-grid">
+
+    <div class="blue-card">
+      <div class="swatch" style="background:#1E40AF"></div>
+      <div class="demo">
+        <span class="mark" style="--blue:#1E40AF;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#1E40AF"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="meta"><div class="name">Cobalt</div><div class="hex">#1E40AF</div><div class="vibe">Deep, premium, banking-grade trust</div></div>
+    </div>
+
+    <div class="blue-card">
+      <div class="swatch" style="background:#2563EB"></div>
+      <div class="demo">
+        <span class="mark" style="--blue:#2563EB;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#2563EB"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="meta"><div class="name">Royal</div><div class="hex">#2563EB</div><div class="vibe">Confident product blue · current TrendX</div></div>
+    </div>
+
+    <div class="blue-card">
+      <div class="swatch" style="background:#3B82F6"></div>
+      <div class="demo">
+        <span class="mark" style="--blue:#3B82F6;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#3B82F6"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="meta"><div class="name">Electric</div><div class="hex">#3B82F6</div><div class="vibe">Bright, energetic, social-media first</div></div>
+    </div>
+
+    <div class="blue-card">
+      <div class="swatch" style="background:#4F46E5"></div>
+      <div class="demo">
+        <span class="mark" style="--blue:#4F46E5;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#4F46E5"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="meta"><div class="name">Indigo</div><div class="hex">#4F46E5</div><div class="vibe">Modern platform · slightly violet edge</div></div>
+    </div>
+
+    <div class="blue-card">
+      <div class="swatch" style="background:#0EA5E9"></div>
+      <div class="demo">
+        <span class="mark" style="--blue:#0EA5E9;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#0EA5E9"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="meta"><div class="name">Sky</div><div class="hex">#0EA5E9</div><div class="vibe">Friendly, open, optimistic · soft tech</div></div>
+    </div>
+
+    <div class="blue-card">
+      <div class="swatch" style="background:#1D4ED8"></div>
+      <div class="demo">
+        <span class="mark" style="--blue:#1D4ED8;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#1D4ED8"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="meta"><div class="name">Sapphire</div><div class="hex">#1D4ED8</div><div class="vibe">Halfway between cobalt + royal · balanced</div></div>
+    </div>
+
+    <div class="blue-card">
+      <div class="swatch" style="background:#1E3A8A"></div>
+      <div class="demo">
+        <span class="mark" style="--blue:#1E3A8A;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#1E3A8A"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="meta"><div class="name">Midnight</div><div class="hex">#1E3A8A</div><div class="vibe">Editorial, nearly-black blue · prestige</div></div>
+    </div>
+
+    <div class="blue-card">
+      <div class="swatch" style="background:#0369A1"></div>
+      <div class="demo">
+        <span class="mark" style="--blue:#0369A1;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#0369A1"><svg viewBox="0 0 42 92" preserveAspectRatio="none"><path class="stroke" d="M16 0 H30 V20 H42 V32 H30 V72 Q30 80 38 80 H42 V92 H32 Q16 92 16 76 V32 H6 V20 H16 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="meta"><div class="name">Ocean</div><div class="hex">#0369A1</div><div class="vibe">Deep, calm, mature · institutional</div></div>
+    </div>
+
+  </div>
+
+  <!-- ============ FAVICON · tM• inline ============ -->
+  <h2>Favicon · variant B · tM• inline pulse, M in blue</h2>
+  <p class="lede">Carrying the same color logic into the favicon: white <code>t</code>, blue <code>M</code>, accent pulse dot inline as punctuation. The tile stays ink-black so the blue M reads as the brand's "live" hue.</p>
+
+  <div class="fav-strip">
+    <!-- 16 -->
+    <div class="fav">
+      <div class="tm-tile blue-m" style="width:16px;height:16px;border-radius:3px;font-size:11px;--blue:#1E40AF;--pulse:#10B981">
+        <span class="t-glyph"><svg viewBox="0 0 44 92" preserveAspectRatio="xMidYMax meet"><path fill="currentColor" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="M-letter">M</span>
+      </div>
+      <small>16</small>
+    </div>
+    <div class="fav">
+      <div class="tm-tile blue-m" style="width:24px;height:24px;border-radius:5px;font-size:15px;--blue:#1E40AF;--pulse:#10B981">
+        <span class="t-glyph"><svg viewBox="0 0 44 92" preserveAspectRatio="xMidYMax meet"><path fill="currentColor" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="M-letter">M</span><span class="dot-inline" style="width:3px;height:3px"></span>
+      </div>
+      <small>24</small>
+    </div>
+    <div class="fav">
+      <div class="tm-tile blue-m" style="width:32px;height:32px;border-radius:6px;font-size:20px;--blue:#1E40AF;--pulse:#10B981">
+        <span class="t-glyph"><svg viewBox="0 0 44 92" preserveAspectRatio="xMidYMax meet"><path fill="currentColor" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="M-letter">M</span><span class="dot-inline" style="width:4px;height:4px"></span>
+      </div>
+      <small>32</small>
+    </div>
+    <div class="fav">
+      <div class="tm-tile blue-m" style="width:48px;height:48px;border-radius:10px;font-size:28px;--blue:#1E40AF;--pulse:#10B981">
+        <span class="t-glyph"><svg viewBox="0 0 44 92" preserveAspectRatio="xMidYMax meet"><path fill="currentColor" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="M-letter">M</span><span class="dot-inline" style="width:6px;height:6px"></span>
+      </div>
+      <small>48</small>
+    </div>
+    <div class="fav">
+      <div class="tm-tile blue-m" style="width:64px;height:64px;border-radius:14px;font-size:38px;--blue:#1E40AF;--pulse:#10B981">
+        <span class="t-glyph"><svg viewBox="0 0 44 92" preserveAspectRatio="xMidYMax meet"><path fill="currentColor" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="M-letter">M</span><span class="dot-inline" style="width:7px;height:7px"></span>
+      </div>
+      <small>64</small>
+    </div>
+    <div class="fav">
+      <div class="tm-tile blue-m" style="width:96px;height:96px;border-radius:20px;font-size:54px;--blue:#1E40AF;--pulse:#10B981">
+        <span class="t-glyph"><svg viewBox="0 0 44 92" preserveAspectRatio="xMidYMax meet"><path fill="currentColor" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="M-letter">M</span><span class="dot-inline" style="width:11px;height:11px"></span>
+      </div>
+      <small>96 · PWA</small>
+    </div>
+    <div class="fav">
+      <div class="tm-tile blue-m" style="width:128px;height:128px;border-radius:28px;font-size:72px;--blue:#1E40AF;--pulse:#10B981">
+        <span class="t-glyph"><svg viewBox="0 0 44 92" preserveAspectRatio="xMidYMax meet"><path fill="currentColor" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="M-letter">M</span><span class="dot-inline" style="width:14px;height:14px"></span>
+      </div>
+      <small>128 · iOS</small>
+    </div>
+  </div>
+
+  <!-- ============ PULSE PICKER ============ -->
+  <h2>Pulse color · the final accent · only one remains</h2>
+  <p class="lede">Brand is now <strong>blue + ash + ink</strong>. The pulse adds the last single color — used only on the dot, primary CTAs, and live indicators.</p>
+
+  <div class="pulse-grid">
+    <div class="pulse-card">
+      <div class="demo">
+        <span class="mark" style="--blue:#1E40AF;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#1E40AF"><svg viewBox="0 0 44 92" preserveAspectRatio="none"><path class="stroke" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="swatch" style="background:#10B981"></div>
+      <div class="name">Emerald</div><div class="hex">#10B981</div>
+    </div>
+    <div class="pulse-card">
+      <div class="demo">
+        <span class="mark" style="--blue:#1E40AF;--pulse:#F59E0B;--pulse-soft:rgba(245,158,11,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#1E40AF"><svg viewBox="0 0 44 92" preserveAspectRatio="none"><path class="stroke" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="swatch" style="background:#F59E0B"></div>
+      <div class="name">Amber</div><div class="hex">#F59E0B</div>
+    </div>
+    <div class="pulse-card">
+      <div class="demo">
+        <span class="mark" style="--blue:#1E40AF;--pulse:#EC4899;--pulse-soft:rgba(236,72,153,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#1E40AF"><svg viewBox="0 0 44 92" preserveAspectRatio="none"><path class="stroke" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="swatch" style="background:#EC4899"></div>
+      <div class="name">Magenta</div><div class="hex">#EC4899</div>
+    </div>
+    <div class="pulse-card">
+      <div class="demo">
+        <span class="mark" style="--blue:#1E40AF;--pulse:#06B6D4;--pulse-soft:rgba(6,182,212,.5);font-size:1em">
+          <span class="glyph-t blue-half" style="color:#1E40AF"><svg viewBox="0 0 44 92" preserveAspectRatio="none"><path class="stroke" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+      </div>
+      <div class="swatch" style="background:#06B6D4"></div>
+      <div class="name">Cyan</div><div class="hex">#06B6D4</div>
+    </div>
+  </div>
+
+  <!-- ============ APPLIED ============ -->
+  <h2>Applied · CMS sidebar, dark mode, storefront header</h2>
+  <div class="apps">
+    <div class="app">
+      <div class="sb">
+        <span class="mark" style="font-size:14px;--blue:#1E40AF;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5)">
+          <span class="glyph-t blue-half" style="color:#1E40AF"><svg viewBox="0 0 44 92" preserveAspectRatio="none"><path class="stroke" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+        <span style="font-size:10px;color:#9CA3AF;font-weight:600">CMS</span>
+      </div>
+      <div class="body"><div class="pill"></div><div class="pill short"></div></div>
+    </div>
+    <div class="app dark">
+      <div class="sb">
+        <span class="mark" style="font-size:14px;--blue:#60A5FA;--pulse:#34D399;--pulse-soft:rgba(52,211,153,.5);color:#fff">
+          <span class="glyph-t blue-half" style="color:#60A5FA"><svg viewBox="0 0 44 92" preserveAspectRatio="none"><path class="stroke" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="rest blue-half" style="color:#60A5FA">rend</span><span class="rest" style="color:#60A5FA">M</span><span class="rest" style="color:#6B7280">arga</span><span class="pulse"></span>
+        </span>
+        <span style="font-size:10px;color:#6B7280;font-weight:600">CMS</span>
+      </div>
+      <div class="body"><div class="pill"></div><div class="pill short"></div></div>
+    </div>
+    <div class="app">
+      <div class="sb">
+        <span class="mark" style="font-size:14px;--blue:#1E40AF;--pulse:#10B981;--pulse-soft:rgba(16,185,129,.5)">
+          <span class="glyph-t blue-half" style="color:#1E40AF"><svg viewBox="0 0 44 92" preserveAspectRatio="none"><path class="stroke" d="M12 0 H32 V16 H44 V36 H32 V72 Q32 80 40 80 H44 V92 H32 Q12 92 12 74 V36 H0 V16 H12 Z"/></svg></span><span class="rest blue-half">rend</span><span class="rest M">M</span><span class="rest ash-half">arga</span><span class="pulse"></span>
+        </span>
+        <span class="cta" style="background:#1E40AF">Shop</span>
+      </div>
+      <div class="body"><div class="pill"></div><div class="pill short"></div></div>
+    </div>
+  </div>
+
+  <!-- ============ NOTES ============ -->
+  <div class="notes">
+    <h3>Designer notes</h3>
+    <ul>
+      <li><strong>The split shifted.</strong> <code>trendM</code> (including the capital M) now lives in blue. <code>arga</code> drops to ash. The pulse continues to live just past the wordmark as the brand's heartbeat.</li>
+      <li><strong>Why this works.</strong> The blue half is the <em>active</em> half — it carries the brand name and the pivot letter (M). The ash half is the supporting tail. This mirrors how brand reads in language: "trendM…" is the punch, "arga" is the resolution.</li>
+      <li><strong>Dark mode shift.</strong> Use the lighter tint of the chosen blue (e.g. <code>#60A5FA</code> for cobalt, <code>#3B82F6</code> for royal) on dark backgrounds so it stays vibrant against ink.</li>
+      <li><strong>Favicon parity.</strong> Tile keeps ink black, the t stays white, the M takes the brand blue, and the inline pulse dot is the punctuation. Reads as <code>tM•</code> — the wordmark in miniature.</li>
+      <li><strong>Mono fallback.</strong> For one-color print, the whole wordmark renders in ink. The blue half stays at 100% black; the ash half drops to 50% grey.</li>
+    </ul>
+  </div>
+
+  <div class="pick">
+    <span class="lbl">Pick →</span>
+    <span class="chip">Cobalt</span>
+    <span class="chip">Royal</span>
+    <span class="chip">Electric</span>
+    <span class="chip">Indigo</span>
+    <span class="chip">Sky</span>
+    <span class="chip">Sapphire</span>
+    <span class="chip">Midnight</span>
+    <span class="chip">Ocean</span>
+    <span class="chip">·</span>
+    <span class="chip">Emerald · Amber · Magenta · Cyan</span>
+  </div>
+
+</div>
+</body>
+</html>

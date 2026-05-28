@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useClerk, useUser } from '@clerk/nextjs'
 import type { UserRole } from '@/lib/api'
+import { Logo, LogoMark } from '@/components/brand/Logo'
 
 type BadgeKind = 'brand' | 'green'
 
@@ -141,15 +142,10 @@ export default function Sidebar({ role }: SidebarProps) {
   const Brand = () => (
     <div className="px-[18px] py-[18px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
       <div className="flex items-center gap-2.5">
-        <div
-          className="w-8 h-8 rounded-[9px] flex items-center justify-center font-black text-white"
-          style={{ background: BRAND_GRAD, fontSize: '16px' }}
-        >
-          T
-        </div>
+        <LogoMark size={32} />
         <div className="leading-tight">
-          <div className="font-extrabold" style={{ color: '#F1F5F9', fontSize: '16px', letterSpacing: '-0.3px' }}>
-            TrendMarga
+          <div style={{ marginBottom: 2 }}>
+            <Logo variant="wordmark" tone="light" size={16} />
           </div>
           <span
             className="inline-block mt-1 font-semibold"
@@ -206,13 +202,8 @@ export default function Sidebar({ role }: SidebarProps) {
         style={{ background: 'var(--color-navy-mid)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
       >
         <div className="flex items-center gap-2">
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center font-black text-white text-xs"
-            style={{ background: BRAND_GRAD }}
-          >
-            T
-          </div>
-          <span className="font-extrabold text-base" style={{ color: '#F1F5F9' }}>TrendMarga</span>
+          <LogoMark size={28} />
+          <Logo variant="wordmark" tone="light" size={16} />
         </div>
         <button type="button" onClick={() => setOpen(true)} style={{ color: 'rgba(148,163,184,0.8)' }}>
           <Menu size={22} />
@@ -234,8 +225,8 @@ export default function Sidebar({ role }: SidebarProps) {
           >
             <div className="flex items-center justify-between px-[18px] py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-[9px] flex items-center justify-center font-black text-white" style={{ background: BRAND_GRAD, fontSize: '16px' }}>T</div>
-                <span className="font-extrabold" style={{ color: '#F1F5F9', fontSize: '16px' }}>TrendMarga</span>
+                <LogoMark size={32} />
+                <Logo variant="wordmark" tone="light" size={16} />
               </div>
               <button type="button" onClick={() => setOpen(false)} style={{ color: 'rgba(148,163,184,0.7)' }}>
                 <X size={20} />

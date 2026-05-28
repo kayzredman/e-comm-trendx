@@ -13,10 +13,10 @@ export type OrderTemplateData = {
 
 export const templates = {
   orderPlaced: (d: OrderTemplateData) => ({
-    sms: `Hi ${d.customerName}, your TrendMarga order #${d.orderId.slice(0, 8)} for GH₵${d.total} has been received. We'll text you when it ships.`,
+    sms: `Hi ${d.customerName}, your trendMarga order #${d.orderId.slice(0, 8)} for GH₵${d.total} has been received. We'll text you when it ships.`,
     email: {
       subject: `Order #${d.orderId.slice(0, 8)} received`,
-      html: `<p>Hi ${d.customerName},</p><p>Thanks for shopping with TrendMarga. Your order <strong>#${d.orderId.slice(0, 8)}</strong> totalling <strong>GH₵${d.total}</strong> has been received.</p>${d.trackingUrl ? `<p><a href="${d.trackingUrl}">Track your order</a></p>` : ''}`,
+      html: `<p>Hi ${d.customerName},</p><p>Thanks for shopping with trendMarga. Your order <strong>#${d.orderId.slice(0, 8)}</strong> totalling <strong>GH₵${d.total}</strong> has been received.</p>${d.trackingUrl ? `<p><a href="${d.trackingUrl}">Track your order</a></p>` : ''}`,
     },
   }),
 
@@ -29,7 +29,7 @@ export const templates = {
   }),
 
   orderShipped: (d: OrderTemplateData) => ({
-    sms: `Your TrendMarga order #${d.orderId.slice(0, 8)} is out for delivery. Have your phone close by.`,
+    sms: `Your trendMarga order #${d.orderId.slice(0, 8)} is out for delivery. Have your phone close by.`,
     email: {
       subject: `Order #${d.orderId.slice(0, 8)} out for delivery`,
       html: `<p>Hi ${d.customerName},</p><p>Your order <strong>#${d.orderId.slice(0, 8)}</strong> is out for delivery today.</p>`,
@@ -37,7 +37,7 @@ export const templates = {
   }),
 
   orderDelivered: (d: OrderTemplateData) => ({
-    sms: `Order #${d.orderId.slice(0, 8)} delivered. Thank you for shopping with TrendMarga!`,
+    sms: `Order #${d.orderId.slice(0, 8)} delivered. Thank you for shopping with trendMarga!`,
     email: {
       subject: `Order #${d.orderId.slice(0, 8)} delivered`,
       html: `<p>Hi ${d.customerName},</p><p>Your order <strong>#${d.orderId.slice(0, 8)}</strong> was delivered. We hope you love it!</p>`,
