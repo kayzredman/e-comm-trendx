@@ -280,6 +280,37 @@ export const healthApi = {
     apiFetch('/health/services/gc', { method: 'POST', body: '{}', token }),
   restart: (token: string, target: RestartTarget): Promise<{ ok: boolean; method: RestartMethod; message: string }> =>
     apiFetch('/health/services/restart', { method: 'POST', body: JSON.stringify({ target }), token }),
+  diagnostics: (token: string): Promise<DiagnosticsReport> =>
+    apiFetch('/health/diagnostics', { method: 'POST', body: '{}', token }),
+}
+
+export type FindingSeverity = 'critical' | 'warning' | 'info'
+
+export type DiagnosticFinding = {
+  id: string
+  service: string
+  severity: FindingSeverity
+  title: string
+  message: string
+  suggestion: string
+  command?: string
+  docsHint?: string
+  remediable?: boolean
+}
+
+export type DiagnosticsReport = {
+  ranAt: string
+  durationMs: number
+  overall: ServiceStatus
+  summary: {
+    total: number
+    critical: number
+    warning: number
+    info: number
+    healthyServices: number
+    totalServices: number
+  }
+  findings: DiagnosticFinding[]
 }
 
 // ─── Users / RBAC ─────────────────────────────────────────────────────────────

@@ -10,12 +10,15 @@ import {
   type RestartTarget,
   type RestartMethod,
   type UserRole,
+  type DiagnosticsReport,
+  type DiagnosticFinding,
+  type FindingSeverity,
 } from '@/lib/api'
 import {
   CheckCircle, AlertTriangle, XCircle, RefreshCw, Database,
   Server, Shield, Globe, Zap, Clock, Activity, MemoryStick,
   Power, Recycle, WifiOff, Cpu, Info, ChevronDown, ChevronUp,
-  Layers, Network, ShoppingBag,
+  Layers, Network, ShoppingBag, Stethoscope, ClipboardCopy, X,
 } from 'lucide-react'
 
 interface Props {
@@ -459,6 +462,237 @@ function formatUptime(s: number) {
   return `${h}h ${m}m ${sec}s`
 }
 
+const SEVERITY_CFG: Record<FindingSeverity, { label: string; color: string; bg: string; icon: typeof CheckCircle }> = {
+  critical: { label: 'Critical', color: '#DC2626', bg: '#FEE2E2', icon: XCircle },
+  warning:  { label: 'Warning',  color: '#D97706', bg: '#FEF3C7', icon: AlertTriangle },
+  info:     { label: 'Info',     color: '#2563EB', bg: '#DBEAFE', icon: Info },
+}
+
+function FindingCard({
+  finding, copiedCmd, onCopy,
+}: {
+  finding: DiagnosticFinding
+  copiedCmd: string | null
+  onCopy: (cmd: string) => void
+}) {
+  const cfg = SEVERITY_CFG[finding.severity]
+  const Icon = cfg.icon
+  return (
+    <div
+      className="rounded-lg border p-4"
+      style={{
+        background: 'var(--color-surface)',
+        borderColor: cfg.color + '40',
+        borderLeft: `3px solid ${cfg.color}`,
+      }}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className="w-8 h-8 rounded-md flex items-center justify-center shrink-0"
+          style={{ background: cfg.bg }}
+        >
+          <Icon size={16} style={{ color: cfg.color }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <span className="text-xs font-bold uppercase tracking-wide" style={{ color: cfg.color }}>
+              {cfg.label}
+            </span>
+            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+              style={{ background: 'var(--color-page)', color: 'var(--color-text-muted)' }}>
+              {finding.service}
+            </span>
+          </div>
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+            {finding.title}
+          </p>
+          <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
+            {finding.message}
+          </p>
+          <div
+            className="mt-2 p-2 rounded text-xs"
+            style={{ background: 'var(--color-page)', color: 'var(--color-text)', lineHeight: 1.5 }}
+          >
+            <strong style={{ color: 'var(--color-text)' }}>Suggested fix: </strong>
+            {finding.suggestion}
+          </div>
+          {finding.command && (() => {
+            const cmd = finding.command
+            return (
+              <div
+                className="mt-2 flex items-center gap-2 p-2 rounded font-mono text-xs"
+                style={{ background: '#0F172A', color: '#E2E8F0' }}
+              >
+                <span style={{ flex: 1, overflow: 'auto' }}>$ {cmd}</span>
+                <button
+                  type="button"
+                  onClick={() => onCopy(cmd)}
+                  className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-semibold shrink-0"
+                  style={{
+                    background: copiedCmd === cmd ? '#16A34A' : '#334155',
+                    color: 'white',
+                  }}
+                  title="Copy command"
+                >
+                  <ClipboardCopy size={10} />
+                  {copiedCmd === cmd ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            )
+          })()}
+          {finding.docsHint && (
+            <p className="text-[10px] mt-1.5" style={{ color: 'var(--color-text-muted)' }}>
+              {finding.docsHint}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DiagnosticsPanel({
+  report, running, copiedCmd, onCopy, onRerun, onClose,
+}: {
+  report: DiagnosticsReport | null
+  running: boolean
+  copiedCmd: string | null
+  onCopy: (cmd: string) => void
+  onRerun: () => void
+  onClose: () => void
+}) {
+  const allClear = report && report.summary.total === 0
+  return (
+    <div
+      className="rounded-xl border mb-6 overflow-hidden"
+      style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
+    >
+      <div
+        className="flex items-center justify-between px-5 py-3 border-b"
+        style={{ borderColor: 'var(--color-border)', background: 'var(--color-page)' }}
+      >
+        <div className="flex items-center gap-2">
+          <Stethoscope size={16} style={{ color: 'var(--color-primary)' }} />
+          <h2 className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>
+            Diagnostics
+          </h2>
+          {report && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+              style={{ background: 'var(--color-surface)', color: 'var(--color-text-muted)' }}>
+              {new Date(report.ranAt).toLocaleTimeString()} · {report.durationMs}ms
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onRerun}
+            disabled={running}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border"
+            style={{
+              background: 'var(--color-surface)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text)',
+              opacity: running ? 0.6 : 1,
+            }}
+          >
+            <RefreshCw size={11} className={running ? 'animate-spin' : ''} />
+            {running ? 'Running…' : 'Re-run'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex items-center justify-center w-7 h-7 rounded-md border"
+            style={{
+              background: 'var(--color-surface)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text-muted)',
+            }}
+            aria-label="Close diagnostics"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-5">
+        {running && !report && (
+          <div className="text-center py-8" style={{ color: 'var(--color-text-muted)' }}>
+            <RefreshCw size={20} className="animate-spin mx-auto mb-2" />
+            <p className="text-sm">Running all checks…</p>
+          </div>
+        )}
+
+        {report && (
+          <>
+            {/* Summary chips */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <SummaryChip label="Critical" count={report.summary.critical} color="#DC2626" bg="#FEE2E2" />
+              <SummaryChip label="Warning"  count={report.summary.warning}  color="#D97706" bg="#FEF3C7" />
+              <SummaryChip label="Info"     count={report.summary.info}     color="#2563EB" bg="#DBEAFE" />
+              <SummaryChip
+                label="Healthy services"
+                count={report.summary.healthyServices}
+                total={report.summary.totalServices}
+                color="#16A34A" bg="#DCFCE7"
+              />
+            </div>
+
+            {allClear ? (
+              <div
+                className="rounded-lg border p-4 flex items-center gap-3"
+                style={{ background: '#F0FDF4', borderColor: '#86EFAC' }}
+              >
+                <CheckCircle size={20} style={{ color: '#16A34A' }} />
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: '#15803D' }}>
+                    No issues detected
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: '#166534' }}>
+                    All services are healthy and no cross-cutting checks fired.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {report.findings.map(f => (
+                  <FindingCard key={f.id} finding={f} copiedCmd={copiedCmd} onCopy={onCopy} />
+                ))}
+              </div>
+            )}
+
+            <p className="text-[11px] mt-4" style={{ color: 'var(--color-text-muted)' }}>
+              Diagnostics is read-only — it detects issues and suggests fixes but does not change
+              infrastructure. One-click remediation is a planned Tier 2 enhancement (see TrendMarga-Plan.md).
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function SummaryChip({ label, count, total, color, bg }: {
+  label: string
+  count: number
+  total?: number
+  color: string
+  bg: string
+}) {
+  return (
+    <div
+      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold"
+      style={{ background: bg, color }}
+    >
+      <span style={{ fontVariantNumeric: 'tabular-nums', fontSize: 14 }}>
+        {count}{total !== undefined ? `/${total}` : ''}
+      </span>
+      <span style={{ opacity: 0.85 }}>{label}</span>
+    </div>
+  )
+}
+
 export default function ServiceQualityClient({ initialReport, token, currentRole }: Props) {
   const [report, setReport] = useState<HealthReport | null>(initialReport)
   const [loading, setLoading] = useState(false)
@@ -469,6 +703,10 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
   const [feedback, setFeedback] = useState<ActionFeedback[]>([])
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({ 'API Server': true })
   const [history, setHistory] = useState<Record<string, number[]>>({})
+  const [diagnostics, setDiagnostics] = useState<DiagnosticsReport | null>(null)
+  const [diagRunning, setDiagRunning] = useState(false)
+  const [diagOpen, setDiagOpen] = useState(false)
+  const [copiedCmd, setCopiedCmd] = useState<string | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const countRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -602,6 +840,36 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
       }
     })
 
+  const handleRunDiagnostics = async () => {
+    setDiagRunning(true)
+    setDiagOpen(true)
+    try {
+      const res = await healthApi.diagnostics(token)
+      setDiagnostics(res)
+      pushFeedback({
+        service: 'Diagnostics',
+        ok: res.summary.critical === 0,
+        message: `${res.summary.total} finding${res.summary.total === 1 ? '' : 's'} · ${res.summary.critical} critical · ${res.summary.warning} warning · ${res.summary.info} info (${res.durationMs}ms)`,
+      })
+      // Also refresh the per-service tiles so they reflect the latest probes.
+      void refresh()
+    } catch (err: unknown) {
+      pushFeedback({ service: 'Diagnostics', ok: false, message: errMsg(err, 'Diagnostics failed') })
+    } finally {
+      setDiagRunning(false)
+    }
+  }
+
+  const copyCommand = async (cmd: string) => {
+    try {
+      await navigator.clipboard.writeText(cmd)
+      setCopiedCmd(cmd)
+      setTimeout(() => setCopiedCmd(c => (c === cmd ? null : c)), 1500)
+    } catch {
+      // best-effort
+    }
+  }
+
   const overall = report?.overall ?? 'down'
   const overallCfg = STATUS_CONFIG[overall]
   const OverallIcon = overallCfg.icon
@@ -638,6 +906,22 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handleRunDiagnostics}
+            disabled={diagRunning}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border"
+            style={{
+              background: 'var(--color-primary)',
+              borderColor: 'var(--color-primary)',
+              color: 'white',
+              opacity: diagRunning ? 0.7 : 1,
+              cursor: diagRunning ? 'wait' : 'pointer',
+            }}
+          >
+            <Stethoscope size={13} className={diagRunning ? 'animate-pulse' : ''} />
+            {diagRunning ? 'Running…' : 'Run Diagnostics'}
+          </button>
           <button
             onClick={() => setAutoRefresh(v => !v)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border"
@@ -713,6 +997,18 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
           </div>
         </div>
       </div>
+
+      {/* Diagnostics findings panel */}
+      {diagOpen && (
+        <DiagnosticsPanel
+          report={diagnostics}
+          running={diagRunning}
+          copiedCmd={copiedCmd}
+          onCopy={copyCommand}
+          onRerun={handleRunDiagnostics}
+          onClose={() => setDiagOpen(false)}
+        />
+      )}
 
       {/* Service cards grouped by kind */}
       {report ? (
