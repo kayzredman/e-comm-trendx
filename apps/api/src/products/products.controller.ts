@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query, UseGuards, NotFoundException } from '@nestjs/common'
+import { Controller, Get, Post, Put, Patch, Delete, Param, Body, Query, UseGuards, NotFoundException } from '@nestjs/common'
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger'
 import { ProductsService } from './products.service'
 import { ClerkGuard } from '../auth/clerk.guard'
@@ -46,5 +46,36 @@ export class ProductsController {
   @ApiBearerAuth()
   remove(@Param('id') id: string) {
     return this.productsService.remove(id)
+  }
+
+  // ── Variants ────────────────────────────────────────────────────────────
+  @Get(':id/variants')
+  @Public()
+  listVariants(@Param('id') id: string) {
+    return this.productsService.listVariants(id)
+  }
+
+  @Post(':id/variants')
+  @ApiBearerAuth()
+  createVariant(@Param('id') id: string, @Body() body: any) {
+    return this.productsService.createVariant(id, body)
+  }
+
+  @Put(':id/variants')
+  @ApiBearerAuth()
+  replaceVariants(@Param('id') id: string, @Body() body: { variants: any[] }) {
+    return this.productsService.replaceVariants(id, body?.variants ?? [])
+  }
+
+  @Patch(':id/variants/:variantId')
+  @ApiBearerAuth()
+  updateVariant(@Param('variantId') variantId: string, @Body() body: any) {
+    return this.productsService.updateVariant(variantId, body)
+  }
+
+  @Delete(':id/variants/:variantId')
+  @ApiBearerAuth()
+  removeVariant(@Param('variantId') variantId: string) {
+    return this.productsService.removeVariant(variantId)
   }
 }

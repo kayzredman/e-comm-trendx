@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.productImagesRelations = exports.productImages = exports.imageSourceEnum = exports.posHoldsRelations = exports.posShiftsRelations = exports.posRegistersRelations = exports.posHolds = exports.posShifts = exports.posRegisters = exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.posHoldStatusEnum = exports.posShiftStatusEnum = exports.orderSourceEnum = exports.paymentMethodEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
+exports.productVariantsRelations = exports.productVariants = exports.productImagesRelations = exports.productImages = exports.imageSourceEnum = exports.posHoldsRelations = exports.posShiftsRelations = exports.posRegistersRelations = exports.posHolds = exports.posShifts = exports.posRegisters = exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.posHoldStatusEnum = exports.posShiftStatusEnum = exports.orderSourceEnum = exports.paymentMethodEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 const drizzle_orm_1 = require("drizzle-orm");
 const cuid2_1 = require("@paralleldrive/cuid2");
@@ -92,6 +92,10 @@ exports.orderItems = (0, pg_core_1.pgTable)('order_items', {
     orderId: (0, pg_core_1.varchar)('order_id', { length: 128 }).notNull(),
     productId: (0, pg_core_1.varchar)('product_id', { length: 128 }).notNull(),
     productName: (0, pg_core_1.varchar)('product_name', { length: 255 }).notNull(),
+    /** Snapshot of the variant at order time. NULL for variant-less products
+     *  or legacy orders placed before the variants feature. */
+    variantId: (0, pg_core_1.varchar)('variant_id', { length: 128 }),
+    variantLabel: (0, pg_core_1.varchar)('variant_label', { length: 255 }),
     unitPrice: (0, pg_core_1.numeric)('unit_price', { precision: 12, scale: 2 }).notNull(),
     quantity: (0, pg_core_1.integer)('quantity').notNull(),
 });
@@ -131,6 +135,7 @@ exports.productsRelations = (0, drizzle_orm_1.relations)(exports.products, ({ on
     category: one(exports.categories, { fields: [exports.products.categoryId], references: [exports.categories.id] }),
     orderItems: many(exports.orderItems),
     imageAssets: many(exports.productImages),
+    variants: many(exports.productVariants),
 }));
 exports.ordersRelations = (0, drizzle_orm_1.relations)(exports.orders, ({ one, many }) => ({
     customer: one(exports.customers, { fields: [exports.orders.customerId], references: [exports.customers.id] }),
@@ -268,5 +273,33 @@ exports.productImages = (0, pg_core_1.pgTable)('product_images', {
 });
 exports.productImagesRelations = (0, drizzle_orm_1.relations)(exports.productImages, ({ one }) => ({
     product: one(exports.products, { fields: [exports.productImages.productId], references: [exports.products.id] }),
+}));
+// ── Product variants (FEATURE_VARIANTS) ──────────────────────────────────────
+// One row per purchasable SKU within a product. A product is sold as a single
+// SKU when it has zero variants (legacy products.inventory / products.price
+// still apply). When variants exist, they override stock and (optionally) price
+// at the variant level.
+exports.productVariants = (0, pg_core_1.pgTable)('product_variants', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    productId: (0, pg_core_1.varchar)('product_id', { length: 128 }).notNull(),
+    /** Optional human-readable axes. NULL is allowed so a "color-only" or
+     *  "size-only" product is supported without inventing a placeholder. */
+    size: (0, pg_core_1.varchar)('size', { length: 64 }),
+    color: (0, pg_core_1.varchar)('color', { length: 64 }),
+    /** Hex like "#1a1a2e" — used by storefront swatches. */
+    colorHex: (0, pg_core_1.varchar)('color_hex', { length: 16 }),
+    /** Open-ended extra axes for future use (material, width, fit, …). */
+    attributes: (0, pg_core_1.jsonb)('attributes').$type().notNull().default({}),
+    sku: (0, pg_core_1.varchar)('sku', { length: 100 }),
+    /** NULL = use the parent product's price. */
+    priceOverride: (0, pg_core_1.numeric)('price_override', { precision: 12, scale: 2 }),
+    inventory: (0, pg_core_1.integer)('inventory').notNull().default(0),
+    sortOrder: (0, pg_core_1.integer)('sort_order').notNull().default(0),
+    isActive: (0, pg_core_1.boolean)('is_active').notNull().default(true),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)('updated_at').notNull().defaultNow(),
+});
+exports.productVariantsRelations = (0, drizzle_orm_1.relations)(exports.productVariants, ({ one }) => ({
+    product: one(exports.products, { fields: [exports.productVariants.productId], references: [exports.products.id] }),
 }));
 //# sourceMappingURL=schema.js.map
