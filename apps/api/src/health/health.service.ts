@@ -88,15 +88,16 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getReport(): Promise<HealthReport> {
-    const [dbCheck, apiCheck, webCheck, storefrontCheck, clerkCheck] = await Promise.all([
+    const [dbCheck, schemaCheck, apiCheck, webCheck, storefrontCheck, clerkCheck] = await Promise.all([
       this.checkDatabase(),
+      this.checkSchema(),
       this.checkSelf(),
       this.checkHttp('Web App', process.env.WEB_URL),
       this.checkHttp('Storefront', process.env.STOREFRONT_URL),
       this.checkClerk(),
     ])
 
-    const services = [dbCheck, apiCheck, webCheck, storefrontCheck, clerkCheck].filter(Boolean) as ServiceCheck[]
+    const services = [dbCheck, schemaCheck, apiCheck, webCheck, storefrontCheck, clerkCheck].filter(Boolean) as ServiceCheck[]
 
     const overall: ServiceStatus =
       services.some(s => s.status === 'down') ? 'down' :
@@ -178,6 +179,107 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
   }
 
   // ─── individual checks ──────────────────────────────────────────────────
+
+  /**
+   * Schema sanity / migration-drift detector.
+   *
+   * Probes a curated list of "canary" columns that have been added by recent
+   * Drizzle migrations. If any SELECT throws (typically `column X does not
+   * exist`), the deployed DB is behind the codebase and the dashboard's
+   * authenticated queries will silently 500. This check surfaces that on the
+   * Service Quality page with the exact missing column and the migration to
+   * run.
+   *
+   * Update CANARY_COLUMNS whenever a new migration adds a column the API
+   * actively reads in non-trivial code paths.
+   */
+  private async checkSchema(): Promise<ServiceCheck> {
+    const checkedAt = new Date().toISOString()
+    const t0 = Date.now()
+    // [table, column, introduced-by-migration]
+    const CANARY_COLUMNS: Array<[string, string, string]> = [
+      ['orders',        'source',     '0002_robust_brother_voodoo'],
+      ['pos_registers', 'id',         '0003_pos_feature'],
+      ['pos_shifts',    'id',         '0003_pos_feature'],
+      ['pos_holds',     'id',         '0003_pos_feature'],
+    ]
+    try {
+      const appliedRows = await this.db.client.execute(
+        sql`SELECT COUNT(*)::int AS n FROM drizzle.__drizzle_migrations`,
+      )
+      const applied = Number(
+        ((appliedRows as unknown as Array<Record<string, unknown>>)[0]?.n) ?? 0,
+      )
+
+      const missing: string[] = []
+      for (const [table, column, migration] of CANARY_COLUMNS) {
+        try {
+          await this.db.client.execute(
+            sql.raw(`SELECT "${column}" FROM "${table}" LIMIT 1`),
+          )
+        } catch (err: any) {
+          const msg = String(err?.message ?? '')
+          if (/does not exist|undefined column|relation .* does not exist/i.test(msg)) {
+            missing.push(`${table}.${column} (run ${migration})`)
+          } else {
+            // unrelated error — surface but don't claim drift
+            return {
+              name: 'Schema',
+              kind: 'database',
+              status: 'degraded',
+              latencyMs: Date.now() - t0,
+              message: `Canary probe ${table}.${column} failed: ${msg.slice(0, 120)}`,
+              checkedAt,
+              actions: ['recheck'],
+              details: { appliedMigrations: applied },
+            }
+          }
+        }
+      }
+
+      const latencyMs = Date.now() - t0
+      if (missing.length > 0) {
+        return {
+          name: 'Schema',
+          kind: 'database',
+          status: 'down',
+          latencyMs,
+          message: `Migration drift — missing: ${missing.join(', ')}`,
+          checkedAt,
+          actions: ['recheck'],
+          details: {
+            appliedMigrations: applied,
+            missingCount: missing.length,
+            fix: 'Run: pnpm migrate:<env>  (or drizzle-kit migrate)',
+          },
+        }
+      }
+      return {
+        name: 'Schema',
+        kind: 'database',
+        status: 'healthy',
+        latencyMs,
+        message: `${applied} migrations applied · ${CANARY_COLUMNS.length} canary columns OK`,
+        checkedAt,
+        actions: ['recheck'],
+        details: {
+          appliedMigrations: applied,
+          canaryColumns: CANARY_COLUMNS.length,
+          checkLatency: `${latencyMs}ms`,
+        },
+      }
+    } catch (err: any) {
+      return {
+        name: 'Schema',
+        kind: 'database',
+        status: 'down',
+        latencyMs: null,
+        message: err?.message ?? 'Schema check failed',
+        checkedAt,
+        actions: ['recheck'],
+      }
+    }
+  }
 
   private async checkDatabase(): Promise<ServiceCheck> {
     const t0 = Date.now()
@@ -383,6 +485,7 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
   async recheck(name: string): Promise<ServiceCheck> {
     switch (name) {
       case 'PostgreSQL': return this.checkDatabase()
+      case 'Schema':     return this.checkSchema()
       case 'API Server': return this.checkSelf()
       case 'Web App':    return (await this.checkHttp('Web App', process.env.WEB_URL))
         ?? { name, kind: 'http', status: 'down', latencyMs: null, message: 'WEB_URL not configured', checkedAt: new Date().toISOString() }

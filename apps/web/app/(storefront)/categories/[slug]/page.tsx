@@ -35,7 +35,7 @@ function ProductCard({ product }: { product: Product }) {
         {hasDiscount && (
           <span className="absolute top-2 left-2 text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: '#DC2626' }}>-{discountPct}%</span>
         )}
-        <button onClick={e => e.preventDefault()} className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500" style={{ color: '#9CA3AF' }}>
+        <button type="button" aria-hidden tabIndex={-1} className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-500 pointer-events-none" style={{ color: '#9CA3AF' }}>
           <Heart size={14} />
         </button>
       </Link>
