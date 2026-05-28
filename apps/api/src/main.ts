@@ -18,13 +18,10 @@ async function bootstrap() {
   const fastify = app.getHttpAdapter().getInstance()
   const binaryParser = (
     _req: unknown,
-    payload: NodeJS.ReadableStream,
+    payload: Buffer,
     done: (err: Error | null, body?: Buffer) => void,
   ) => {
-    const chunks: Buffer[] = []
-    payload.on('data', (c: Buffer | string) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)))
-    payload.on('end', () => done(null, Buffer.concat(chunks)))
-    payload.on('error', (err: Error) => done(err))
+    done(null, payload)
   }
   fastify.addContentTypeParser('application/octet-stream', { parseAs: 'buffer' }, binaryParser as any)
   fastify.addContentTypeParser(/^image\/.+$/, { parseAs: 'buffer' }, binaryParser as any)

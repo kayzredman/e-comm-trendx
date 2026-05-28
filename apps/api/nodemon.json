@@ -1,6 +1,6 @@
 {
-  "watch": ["src", "../../packages"],
+  "watch": ["src", "../../packages/db/src", "../../packages/types/src", "../../packages/config/src"],
   "ext": "ts,json",
-  "ignore": ["src/**/*.spec.ts", "dist/**"],
-  "exec": "TS_NODE_CACHE=false ./node_modules/.bin/ts-node -r tsconfig-paths/register --transpile-only src/main.ts"
+  "ignore": ["src/**/*.spec.ts", "dist/**", "uploads/**"],
+  "exec": "NODE_OPTIONS='--max-old-space-size=4096' ./node_modules/.bin/ts-node -r tsconfig-paths/register --transpile-only src/main.ts"
 }

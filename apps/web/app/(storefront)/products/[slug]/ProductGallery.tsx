@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { ZoomIn } from 'lucide-react'
 import type { Product } from '@/lib/api'
 
 type GalleryImage = {
@@ -41,11 +42,10 @@ export default function ProductGallery({
   const active = images[activeIdx]
 
   return (
-    <div className="space-y-3">
-      {/* Main image */}
+    <div className="lg:sticky lg:top-24">
       <div
-        className="relative aspect-square rounded-2xl overflow-hidden"
-        style={{ background: 'var(--color-surface-muted)' }}
+        className="relative aspect-square rounded-[28px] overflow-hidden mb-3 group"
+        style={{ background: 'var(--color-surface)', border: '1.5px solid #F1F5F9' }}
       >
         {active ? (
           <Image
@@ -57,27 +57,38 @@ export default function ProductGallery({
             priority
             placeholder={active.blurDataUrl ? 'blur' : 'empty'}
             blurDataURL={active.blurDataUrl}
-            className="object-cover"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-8xl">📦</div>
         )}
+
+        {active && (
+          <div
+            className="absolute bottom-3.5 right-3.5 flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-semibold text-white backdrop-blur-md"
+            style={{ background: 'rgba(0,0,0,0.5)' }}
+          >
+            <ZoomIn size={12} />
+            Hover to zoom
+          </div>
+        )}
       </div>
-      {/* Thumbnails */}
+
       {images.length > 1 && (
         <div className="flex gap-2 flex-wrap">
           {images.map((img, i) => (
             <button
               key={img.thumb + i}
               onClick={() => setActiveIdx(i)}
-              className="relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all"
+              className="relative w-[72px] h-[72px] rounded-[10px] overflow-hidden transition-all"
               style={{
+                border: '2px solid',
                 borderColor: i === activeIdx ? 'var(--color-primary)' : 'transparent',
-                opacity: i === activeIdx ? 1 : 0.6,
+                background: 'var(--color-surface-muted)',
               }}
               aria-label={`Image ${i + 1}`}
             >
-              <Image src={img.thumb} alt="" fill sizes="64px" className="object-cover" />
+              <Image src={img.thumb} alt="" fill sizes="72px" className="object-cover" />
             </button>
           ))}
         </div>

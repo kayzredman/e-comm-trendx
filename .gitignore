@@ -29,3 +29,9 @@ yarn-error.log*
 
 # Railway / Docker
 *.dockerfile
+
+# Local upload bucket (LOCAL storage driver)
+apps/api/uploads/
+
+# TypeScript incremental build info
+*.tsbuildinfo

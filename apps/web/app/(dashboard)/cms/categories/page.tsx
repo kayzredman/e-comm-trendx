@@ -12,12 +12,14 @@ export default async function CategoriesPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>Categories</h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
-            {categories.length} categor{categories.length === 1 ? 'y' : 'ies'}
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight" style={{ color: 'var(--color-text)' }}>
+            Categories
+          </h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
+            Organise your products into browsable groups for shoppers.
           </p>
         </div>
       </div>
