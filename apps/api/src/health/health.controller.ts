@@ -25,6 +25,15 @@ export class HealthController {
     return this.healthService.getReport()
   }
 
+  // ── Run all diagnostics and return findings + suggested fixes ──────────
+  @Post('diagnostics')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER', 'MANAGER')
+  runDiagnostics() {
+    return this.healthService.runDiagnostics()
+  }
+
   // ── Re-run a single check ────────────────────────────────────────────────
   @Post('services/:name/recheck')
   @ApiBearerAuth()

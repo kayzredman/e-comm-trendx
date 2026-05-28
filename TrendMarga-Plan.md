@@ -239,3 +239,37 @@ Each Phase 2 service gets its own Railway service entry, its own env vars, its o
 - POS module
 - Customer accounts / login
 - React Native mobile storefront app
+
+---
+
+## Ops gaps (tracked)
+
+### Tier 2 — Service Quality self-heal (deferred)
+
+The `/cms/service-quality` dashboard currently supports **Tier 1 diagnostics**:
+one-click "Run Diagnostics" returns severity-ranked findings with suggested
+fixes and copy-to-clipboard commands. **No automatic remediation** is performed.
+
+Planned follow-up — a strictly allow-listed set of safe, idempotent
+self-heal actions invokable from a finding:
+
+- `clear-cache` — flush in-memory / Redis caches
+- `restart-bullmq-worker` — bounce a worker when its queue stalls
+- `reseed-category-routing` — idempotent upserts of intake routing
+- `warm-product-cache` — re-hydrate the storefront catalog cache
+
+**Explicitly excluded** (always manual, must stay copyable commands):
+
+- Running database migrations
+- Restarting API / web (already gated to OWNER)
+- Mutating production data
+- Changing env vars / secrets
+
+Each remediation action must be:
+- OWNER-only
+- Audit-- Audit-- Audit-- Audit-- Audit-- Audit-- e to click twice)
+- Behind a confirm- Behind a confirm- — Scheduled diagnostics + alerting (deferred)
+
+- Cron the diagnostics every N minutes
+- Persist last N runs to Postgres
+- Alert (email/Slack) on first occurrence of a new critical finding

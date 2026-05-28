@@ -24,6 +24,38 @@ export interface ServiceCheck {
   details?: Record<string, string | number | boolean>
 }
 
+export type FindingSeverity = 'critical' | 'warning' | 'info'
+
+export interface DiagnosticFinding {
+  id: string
+  service: string
+  severity: FindingSeverity
+  title: string
+  message: string
+  suggestion: string
+  /** Optional shell command users can copy to remediate. */
+  command?: string
+  /** Optional pointer to docs/runbook. */
+  docsHint?: string
+  /** If true, hints that a built-in remediation action exists (future Tier 2). */
+  remediable?: boolean
+}
+
+export interface DiagnosticsReport {
+  ranAt: string
+  durationMs: number
+  overall: ServiceStatus
+  summary: {
+    total: number
+    critical: number
+    warning: number
+    info: number
+    healthyServices: number
+    totalServices: number
+  }
+  findings: DiagnosticFinding[]
+}
+
 export interface HealthReport {
   overall: ServiceStatus
   services: ServiceCheck[]
@@ -596,5 +628,208 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
   private resolveRepoPath(rel: string): string {
     // apps/api/src/health/health.service.ts → repo root is 4 levels up
     return path.resolve(__dirname, '../../../..', rel)
+  }
+
+  // ─── diagnostics (Tier 1: detect + suggest) ─────────────────────────────
+
+  /**
+   * Run the full health report and convert any non-healthy services + a
+   * curated set of cross-cutting checks into actionable findings.
+   *
+   * Pure read-only. No remediation is performed (see TrendMarga-Plan.md →
+   * "Tier 2: self-heal" gap for the planned follow-up).
+   */
+  async runDiagnostics(): Promise<DiagnosticsReport> {
+    const t0 = Date.now()
+    const report = await this.getReport()
+    const findings: DiagnosticFinding[] = []
+
+    // 1. Lift every non-healthy service into a finding.
+    for (const svc of report.services) {
+      if (svc.status === 'healthy') continue
+      findings.push(this.serviceToFinding(svc))
+    }
+
+    // 2. Cross-cutting rules — fire even when services are "healthy".
+
+    if (!process.env.WEB_URL) {
+      findings.push({
+        id: 'env-web-url-missing',
+        service: 'Web App',
+        severity: 'warning',
+        title: 'WEB_URL not configured',
+        message: 'API cannot probe the dashboard web app — no URL is set.',
+        suggestion: 'Set WEB_URL in the API service env to the public dashboard origin (e.g. https://web-staging-d640.up.railway.app).',
+        command: 'railway variables set WEB_URL=<https-origin>',
+      })
+    }
+    if (!process.env.STOREFRONT_URL) {
+      findings.push({
+        id: 'env-storefront-url-missing',
+        service: 'Storefront',
+        severity: 'warning',
+        title: 'STOREFRONT_URL not configured',
+        message: 'API cannot probe the public storefront — no URL is set.',
+        suggestion: 'Set STOREFRONT_URL in the API service env to the storefront origin.',
+        command: 'railway variables set STOREFRONT_URL=<https-origin>',
+      })
+    }
+    if (!process.env.CLERK_SECRET_KEY) {
+      findings.push({
+        id: 'env-clerk-secret-missing',
+        service: 'Clerk Auth',
+        severity: 'critical',
+        title: 'CLERK_SECRET_KEY missing',
+        message: 'Auth checks cannot run. Sign-in will fail in this environment.',
+        suggestion: 'Add CLERK_SECRET_KEY to the API env (sk_test_ for dev, sk_live_ for prod).',
+      })
+    }
+
+    // Memory / loop pressure (warning-level, captured even when "healthy")
+    if (report.memoryMB.percent > 85) {
+      findings.push({
+        id: 'mem-heap-high',
+        service: 'API Server',
+        severity: report.memoryMB.percent > 95 ? 'critical' : 'warning',
+        title: `Heap at ${report.memoryMB.percent}%`,
+        message: `Heap ${report.memoryMB.used}/${report.memoryMB.total}MB · RSS ${report.memoryMB.rssMB}MB.`,
+        suggestion: 'Trigger a Force GC from the API Server card, or restart the API if growth keeps climbing after GC.',
+      })
+    }
+    if (report.eventLoop.lagP99Ms > 250) {
+      findings.push({
+        id: 'loop-lag-high',
+        service: 'API Server',
+        severity: report.eventLoop.lagP99Ms > 1000 ? 'critical' : 'warning',
+        title: `Event-loop p99 ${report.eventLoop.lagP99Ms}ms`,
+        message: 'API is blocking — sustained lag will hurt request latency.',
+        suggestion: 'Investigate sync work in hot paths; consider moving CPU-bound work to a BullMQ worker.',
+      })
+    }
+
+    // Restart capability awareness — info, not a problem.
+    if (
+      process.env.NODE_ENV === 'production' &&
+      report.capabilities.canRestartApi === 'unsupported'
+    ) {
+      findings.push({
+        id: 'restart-not-wired',
+        service: 'API Server',
+        severity: 'info',
+        title: 'Restart not wired in production',
+        message: 'The dashboard cannot trigger a redeploy because Railway env vars are missing.',
+        suggestion: 'Set RAILWAY_API_TOKEN, RAILWAY_ENVIRONMENT_ID, and RAILWAY_API_SERVICE_ID on the API service.',
+      })
+    }
+
+    // Schema canary already produces a "Run: pnpm migrate:<env>" command in
+    // its `details.fix`. Promote that into the finding when present.
+    const schemaSvc = report.services.find(s => s.name === 'Schema')
+    if (schemaSvc && schemaSvc.status === 'down' && typeof schemaSvc.details?.fix === 'string') {
+      const idx = findings.findIndex(f => f.id === 'service-Schema')
+      if (idx >= 0) {
+        findings[idx] = {
+          ...findings[idx],
+          command: 'pnpm migrate:staging',
+          docsHint: 'See README → "Database migrations on Railway".',
+        }
+      }
+    }
+
+    // Dedupe by id (last write wins).
+    const dedup = new Map<string, DiagnosticFinding>()
+    for (const f of findings) dedup.set(f.id, f)
+    const finalFindings = [...dedup.values()].sort(this.compareFindings)
+
+    const summary = {
+      total: finalFindings.length,
+      critical: finalFindings.filter(f => f.severity === 'critical').length,
+      warning: finalFindings.filter(f => f.severity === 'warning').length,
+      info: finalFindings.filter(f => f.severity === 'info').length,
+      healthyServices: report.services.filter(s => s.status === 'healthy').length,
+      totalServices: report.services.length,
+    }
+
+    return {
+      ranAt: new Date().toISOString(),
+      durationMs: Date.now() - t0,
+      overall: report.overall,
+      summary,
+      findings: finalFindings,
+    }
+  }
+
+  private serviceToFinding(svc: ServiceCheck): DiagnosticFinding {
+    const severity: FindingSeverity = svc.status === 'down' ? 'critical' : 'warning'
+    const { title, suggestion, command, docsHint } = this.suggestionFor(svc)
+    return {
+      id: `service-${svc.name.replace(/\s+/g, '-')}`,
+      service: svc.name,
+      severity,
+      title,
+      message: svc.message,
+      suggestion,
+      ...(command ? { command } : {}),
+      ...(docsHint ? { docsHint } : {}),
+    }
+  }
+
+  private suggestionFor(svc: ServiceCheck): { title: string; suggestion: string; command?: string; docsHint?: string } {
+    const down = svc.status === 'down'
+    switch (svc.name) {
+      case 'PostgreSQL':
+        return {
+          title: down ? 'Database is unreachable' : 'Database is slow',
+          suggestion: down
+            ? 'Confirm DATABASE_URL, check Postgres service status on Railway, then click Reconnect on the PostgreSQL card.'
+            : 'Latency is above 500ms. Check Railway region pairing and current Postgres CPU.',
+          docsHint: 'Memory: railway-monorepo → "pnpm + Railway".',
+        }
+      case 'Schema':
+        return {
+          title: down ? 'Migration drift detected' : 'Schema check degraded',
+          suggestion: 'Apply pending Drizzle migrations against the target environment, then click Recheck.',
+          command: 'pnpm migrate:staging',
+          docsHint: 'See scripts/migrate-railway.sh.',
+        }
+      case 'API Server':
+        return {
+          title: down ? 'API server is unhealthy' : 'API server is degraded',
+          suggestion: down
+            ? 'Restart the API. If it keeps falling over, review recent deploys and the latest Railway logs.'
+            : 'Try Force GC on the API Server card. If pressure remains after GC, restart.',
+        }
+      case 'Web App':
+        return {
+          title: down ? 'Web app is unreachable' : 'Web app is slow',
+          suggestion: down
+            ? 'Hit the URL in a browser. If it 500s, check the latest web deploy logs for a build/runtime error.'
+            : 'Slow first response — usually cold start. Recheck in 30s.',
+        }
+      case 'Storefront':
+        return {
+          title: down ? 'Storefront is unreachable' : 'Storefront is slow',
+          suggestion: down
+            ? 'Verify STOREFRONT_URL and the storefront deploy status.'
+            : 'Slow response from the storefront — likely cold start.',
+        }
+      case 'Clerk Auth':
+        return {
+          title: down ? 'Clerk auth is failing' : 'Clerk auth is slow',
+          suggestion: down
+            ? 'CLERK_SECRET_KEY may be invalid or Clerk is down. Verify the key in Clerk dashboard.'
+            : 'Clerk JWKS is responding slowly. Usually transient.',
+        }
+      default:
+        return {
+          title: `${svc.name} ${down ? 'is down' : 'is degraded'}`,
+          suggestion: 'Recheck the service; review logs if the issue persists.',
+        }
+    }
+  }
+
+  private compareFindings = (a: DiagnosticFinding, b: DiagnosticFinding): number => {
+    const order: Record<FindingSeverity, number> = { critical: 0, warning: 1, info: 2 }
+    return order[a.severity] - order[b.severity]
   }
 }
