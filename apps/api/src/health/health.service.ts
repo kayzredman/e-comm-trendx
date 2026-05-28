@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import * as os from 'node:os'
+import * as v8 from 'node:v8'
 import { monitorEventLoopDelay, type IntervalHistogram } from 'node:perf_hooks'
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down'
@@ -60,7 +61,7 @@ export interface HealthReport {
   overall: ServiceStatus
   services: ServiceCheck[]
   serverUptimeSeconds: number
-  memoryMB: { used: number; total: number; percent: number; rssMB: number; externalMB: number; arrayBuffersMB: number }
+  memoryMB: { used: number; total: number; limit?: number; percent: number; rssMB: number; externalMB: number; arrayBuffersMB: number }
   cpu: { user: number; system: number; loadAvg1: number; loadAvg5: number; loadAvg15: number; coreCount: number }
   eventLoop: { lagMeanMs: number; lagP99Ms: number; lagMaxMs: number }
   process: {
@@ -136,7 +137,12 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
       services.some(s => s.status === 'degraded') ? 'degraded' : 'healthy'
 
     const mem = process.memoryUsage()
+    // IMPORTANT: heapTotal is the currently-committed heap, not the limit. V8 grows the
+    // heap on demand up to heap_size_limit (--max-old-space-size, default ~4GB). Using
+    // heapUsed/heapTotal produces false "97% full" alarms on small processes.
+    const heapLimitBytes = v8.getHeapStatistics().heap_size_limit
     const totalMB = Math.round(mem.heapTotal / 1024 / 1024)
+    const limitMB = Math.round(heapLimitBytes / 1024 / 1024)
     const usedMB = Math.round(mem.heapUsed / 1024 / 1024)
     const rssMB = Math.round(mem.rss / 1024 / 1024)
     const externalMB = Math.round((mem.external || 0) / 1024 / 1024)
@@ -156,7 +162,8 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
       memoryMB: {
         used: usedMB,
         total: totalMB,
-        percent: totalMB > 0 ? Math.round((usedMB / totalMB) * 100) : 0,
+        limit: limitMB,
+        percent: limitMB > 0 ? Math.round((usedMB / limitMB) * 100) : 0,
         rssMB,
         externalMB,
         arrayBuffersMB,
@@ -353,10 +360,13 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
 
   private async checkSelf(): Promise<ServiceCheck> {
     const mem = process.memoryUsage()
+    const heapLimitBytes = v8.getHeapStatistics().heap_size_limit
     const usedMB = Math.round(mem.heapUsed / 1024 / 1024)
     const totalMB = Math.round(mem.heapTotal / 1024 / 1024)
+    const limitMB = Math.round(heapLimitBytes / 1024 / 1024)
     const rssMB = Math.round(mem.rss / 1024 / 1024)
-    const percent = totalMB > 0 ? Math.round((usedMB / totalMB) * 100) : 0
+    // Percentage is against the real V8 heap limit, not the currently-committed heap.
+    const percent = limitMB > 0 ? Math.round((usedMB / limitMB) * 100) : 0
     const loop = this.readLoopLag()
     const status: ServiceStatus =
       percent > 95 || loop.lagP99Ms > 1000 ? 'down' :
@@ -368,8 +378,8 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
       status,
       latencyMs: Math.round(loop.lagMeanMs),
       message: status !== 'healthy'
-        ? `Memory ${percent}% \u00b7 loop p99 ${loop.lagP99Ms}ms`
-        : `Heap ${usedMB}/${totalMB}MB \u00b7 RSS ${rssMB}MB \u00b7 loop ${loop.lagMeanMs}ms`,
+        ? `Heap ${usedMB}/${limitMB}MB (${percent}%) \u00b7 loop p99 ${loop.lagP99Ms}ms`
+        : `Heap ${usedMB}/${limitMB}MB (${percent}%) \u00b7 RSS ${rssMB}MB \u00b7 loop ${loop.lagMeanMs}ms`,
       checkedAt: new Date().toISOString(),
       actions: ['restart', 'gc', 'recheck'],
       details: {
@@ -379,7 +389,8 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
         env: process.env.NODE_ENV ?? 'development',
         pid: process.pid,
         port: Number(process.env.API_PORT ?? 4000),
-        heap: `${usedMB}/${totalMB}MB (${percent}%)`,
+        heap: `${usedMB}/${limitMB}MB (${percent}%)`,
+        heapCommitted: `${totalMB}MB`,
         rss: `${rssMB}MB`,
         loopMean: `${loop.lagMeanMs}ms`,
         loopP99: `${loop.lagP99Ms}ms`,
@@ -685,15 +696,19 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
       })
     }
 
-    // Memory / loop pressure (warning-level, captured even when "healthy")
+    // Memory / loop pressure (warning-level, captured even when "healthy").
+    // Note: percent is heapUsed / v8 heap_size_limit — the real ceiling, not the
+    // currently-committed heap. So this only fires when V8 has actually grown the
+    // heap close to --max-old-space-size, which is a real leak/OOM risk.
     if (report.memoryMB.percent > 85) {
+      const limit = report.memoryMB.limit ?? report.memoryMB.total
       findings.push({
         id: 'mem-heap-high',
         service: 'API Server',
         severity: report.memoryMB.percent > 95 ? 'critical' : 'warning',
-        title: `Heap at ${report.memoryMB.percent}%`,
-        message: `Heap ${report.memoryMB.used}/${report.memoryMB.total}MB · RSS ${report.memoryMB.rssMB}MB.`,
-        suggestion: 'Trigger a Force GC from the API Server card, or restart the API if growth keeps climbing after GC.',
+        title: `Heap at ${report.memoryMB.percent}% of V8 limit`,
+        message: `Heap ${report.memoryMB.used}/${limit}MB used · committed ${report.memoryMB.total}MB · RSS ${report.memoryMB.rssMB}MB.`,
+        suggestion: 'Trigger a Force GC from the API Server card. If it stays high, look for a leak (unbounded caches, growing arrays, retained closures) or raise --max-old-space-size.',
       })
     }
     if (report.eventLoop.lagP99Ms > 250) {

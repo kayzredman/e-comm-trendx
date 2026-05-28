@@ -244,7 +244,7 @@ export interface HealthReport {
   overall: ServiceStatus
   services: ServiceCheck[]
   serverUptimeSeconds: number
-  memoryMB: { used: number; total: number; percent: number; rssMB: number; externalMB: number; arrayBuffersMB: number }
+  memoryMB: { used: number; total: number; limit?: number; percent: number; rssMB: number; externalMB: number; arrayBuffersMB: number }
   cpu: { user: number; system: number; loadAvg1: number; loadAvg5: number; loadAvg15: number; coreCount: number }
   eventLoop: { lagMeanMs: number; lagP99Ms: number; lagMaxMs: number }
   process: {
