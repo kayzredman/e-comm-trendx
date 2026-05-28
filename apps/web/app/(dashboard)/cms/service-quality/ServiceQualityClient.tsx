@@ -469,14 +469,29 @@ const SEVERITY_CFG: Record<FindingSeverity, { label: string; color: string; bg: 
 }
 
 function FindingCard({
-  finding, copiedCmd, onCopy,
+  finding, copiedCmd, onCopy, service, capabilities, isOwner, busyAction,
+  onRecheck, onReconnectDb, onForceGc,
 }: {
   finding: DiagnosticFinding
   copiedCmd: string | null
   onCopy: (cmd: string) => void
+  service: ServiceCheck | null
+  capabilities: HealthReport['capabilities'] | null
+  isOwner: boolean
+  busyAction: string | null
+  onRecheck: (svc: ServiceCheck) => void
+  onReconnectDb: (svc: ServiceCheck) => void
+  onForceGc: (svc: ServiceCheck) => void
 }) {
   const cfg = SEVERITY_CFG[finding.severity]
   const Icon = cfg.icon
+  const busy = (a: string) => service ? busyAction === `${service.name}:${a}` : false
+
+  // Decide which existing safe actions apply to this finding.
+  const showRecheck     = !!service
+  const showReconnect   = !!service && (service.name === 'PostgreSQL' || service.name === 'Schema')
+  const showGc          = !!service && finding.id === 'mem-heap-high' && !!capabilities?.canForceGc
+  const hasInlineActions = showRecheck || showReconnect || showGc
   return (
     <div
       className="rounded-lg border p-4"
@@ -545,6 +560,69 @@ function FindingCard({
               {finding.docsHint}
             </p>
           )}
+          {hasInlineActions && service && (
+            <div className="mt-3 flex items-center gap-2 flex-wrap">
+              {showRecheck && (
+                <button
+                  type="button"
+                  onClick={() => onRecheck(service)}
+                  disabled={busy('recheck')}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border"
+                  style={{
+                    background: 'var(--color-surface)',
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-text)',
+                    opacity: busy('recheck') ? 0.6 : 1,
+                  }}
+                  title={`Re-probe ${service.name}`}
+                >
+                  <RefreshCw size={11} className={busy('recheck') ? 'animate-spin' : ''} />
+                  {busy('recheck') ? 'Rechecking…' : 'Recheck'}
+                </button>
+              )}
+              {showReconnect && isOwner && (
+                <button
+                  type="button"
+                  onClick={() => onReconnectDb(service)}
+                  disabled={busy('reconnectDb')}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border"
+                  style={{
+                    background: '#FEF3C7',
+                    borderColor: '#F59E0B',
+                    color: '#92400E',
+                    opacity: busy('reconnectDb') ? 0.6 : 1,
+                  }}
+                  title="Reconnect database pool"
+                >
+                  <RefreshCw size={11} className={busy('reconnectDb') ? 'animate-spin' : ''} />
+                  {busy('reconnectDb') ? 'Reconnecting…' : 'Reconnect DB'}
+                </button>
+              )}
+              {showGc && isOwner && (
+                <button
+                  type="button"
+                  onClick={() => onForceGc(service)}
+                  disabled={busy('gc')}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border"
+                  style={{
+                    background: 'var(--color-surface)',
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-text)',
+                    opacity: busy('gc') ? 0.6 : 1,
+                  }}
+                  title="Force V8 garbage collection"
+                >
+                  <RefreshCw size={11} className={busy('gc') ? 'animate-spin' : ''} />
+                  {busy('gc') ? 'Collecting…' : 'Force GC'}
+                </button>
+              )}
+              {!isOwner && (showReconnect || showGc) && (
+                <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                  (Reconnect / GC require OWNER role)
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -552,14 +630,25 @@ function FindingCard({
 }
 
 function DiagnosticsPanel({
-  report, running, copiedCmd, onCopy, onRerun, onClose,
+  report, running, error, copiedCmd, isOwner, capabilities, busyAction,
+  findServiceFromReport,
+  onCopy, onRerun, onClose,
+  onRecheckService, onReconnectDb, onForceGc,
 }: {
   report: DiagnosticsReport | null
   running: boolean
+  error: string | null
   copiedCmd: string | null
+  isOwner: boolean
+  capabilities: HealthReport['capabilities'] | null
+  busyAction: string | null
+  findServiceFromReport: (name: string) => ServiceCheck | null
   onCopy: (cmd: string) => void
   onRerun: () => void
   onClose: () => void
+  onRecheckService: (svc: ServiceCheck) => void
+  onReconnectDb: (svc: ServiceCheck) => void
+  onForceGc: (svc: ServiceCheck) => void
 }) {
   const allClear = report && report.summary.total === 0
   return (
@@ -624,6 +713,38 @@ function DiagnosticsPanel({
           </div>
         )}
 
+        {!running && !report && error && (
+          <div
+            className="rounded-lg border p-4"
+            style={{ background: '#FEF2F2', borderColor: '#FCA5A5' }}
+          >
+            <div className="flex items-start gap-3">
+              <XCircle size={20} style={{ color: '#DC2626' }} className="shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold" style={{ color: '#991B1B' }}>
+                  Diagnostics could not run
+                </p>
+                <p className="text-xs mt-1" style={{ color: '#7F1D1D', lineHeight: 1.5 }}>
+                  {error}
+                </p>
+                <p className="text-[11px] mt-2" style={{ color: '#991B1B' }}>
+                  Tip: if you&apos;re on local dev, restart the API (<span style={{ fontFamily: 'monospace' }}>pnpm --filter @trendmarga/api dev</span>) so it picks up the new
+                  <span style={{ fontFamily: 'monospace' }}> POST /health/diagnostics</span> route. Otherwise check API logs and your role (OWNER / MANAGER required).
+                </p>
+                <button
+                  type="button"
+                  onClick={onRerun}
+                  className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border"
+                  style={{ background: 'white', borderColor: '#FCA5A5', color: '#991B1B' }}
+                >
+                  <RefreshCw size={11} />
+                  Try again
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {report && (
           <>
             {/* Summary chips */}
@@ -657,14 +778,27 @@ function DiagnosticsPanel({
             ) : (
               <div className="grid gap-3">
                 {report.findings.map(f => (
-                  <FindingCard key={f.id} finding={f} copiedCmd={copiedCmd} onCopy={onCopy} />
+                  <FindingCard
+                    key={f.id}
+                    finding={f}
+                    copiedCmd={copiedCmd}
+                    onCopy={onCopy}
+                    service={findServiceFromReport(f.service)}
+                    capabilities={capabilities}
+                    isOwner={isOwner}
+                    busyAction={busyAction}
+                    onRecheck={onRecheckService}
+                    onReconnectDb={onReconnectDb}
+                    onForceGc={onForceGc}
+                  />
                 ))}
               </div>
             )}
 
             <p className="text-[11px] mt-4" style={{ color: 'var(--color-text-muted)' }}>
-              Diagnostics is read-only — it detects issues and suggests fixes but does not change
-              infrastructure. One-click remediation is a planned Tier 2 enhancement (see TrendMarga-Plan.md).
+              Inline actions (Recheck / Reconnect / GC) reuse existing safe controls. One-click
+              remediation for missing env vars, restarts, and re-seeding is a planned Tier 2
+              enhancement (see TrendMarga-Plan.md).
             </p>
           </>
         )}
@@ -706,6 +840,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
   const [diagnostics, setDiagnostics] = useState<DiagnosticsReport | null>(null)
   const [diagRunning, setDiagRunning] = useState(false)
   const [diagOpen, setDiagOpen] = useState(false)
+  const [diagError, setDiagError] = useState<string | null>(null)
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const countRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -843,6 +978,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
   const handleRunDiagnostics = async () => {
     setDiagRunning(true)
     setDiagOpen(true)
+    setDiagError(null)
     try {
       const res = await healthApi.diagnostics(token)
       setDiagnostics(res)
@@ -854,7 +990,9 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
       // Also refresh the per-service tiles so they reflect the latest probes.
       void refresh()
     } catch (err: unknown) {
-      pushFeedback({ service: 'Diagnostics', ok: false, message: errMsg(err, 'Diagnostics failed') })
+      const msg = errMsg(err, 'Diagnostics failed')
+      setDiagError(msg)
+      pushFeedback({ service: 'Diagnostics', ok: false, message: msg })
     } finally {
       setDiagRunning(false)
     }
@@ -1003,10 +1141,18 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
         <DiagnosticsPanel
           report={diagnostics}
           running={diagRunning}
+          error={diagError}
           copiedCmd={copiedCmd}
+          isOwner={isOwner}
+          capabilities={report?.capabilities ?? null}
+          busyAction={busyAction}
+          findServiceFromReport={(name) => report?.services.find(s => s.name === name) ?? null}
           onCopy={copyCommand}
           onRerun={handleRunDiagnostics}
           onClose={() => setDiagOpen(false)}
+          onRecheckService={(svc) => handleRecheck(svc)}
+          onReconnectDb={(svc) => handleReconnectDb(svc)}
+          onForceGc={(svc) => handleGc(svc)}
         />
       )}
 
