@@ -39,6 +39,7 @@ const STATUS_CONFIG: Record<ServiceStatus, { label: string; color: string; bg: s
 
 const SERVICE_ICONS: Record<string, typeof Server> = {
   'PostgreSQL':   Database,
+  'Schema':       Layers,
   'API Server':   Server,
   'Web App':      Globe,
   'Storefront':   ShoppingBag,
