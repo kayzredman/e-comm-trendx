@@ -8,7 +8,10 @@
     "typecheck": "turbo run typecheck",
     "db:generate": "turbo run db:generate --filter=@trendmarga/db",
     "db:migrate": "turbo run db:migrate --filter=@trendmarga/db",
-    "db:studio": "turbo run db:studio --filter=@trendmarga/db"
+    "db:studio": "turbo run db:studio --filter=@trendmarga/db",
+    "migrate:dev": "bash scripts/migrate-railway.sh dev",
+    "migrate:staging": "bash scripts/migrate-railway.sh staging",
+    "migrate:prod": "bash scripts/migrate-railway.sh production"
   },
   "devDependencies": {
     "turbo": "^2.3.3",
