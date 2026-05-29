@@ -3,6 +3,7 @@ import { DbService } from '../db/db.service'
 import { orders, orderItems, customers, products, productVariants } from '@trendmarga/db'
 import { eq, desc, sql } from 'drizzle-orm'
 import { NotificationsService } from '../notifications/notifications.service'
+import { DeliveryEventsService } from '../delivery/events.service'
 import { features } from '@trendmarga/config'
 
 const STATUS_TO_TEMPLATE = {
@@ -12,11 +13,25 @@ const STATUS_TO_TEMPLATE = {
   CANCELLED: 'orderCancelled',
 } as const
 
+const STATUS_TO_EVENT = {
+  CONFIRMED: 'CONFIRMED',
+  PROCESSING: 'PROCESSING',
+  READY_FOR_PICKUP: 'READY_FOR_PICKUP',
+  OUT_FOR_DELIVERY: 'OUT_FOR_DELIVERY',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
+} as const
+
+function generateDeliveryCode(): string {
+  return String(Math.floor(1000 + Math.random() * 9000))
+}
+
 @Injectable()
 export class OrdersService {
   constructor(
     private readonly db: DbService,
     private readonly notifications: NotificationsService,
+    private readonly events: DeliveryEventsService,
   ) {}
 
   findAll() {
@@ -35,12 +50,27 @@ export class OrdersService {
     return order
   }
 
-  async updateStatus(id: string, status: typeof orders.$inferInsert['status']) {
+  async updateStatus(
+    id: string,
+    status: typeof orders.$inferInsert['status'],
+    actor?: { id?: string; name?: string },
+  ) {
     const [order] = await this.db.client
       .update(orders)
       .set({ status, updatedAt: new Date() })
       .where(eq(orders.id, id))
       .returning()
+
+    // Append to the delivery_events spine
+    const eventType = STATUS_TO_EVENT[status as keyof typeof STATUS_TO_EVENT]
+    if (eventType) {
+      await this.events.record({
+        orderId: id,
+        type: eventType,
+        actorId: actor?.id,
+        actorName: actor?.name,
+      }).catch(() => {})
+    }
 
     // Notify customer on lifecycle transitions (no-ops unless FEATURE_NOTIFICATIONS=true)
     const template = STATUS_TO_TEMPLATE[status as keyof typeof STATUS_TO_TEMPLATE]
@@ -69,8 +99,14 @@ export class OrdersService {
   }
 
   async create(data: { order: typeof orders.$inferInsert; items: Omit<typeof orderItems.$inferInsert, 'orderId'>[] }) {
+    // Generate the customer-facing delivery OTP if not already set.
+    const orderInput: typeof orders.$inferInsert = {
+      ...data.order,
+      deliveryCode: data.order.deliveryCode ?? generateDeliveryCode(),
+    }
+
     const result = await this.db.client.transaction(async (tx) => {
-      const [order] = await tx.insert(orders).values(data.order).returning()
+      const [order] = await tx.insert(orders).values(orderInput).returning()
       const insertedItems = await tx.insert(orderItems).values(
         data.items.map(item => ({ ...item, orderId: order.id }))
       ).returning()
@@ -92,6 +128,12 @@ export class OrdersService {
 
       return { ...order, items: insertedItems }
     })
+
+    // Seed the event spine
+    await this.events.record({ orderId: result.id, type: 'CREATED' }).catch(() => {})
+    if (result.status === 'CONFIRMED') {
+      await this.events.record({ orderId: result.id, type: 'CONFIRMED' }).catch(() => {})
+    }
 
     // Fire order-placed notification (no-op unless flag enabled)
     if (result.customerId) {

@@ -9,11 +9,13 @@ import {
   XCircle, User, MapPin, CreditCard, Phone, Mail, Printer, ExternalLink, StickyNote,
 } from 'lucide-react'
 import Link from 'next/link'
+import DeliveryControl from './DeliveryControl'
 
 const STATUS_STYLE: Record<string, { label: string; bg: string; color: string; ring: string }> = {
   PENDING:          { label: 'Pending',          bg: '#FEF9C3', color: '#CA8A04', ring: '#FDE68A' },
   CONFIRMED:        { label: 'Confirmed',        bg: '#DBEAFE', color: '#2563EB', ring: '#BFDBFE' },
   PROCESSING:       { label: 'Processing',       bg: '#EDE9FE', color: '#7C3AED', ring: '#DDD6FE' },
+  READY_FOR_PICKUP: { label: 'Ready for pickup', bg: '#FEF3C7', color: '#B45309', ring: '#FDE68A' },
   OUT_FOR_DELIVERY: { label: 'Out for delivery', bg: '#FFEDD5', color: '#EA580C', ring: '#FED7AA' },
   DELIVERED:        { label: 'Delivered',        bg: '#DCFCE7', color: '#16A34A', ring: '#BBF7D0' },
   CANCELLED:        { label: 'Cancelled',        bg: '#FEE2E2', color: '#DC2626', ring: '#FECACA' },
@@ -23,6 +25,7 @@ const TIMELINE_STEPS: Array<{ key: OrderStatus; label: string; icon: React.Eleme
   { key: 'PENDING',          label: 'Placed',         icon: Clock },
   { key: 'CONFIRMED',        label: 'Confirmed',      icon: CheckCircle2 },
   { key: 'PROCESSING',       label: 'Processing',     icon: Package },
+  { key: 'READY_FOR_PICKUP', label: 'Ready for pickup', icon: Package },
   { key: 'OUT_FOR_DELIVERY', label: 'Out for delivery', icon: Truck },
   { key: 'DELIVERED',        label: 'Delivered',      icon: Home },
 ]
@@ -49,7 +52,7 @@ export default function OrderDetail({ order: initial }: { order: Order }) {
 
   // All available statuses — staff can move the order to any of them
   const ALL_STATUSES: OrderStatus[] = useMemo(
-    () => ['PENDING', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'],
+    () => ['PENDING', 'CONFIRMED', 'PROCESSING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'],
     [],
   )
 
@@ -234,6 +237,11 @@ export default function OrderDetail({ order: initial }: { order: Order }) {
         </div>
       </div>
 
+      {/* ── Delivery control: courier assign / track / verify ── */}
+      {!isCancelled && (
+        <DeliveryControl orderId={order.id} deliveryCode={order.deliveryCode ?? null} />
+      )}
+
       {/* ── 2-col body ──────────────────────────────────────── */}
       <div className="grid gap-5 lg:grid-cols-[2fr_1fr]">
         {/* LEFT: Items + Notes */}
@@ -415,6 +423,20 @@ export default function OrderDetail({ order: initial }: { order: Order }) {
                 {PAYMENT_LABEL[order.paymentMethod] ?? order.paymentMethod}
               </span>
             </div>
+            {order.paymentStatus && (
+              <div className="mt-2 flex items-center justify-between text-xs">
+                <span style={{ color: 'var(--color-text-muted)' }}>Status</span>
+                <span className="px-2 py-0.5 rounded-md font-semibold"
+                  style={
+                    order.paymentStatus === 'PAID' ? { background: '#ECFDF5', color: '#059669' }
+                    : order.paymentStatus === 'FAILED' ? { background: '#FEE2E2', color: '#991B1B' }
+                    : order.paymentStatus === 'REFUNDED' ? { background: '#F1F5F9', color: '#475569' }
+                    : { background: '#FEF3C7', color: '#92400E' }
+                  }>
+                  {order.paymentStatus}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>

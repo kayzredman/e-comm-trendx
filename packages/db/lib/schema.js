@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.productVariantsRelations = exports.productVariants = exports.productImagesRelations = exports.productImages = exports.imageSourceEnum = exports.posHoldsRelations = exports.posShiftsRelations = exports.posRegistersRelations = exports.posHolds = exports.posShifts = exports.posRegisters = exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.posHoldStatusEnum = exports.posShiftStatusEnum = exports.orderSourceEnum = exports.paymentMethodEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
+exports.paymentProviderEnum = exports.payoutMethodEnum = exports.paymentVerificationStatusEnum = exports.deliveryEventTypeEnum = exports.assignmentStatusEnum = exports.courierTypeEnum = exports.productVariantsRelations = exports.productVariants = exports.productImagesRelations = exports.productImages = exports.imageSourceEnum = exports.posHoldsRelations = exports.posShiftsRelations = exports.posRegistersRelations = exports.posHolds = exports.posShifts = exports.posRegisters = exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.posHoldStatusEnum = exports.posShiftStatusEnum = exports.orderSourceEnum = exports.paymentMethodEnum = exports.paymentStatusEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
+exports.paymentVerificationsRelations = exports.payoutsRelations = exports.deliveryEventsRelations = exports.deliveryAssignmentsRelations = exports.couriersRelations = exports.paymentVerifications = exports.payouts = exports.deliveryEvents = exports.deliveryAssignments = exports.couriers = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 const drizzle_orm_1 = require("drizzle-orm");
 const cuid2_1 = require("@paralleldrive/cuid2");
@@ -8,8 +9,9 @@ const cuid2_1 = require("@paralleldrive/cuid2");
 exports.userRoleEnum = (0, pg_core_1.pgEnum)('user_role', ['OWNER', 'MANAGER', 'CONTENT_EDITOR', 'ORDER_MANAGER', 'VIEWER', 'STAFF', 'CASHIER']);
 exports.productStatusEnum = (0, pg_core_1.pgEnum)('product_status', ['ACTIVE', 'DRAFT', 'ARCHIVED']);
 exports.orderStatusEnum = (0, pg_core_1.pgEnum)('order_status', [
-    'PENDING', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',
+    'PENDING', 'CONFIRMED', 'PROCESSING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',
 ]);
+exports.paymentStatusEnum = (0, pg_core_1.pgEnum)('payment_status', ['PENDING', 'PAID', 'FAILED', 'REFUNDED']);
 exports.paymentMethodEnum = (0, pg_core_1.pgEnum)('payment_method', ['CASH_ON_DELIVERY', 'MOBILE_MONEY', 'CARD', 'CASH']);
 exports.orderSourceEnum = (0, pg_core_1.pgEnum)('order_source', ['ONLINE', 'POS']);
 exports.posShiftStatusEnum = (0, pg_core_1.pgEnum)('pos_shift_status', ['OPEN', 'CLOSED']);
@@ -84,6 +86,12 @@ exports.orders = (0, pg_core_1.pgTable)('orders', {
     momoReference: (0, pg_core_1.varchar)('momo_reference', { length: 64 }),
     cardLast4: (0, pg_core_1.varchar)('card_last4', { length: 4 }),
     receiptNumber: (0, pg_core_1.varchar)('receipt_number', { length: 32 }),
+    // Delivery v1
+    paymentStatus: (0, exports.paymentStatusEnum)('payment_status').notNull().default('PENDING'),
+    paidAt: (0, pg_core_1.timestamp)('paid_at'),
+    zoneId: (0, pg_core_1.varchar)('zone_id', { length: 128 }),
+    // 4-digit OTP shown to customer; courier reads it at handoff
+    deliveryCode: (0, pg_core_1.varchar)('delivery_code', { length: 8 }),
     createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
     updatedAt: (0, pg_core_1.timestamp)('updated_at').notNull().defaultNow(),
 });
@@ -117,6 +125,8 @@ exports.deliveryZones = (0, pg_core_1.pgTable)('delivery_zones', {
     feeStrategy: (0, exports.feeStrategyEnum)('fee_strategy').notNull().default('FLAT'),
     feePerKm: (0, pg_core_1.numeric)('fee_per_km', { precision: 8, scale: 2 }),
     freeThreshold: (0, pg_core_1.numeric)('free_threshold', { precision: 12, scale: 2 }),
+    // When true, orders to this zone must be paid before fulfilment (no COD)
+    requiresPrepayment: (0, pg_core_1.boolean)('requires_prepayment').notNull().default(false),
     isActive: (0, pg_core_1.boolean)('is_active').notNull().default(true),
 });
 exports.deliverySettings = (0, pg_core_1.pgTable)('delivery_settings', {
@@ -305,5 +315,109 @@ exports.productVariants = (0, pg_core_1.pgTable)('product_variants', {
 });
 exports.productVariantsRelations = (0, drizzle_orm_1.relations)(exports.productVariants, ({ one }) => ({
     product: one(exports.products, { fields: [exports.productVariants.productId], references: [exports.products.id] }),
+}));
+// ── Delivery v1 ───────────────────────────────────────────────────────────────
+exports.courierTypeEnum = (0, pg_core_1.pgEnum)('courier_type', ['FLEET', 'FREELANCE']);
+exports.assignmentStatusEnum = (0, pg_core_1.pgEnum)('assignment_status', ['ASSIGNED', 'PICKED_UP', 'DELIVERED', 'FAILED', 'CANCELLED']);
+exports.deliveryEventTypeEnum = (0, pg_core_1.pgEnum)('delivery_event_type', [
+    'CREATED', 'CONFIRMED', 'PROCESSING', 'READY_FOR_PICKUP',
+    'ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED',
+    'FAILED', 'CANCELLED', 'PAYMENT_VERIFIED', 'PAYMENT_REJECTED', 'NOTE',
+]);
+exports.paymentVerificationStatusEnum = (0, pg_core_1.pgEnum)('payment_verification_status', ['PENDING', 'VERIFIED', 'REJECTED']);
+exports.payoutMethodEnum = (0, pg_core_1.pgEnum)('payout_method', ['MOMO', 'CASH', 'BANK']);
+exports.paymentProviderEnum = (0, pg_core_1.pgEnum)('payment_provider', ['MTN_MOMO', 'VODAFONE_CASH', 'AIRTELTIGO', 'BANK', 'OTHER']);
+exports.couriers = (0, pg_core_1.pgTable)('couriers', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    name: (0, pg_core_1.varchar)('name', { length: 255 }).notNull(),
+    phone: (0, pg_core_1.varchar)('phone', { length: 30 }).notNull(),
+    employmentType: (0, exports.courierTypeEnum)('employment_type').notNull().default('FREELANCE'),
+    /** Percent of delivery fee paid out to FREELANCE couriers (0–100). Ignored for FLEET. */
+    commissionPct: (0, pg_core_1.numeric)('commission_pct', { precision: 5, scale: 2 }).notNull().default('15'),
+    /** Optional flat amount per delivery — when set, used instead of commission. */
+    flatPerDelivery: (0, pg_core_1.numeric)('flat_per_delivery', { precision: 10, scale: 2 }),
+    vehicle: (0, pg_core_1.varchar)('vehicle', { length: 120 }),
+    momoNumber: (0, pg_core_1.varchar)('momo_number', { length: 30 }),
+    isActive: (0, pg_core_1.boolean)('is_active').notNull().default(true),
+    notes: (0, pg_core_1.text)('notes'),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)('updated_at').notNull().defaultNow(),
+});
+exports.deliveryAssignments = (0, pg_core_1.pgTable)('delivery_assignments', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    orderId: (0, pg_core_1.varchar)('order_id', { length: 128 }).notNull(),
+    courierId: (0, pg_core_1.varchar)('courier_id', { length: 128 }).notNull(),
+    status: (0, exports.assignmentStatusEnum)('status').notNull().default('ASSIGNED'),
+    /** Snapshot of the delivery fee at assignment time. */
+    deliveryFee: (0, pg_core_1.numeric)('delivery_fee', { precision: 12, scale: 2 }).notNull(),
+    /** Snapshot of what we owe the courier for this delivery (0 for FLEET). */
+    commissionAmount: (0, pg_core_1.numeric)('commission_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+    assignedBy: (0, pg_core_1.varchar)('assigned_by', { length: 128 }),
+    assignedAt: (0, pg_core_1.timestamp)('assigned_at').notNull().defaultNow(),
+    pickedUpAt: (0, pg_core_1.timestamp)('picked_up_at'),
+    deliveredAt: (0, pg_core_1.timestamp)('delivered_at'),
+    failedAt: (0, pg_core_1.timestamp)('failed_at'),
+    failureReason: (0, pg_core_1.text)('failure_reason'),
+    /** Set when this assignment's commission has been included in a payout. */
+    payoutId: (0, pg_core_1.varchar)('payout_id', { length: 128 }),
+});
+exports.deliveryEvents = (0, pg_core_1.pgTable)('delivery_events', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    orderId: (0, pg_core_1.varchar)('order_id', { length: 128 }).notNull(),
+    type: (0, exports.deliveryEventTypeEnum)('type').notNull(),
+    actorId: (0, pg_core_1.varchar)('actor_id', { length: 128 }),
+    actorName: (0, pg_core_1.varchar)('actor_name', { length: 255 }),
+    courierId: (0, pg_core_1.varchar)('courier_id', { length: 128 }),
+    note: (0, pg_core_1.text)('note'),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+});
+exports.payouts = (0, pg_core_1.pgTable)('payouts', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    courierId: (0, pg_core_1.varchar)('courier_id', { length: 128 }).notNull(),
+    amount: (0, pg_core_1.numeric)('amount', { precision: 12, scale: 2 }).notNull(),
+    method: (0, exports.payoutMethodEnum)('method').notNull().default('MOMO'),
+    reference: (0, pg_core_1.varchar)('reference', { length: 120 }),
+    periodFrom: (0, pg_core_1.timestamp)('period_from').notNull(),
+    periodTo: (0, pg_core_1.timestamp)('period_to').notNull(),
+    deliveryCount: (0, pg_core_1.integer)('delivery_count').notNull().default(0),
+    paidBy: (0, pg_core_1.varchar)('paid_by', { length: 128 }),
+    paidAt: (0, pg_core_1.timestamp)('paid_at').notNull().defaultNow(),
+    notes: (0, pg_core_1.text)('notes'),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+});
+exports.paymentVerifications = (0, pg_core_1.pgTable)('payment_verifications', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    orderId: (0, pg_core_1.varchar)('order_id', { length: 128 }).notNull(),
+    amount: (0, pg_core_1.numeric)('amount', { precision: 12, scale: 2 }).notNull(),
+    provider: (0, exports.paymentProviderEnum)('provider').notNull(),
+    providerRef: (0, pg_core_1.varchar)('provider_ref', { length: 120 }),
+    fromPhone: (0, pg_core_1.varchar)('from_phone', { length: 30 }),
+    screenshotUrl: (0, pg_core_1.text)('screenshot_url'),
+    status: (0, exports.paymentVerificationStatusEnum)('status').notNull().default('PENDING'),
+    verifiedBy: (0, pg_core_1.varchar)('verified_by', { length: 128 }),
+    verifiedAt: (0, pg_core_1.timestamp)('verified_at'),
+    rejectionReason: (0, pg_core_1.text)('rejection_reason'),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+});
+// Relations
+exports.couriersRelations = (0, drizzle_orm_1.relations)(exports.couriers, ({ many }) => ({
+    assignments: many(exports.deliveryAssignments),
+    payouts: many(exports.payouts),
+}));
+exports.deliveryAssignmentsRelations = (0, drizzle_orm_1.relations)(exports.deliveryAssignments, ({ one }) => ({
+    order: one(exports.orders, { fields: [exports.deliveryAssignments.orderId], references: [exports.orders.id] }),
+    courier: one(exports.couriers, { fields: [exports.deliveryAssignments.courierId], references: [exports.couriers.id] }),
+    payout: one(exports.payouts, { fields: [exports.deliveryAssignments.payoutId], references: [exports.payouts.id] }),
+}));
+exports.deliveryEventsRelations = (0, drizzle_orm_1.relations)(exports.deliveryEvents, ({ one }) => ({
+    order: one(exports.orders, { fields: [exports.deliveryEvents.orderId], references: [exports.orders.id] }),
+    courier: one(exports.couriers, { fields: [exports.deliveryEvents.courierId], references: [exports.couriers.id] }),
+}));
+exports.payoutsRelations = (0, drizzle_orm_1.relations)(exports.payouts, ({ one, many }) => ({
+    courier: one(exports.couriers, { fields: [exports.payouts.courierId], references: [exports.couriers.id] }),
+    assignments: many(exports.deliveryAssignments),
+}));
+exports.paymentVerificationsRelations = (0, drizzle_orm_1.relations)(exports.paymentVerifications, ({ one }) => ({
+    order: one(exports.orders, { fields: [exports.paymentVerifications.orderId], references: [exports.orders.id] }),
 }));
 //# sourceMappingURL=schema.js.map

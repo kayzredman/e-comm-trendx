@@ -2,7 +2,7 @@ import { storefrontApi } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle2, Clock, Package, Truck, Home, ShoppingBag } from 'lucide-react'
+import { CheckCircle2, Clock, Package, Truck, Home, ShoppingBag, Phone, MessageCircle, Bike } from 'lucide-react'
 import type { Metadata } from 'next'
 import OrderStatusPoller from './OrderStatusPoller'
 
@@ -19,6 +19,7 @@ type OrderStatus =
   | 'PENDING'
   | 'CONFIRMED'
   | 'PROCESSING'
+  | 'READY_FOR_PICKUP'
   | 'OUT_FOR_DELIVERY'
   | 'DELIVERED'
   | 'CANCELLED'
@@ -48,8 +49,14 @@ const STATUS_STEPS: Array<{
     description: 'Your order is being packed and made ready for dispatch.',
   },
   {
+    key: 'READY_FOR_PICKUP',
+    label: 'Ready',
+    icon: Package,
+    description: 'Your order is packed and waiting for a courier.',
+  },
+  {
     key: 'OUT_FOR_DELIVERY',
-    label: 'Out for Delivery',
+    label: 'On the way',
     icon: Truck,
     description: "Your order is on its way! Expect delivery soon.",
   },
@@ -204,6 +211,53 @@ export default async function OrderTrackingPage({ params }: Props) {
           )}
 
           <OrderStatusPoller status={order.status} />
+        </div>
+      )}
+
+      {/* ── Active courier card ── */}
+      {order.activeCourier && !isCancelled && (
+        <div className="rounded-2xl p-5 mb-6" style={{ background: 'linear-gradient(135deg,#1E40AF 0%,#2563EB 100%)', color: '#fff' }}>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base"
+              style={{ background: 'rgba(255,255,255,0.2)' }}>
+              {order.activeCourier.name.split(' ').map(p => p[0]).slice(0, 2).join('')}
+            </div>
+            <div className="flex-1">
+              <div className="text-[10px] uppercase tracking-wider font-bold opacity-80 flex items-center gap-1">
+                <Bike size={11} /> Your courier
+              </div>
+              <div className="font-bold">{order.activeCourier.name}</div>
+              <div className="text-xs opacity-80">{order.activeCourier.vehicle ?? 'On the way'} · {order.activeCourier.assignmentStatus.replace('_', ' ')}</div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <a href={`tel:${order.activeCourier.phone}`}
+              className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-bold"
+              style={{ background: '#fff', color: '#1E40AF' }}>
+              <Phone size={14} /> Call
+            </a>
+            <a href={`https://wa.me/${order.activeCourier.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer"
+              className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-bold"
+              style={{ background: '#25D366', color: '#fff' }}>
+              <MessageCircle size={14} /> WhatsApp
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delivery code card ── */}
+      {order.deliveryCode && !isCancelled && order.status !== 'DELIVERED' && (
+        <div className="rounded-2xl border-2 border-dashed p-5 mb-6 text-center"
+          style={{ borderColor: '#10B981', background: '#ECFDF5' }}>
+          <div className="text-[10px] uppercase tracking-wider font-bold mb-1" style={{ color: '#047857' }}>
+            Your delivery code
+          </div>
+          <div className="text-4xl font-extrabold tracking-[0.4em] font-mono my-2" style={{ color: '#047857' }}>
+            {order.deliveryCode}
+          </div>
+          <p className="text-xs" style={{ color: '#065F46' }}>
+            Share this with the courier at your doorstep to confirm delivery.
+          </p>
         </div>
       )}
 

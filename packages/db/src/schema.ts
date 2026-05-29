@@ -6,8 +6,9 @@ import { createId } from '@paralleldrive/cuid2'
 export const userRoleEnum = pgEnum('user_role', ['OWNER', 'MANAGER', 'CONTENT_EDITOR', 'ORDER_MANAGER', 'VIEWER', 'STAFF', 'CASHIER'])
 export const productStatusEnum = pgEnum('product_status', ['ACTIVE', 'DRAFT', 'ARCHIVED'])
 export const orderStatusEnum = pgEnum('order_status', [
-  'PENDING', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',
+  'PENDING', 'CONFIRMED', 'PROCESSING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED',
 ])
+export const paymentStatusEnum = pgEnum('payment_status', ['PENDING', 'PAID', 'FAILED', 'REFUNDED'])
 export const paymentMethodEnum = pgEnum('payment_method', ['CASH_ON_DELIVERY', 'MOBILE_MONEY', 'CARD', 'CASH'])
 export const orderSourceEnum = pgEnum('order_source', ['ONLINE', 'POS'])
 export const posShiftStatusEnum = pgEnum('pos_shift_status', ['OPEN', 'CLOSED'])
@@ -93,6 +94,12 @@ export const orders = pgTable('orders', {
   momoReference: varchar('momo_reference', { length: 64 }),
   cardLast4: varchar('card_last4', { length: 4 }),
   receiptNumber: varchar('receipt_number', { length: 32 }),
+  // Delivery v1
+  paymentStatus: paymentStatusEnum('payment_status').notNull().default('PENDING'),
+  paidAt: timestamp('paid_at'),
+  zoneId: varchar('zone_id', { length: 128 }),
+  // 4-digit OTP shown to customer; courier reads it at handoff
+  deliveryCode: varchar('delivery_code', { length: 8 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
@@ -129,6 +136,8 @@ export const deliveryZones = pgTable('delivery_zones', {
   feeStrategy: feeStrategyEnum('fee_strategy').notNull().default('FLAT'),
   feePerKm: numeric('fee_per_km', { precision: 8, scale: 2 }),
   freeThreshold: numeric('free_threshold', { precision: 12, scale: 2 }),
+  // When true, orders to this zone must be paid before fulfilment (no COD)
+  requiresPrepayment: boolean('requires_prepayment').notNull().default(false),
   isActive: boolean('is_active').notNull().default(true),
 })
 
@@ -346,5 +355,120 @@ export const productVariants = pgTable('product_variants', {
 
 export const productVariantsRelations = relations(productVariants, ({ one }) => ({
   product: one(products, { fields: [productVariants.productId], references: [products.id] }),
+}))
+
+// ── Delivery v1 ───────────────────────────────────────────────────────────────
+export const courierTypeEnum = pgEnum('courier_type', ['FLEET', 'FREELANCE'])
+export const assignmentStatusEnum = pgEnum('assignment_status', ['ASSIGNED', 'PICKED_UP', 'DELIVERED', 'FAILED', 'CANCELLED'])
+export const deliveryEventTypeEnum = pgEnum('delivery_event_type', [
+  'CREATED', 'CONFIRMED', 'PROCESSING', 'READY_FOR_PICKUP',
+  'ASSIGNED', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'DELIVERED',
+  'FAILED', 'CANCELLED', 'PAYMENT_VERIFIED', 'PAYMENT_REJECTED', 'NOTE',
+])
+export const paymentVerificationStatusEnum = pgEnum('payment_verification_status', ['PENDING', 'VERIFIED', 'REJECTED'])
+export const payoutMethodEnum = pgEnum('payout_method', ['MOMO', 'CASH', 'BANK'])
+export const paymentProviderEnum = pgEnum('payment_provider', ['MTN_MOMO', 'VODAFONE_CASH', 'AIRTELTIGO', 'BANK', 'OTHER'])
+
+export const couriers = pgTable('couriers', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  phone: varchar('phone', { length: 30 }).notNull(),
+  employmentType: courierTypeEnum('employment_type').notNull().default('FREELANCE'),
+  /** Percent of delivery fee paid out to FREELANCE couriers (0–100). Ignored for FLEET. */
+  commissionPct: numeric('commission_pct', { precision: 5, scale: 2 }).notNull().default('15'),
+  /** Optional flat amount per delivery — when set, used instead of commission. */
+  flatPerDelivery: numeric('flat_per_delivery', { precision: 10, scale: 2 }),
+  vehicle: varchar('vehicle', { length: 120 }),
+  momoNumber: varchar('momo_number', { length: 30 }),
+  isActive: boolean('is_active').notNull().default(true),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const deliveryAssignments = pgTable('delivery_assignments', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  orderId: varchar('order_id', { length: 128 }).notNull(),
+  courierId: varchar('courier_id', { length: 128 }).notNull(),
+  status: assignmentStatusEnum('status').notNull().default('ASSIGNED'),
+  /** Snapshot of the delivery fee at assignment time. */
+  deliveryFee: numeric('delivery_fee', { precision: 12, scale: 2 }).notNull(),
+  /** Snapshot of what we owe the courier for this delivery (0 for FLEET). */
+  commissionAmount: numeric('commission_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  assignedBy: varchar('assigned_by', { length: 128 }),
+  assignedAt: timestamp('assigned_at').notNull().defaultNow(),
+  pickedUpAt: timestamp('picked_up_at'),
+  deliveredAt: timestamp('delivered_at'),
+  failedAt: timestamp('failed_at'),
+  failureReason: text('failure_reason'),
+  /** Set when this assignment's commission has been included in a payout. */
+  payoutId: varchar('payout_id', { length: 128 }),
+})
+
+export const deliveryEvents = pgTable('delivery_events', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  orderId: varchar('order_id', { length: 128 }).notNull(),
+  type: deliveryEventTypeEnum('type').notNull(),
+  actorId: varchar('actor_id', { length: 128 }),
+  actorName: varchar('actor_name', { length: 255 }),
+  courierId: varchar('courier_id', { length: 128 }),
+  note: text('note'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+export const payouts = pgTable('payouts', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  courierId: varchar('courier_id', { length: 128 }).notNull(),
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+  method: payoutMethodEnum('method').notNull().default('MOMO'),
+  reference: varchar('reference', { length: 120 }),
+  periodFrom: timestamp('period_from').notNull(),
+  periodTo: timestamp('period_to').notNull(),
+  deliveryCount: integer('delivery_count').notNull().default(0),
+  paidBy: varchar('paid_by', { length: 128 }),
+  paidAt: timestamp('paid_at').notNull().defaultNow(),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+export const paymentVerifications = pgTable('payment_verifications', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  orderId: varchar('order_id', { length: 128 }).notNull(),
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+  provider: paymentProviderEnum('provider').notNull(),
+  providerRef: varchar('provider_ref', { length: 120 }),
+  fromPhone: varchar('from_phone', { length: 30 }),
+  screenshotUrl: text('screenshot_url'),
+  status: paymentVerificationStatusEnum('status').notNull().default('PENDING'),
+  verifiedBy: varchar('verified_by', { length: 128 }),
+  verifiedAt: timestamp('verified_at'),
+  rejectionReason: text('rejection_reason'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// Relations
+export const couriersRelations = relations(couriers, ({ many }) => ({
+  assignments: many(deliveryAssignments),
+  payouts: many(payouts),
+}))
+
+export const deliveryAssignmentsRelations = relations(deliveryAssignments, ({ one }) => ({
+  order: one(orders, { fields: [deliveryAssignments.orderId], references: [orders.id] }),
+  courier: one(couriers, { fields: [deliveryAssignments.courierId], references: [couriers.id] }),
+  payout: one(payouts, { fields: [deliveryAssignments.payoutId], references: [payouts.id] }),
+}))
+
+export const deliveryEventsRelations = relations(deliveryEvents, ({ one }) => ({
+  order: one(orders, { fields: [deliveryEvents.orderId], references: [orders.id] }),
+  courier: one(couriers, { fields: [deliveryEvents.courierId], references: [couriers.id] }),
+}))
+
+export const payoutsRelations = relations(payouts, ({ one, many }) => ({
+  courier: one(couriers, { fields: [payouts.courierId], references: [couriers.id] }),
+  assignments: many(deliveryAssignments),
+}))
+
+export const paymentVerificationsRelations = relations(paymentVerifications, ({ one }) => ({
+  order: one(orders, { fields: [paymentVerifications.orderId], references: [orders.id] }),
 }))
 
