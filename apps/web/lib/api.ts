@@ -274,7 +274,8 @@ export function resolveProductImage(
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
-export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED'
+export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'READY_FOR_PICKUP' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED'
+export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
 
 export type OrderItem = {
   id: string
@@ -306,6 +307,10 @@ export type Order = {
   tenderedAmount?: string | null
   changeAmount?: string | null
   receiptNumber?: string | null
+  paymentStatus?: PaymentStatus
+  paidAt?: string | null
+  zoneId?: string | null
+  deliveryCode?: string | null
   createdAt: string
   updatedAt: string
   customer?: Customer
@@ -317,6 +322,173 @@ export const ordersApi = {
   get: (id: string, token: string): Promise<Order> => apiFetch(`/orders/${id}`, { token }),
   updateStatus: (id: string, status: OrderStatus, token: string): Promise<Order> =>
     apiFetch(`/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }), token }),
+}
+
+// ─── Delivery v1: couriers, assignments, events, payouts, payment verifications ───
+
+export type CourierType = 'FLEET' | 'FREELANCE'
+export type AssignmentStatus = 'ASSIGNED' | 'PICKED_UP' | 'DELIVERED' | 'FAILED' | 'CANCELLED'
+export type PayoutMethod = 'MOMO' | 'CASH' | 'BANK'
+export type PaymentProvider = 'MTN_MOMO' | 'VODAFONE_CASH' | 'AIRTELTIGO' | 'BANK' | 'OTHER'
+export type PaymentVerificationStatus = 'PENDING' | 'VERIFIED' | 'REJECTED'
+export type DeliveryEventType =
+  | 'CREATED' | 'CONFIRMED' | 'PROCESSING' | 'READY_FOR_PICKUP'
+  | 'ASSIGNED' | 'PICKED_UP' | 'OUT_FOR_DELIVERY' | 'DELIVERED'
+  | 'FAILED' | 'CANCELLED' | 'PAYMENT_VERIFIED' | 'PAYMENT_REJECTED' | 'NOTE'
+
+export type Courier = {
+  id: string
+  name: string
+  phone: string
+  employmentType: CourierType
+  commissionPct: string
+  flatPerDelivery: string | null
+  vehicle: string | null
+  momoNumber: string | null
+  isActive: boolean
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type CourierWithStats = Courier & {
+  deliveries30d: number
+  delivered30d: number
+  onTimePct: number | null
+}
+
+export type CourierInput = {
+  name: string
+  phone: string
+  employmentType: CourierType
+  commissionPct?: string
+  flatPerDelivery?: string | null
+  vehicle?: string | null
+  momoNumber?: string | null
+  isActive?: boolean
+  notes?: string | null
+}
+
+export type DeliveryAssignment = {
+  id: string
+  orderId: string
+  courierId: string
+  status: AssignmentStatus
+  deliveryFee: string
+  commissionAmount: string
+  assignedAt: string
+  pickedUpAt: string | null
+  deliveredAt: string | null
+  failedAt: string | null
+  failureReason: string | null
+  payoutId: string | null
+  courier?: Courier | null
+}
+
+export type DeliveryEvent = {
+  id: string
+  orderId: string
+  type: DeliveryEventType
+  actorId: string | null
+  actorName: string | null
+  courierId: string | null
+  note: string | null
+  createdAt: string
+}
+
+export type PayoutSummary = {
+  from: string
+  to: string
+  couriers: Array<{
+    courier: Courier
+    deliveries: number
+    revenue: string
+    owed: string
+  }>
+}
+
+export type Payout = {
+  id: string
+  courierId: string
+  amount: string
+  method: PayoutMethod
+  reference: string | null
+  periodFrom: string
+  periodTo: string
+  deliveryCount: number
+  paidBy: string | null
+  paidAt: string
+  notes: string | null
+  createdAt: string
+  courier?: Courier | null
+}
+
+export type PaymentVerification = {
+  id: string
+  orderId: string
+  amount: string
+  provider: PaymentProvider
+  providerRef: string | null
+  fromPhone: string | null
+  screenshotUrl: string | null
+  status: PaymentVerificationStatus
+  verifiedBy: string | null
+  verifiedAt: string | null
+  rejectionReason: string | null
+  createdAt: string
+  order?: Order | null
+}
+
+export const couriersApi = {
+  list: (token: string): Promise<Courier[]> => apiFetch('/couriers', { token }),
+  listWithStats: (token: string): Promise<CourierWithStats[]> => apiFetch('/couriers/stats', { token }),
+  create: (data: CourierInput, token: string): Promise<Courier> =>
+    apiFetch('/couriers', { method: 'POST', body: JSON.stringify(data), token }),
+  update: (id: string, data: Partial<CourierInput>, token: string): Promise<Courier> =>
+    apiFetch(`/couriers/${id}`, { method: 'PATCH', body: JSON.stringify(data), token }),
+  deactivate: (id: string, token: string): Promise<Courier> =>
+    apiFetch(`/couriers/${id}/deactivate`, { method: 'PATCH', token }),
+}
+
+export const assignmentsApi = {
+  assign: (orderId: string, courierId: string, token: string): Promise<DeliveryAssignment> =>
+    apiFetch('/delivery/assignments', { method: 'POST', body: JSON.stringify({ orderId, courierId }), token }),
+  transition: (orderId: string, next: 'PICKED_UP' | 'DELIVERED' | 'FAILED', token: string, reason?: string) =>
+    apiFetch<DeliveryAssignment>(`/delivery/assignments/${orderId}/transition`, {
+      method: 'PATCH',
+      body: JSON.stringify({ next, reason }),
+      token,
+    }),
+  forOrder: (orderId: string, token: string): Promise<DeliveryAssignment[]> =>
+    apiFetch(`/delivery/assignments/order/${orderId}`, { token }),
+}
+
+export const deliveryEventsApi = {
+  forOrder: (orderId: string, token: string): Promise<DeliveryEvent[]> =>
+    apiFetch(`/delivery/events/${orderId}`, { token }),
+}
+
+export const payoutsApi = {
+  summary: (token: string): Promise<PayoutSummary> => apiFetch('/payouts/summary', { token }),
+  recent: (token: string): Promise<Payout[]> => apiFetch('/payouts/recent', { token }),
+  pay: (
+    courierId: string,
+    body: { method?: PayoutMethod; reference?: string; notes?: string },
+    token: string,
+  ): Promise<Payout> =>
+    apiFetch(`/payouts/pay/${courierId}`, { method: 'POST', body: JSON.stringify(body), token }),
+}
+
+export const paymentVerificationsApi = {
+  list: (token: string): Promise<PaymentVerification[]> => apiFetch('/payment-verifications', { token }),
+  stats: (token: string): Promise<{
+    pending: { count: number; amount: string }
+    verifiedToday: { count: number; amount: string }
+  }> => apiFetch('/payment-verifications/stats', { token }),
+  confirm: (id: string, token: string): Promise<{ id: string; status: 'VERIFIED' }> =>
+    apiFetch(`/payment-verifications/${id}/confirm`, { method: 'POST', token }),
+  reject: (id: string, reason: string, token: string): Promise<{ id: string; status: 'REJECTED' }> =>
+    apiFetch(`/payment-verifications/${id}/reject`, { method: 'POST', body: JSON.stringify({ reason }), token }),
 }
 
 // ─── Customers ────────────────────────────────────────────────────────────────
@@ -353,6 +525,7 @@ export type DeliveryZone = {
   feeStrategy: FeeStrategy
   feePerKm: string | null
   freeThreshold: string | null
+  requiresPrepayment?: boolean
   isActive: boolean
 }
 
@@ -627,8 +800,22 @@ export const storefrontApi = {
   },
   placeOrder: (body: PlaceOrderInput): Promise<Order> =>
     apiFetch('/v1/orders', { method: 'POST', body: JSON.stringify(body) }),
-  getOrder: (id: string): Promise<Order & { customer?: Customer; items?: OrderItem[] }> =>
-    apiFetch(`/v1/orders/${id}`),
+  getOrder: (
+    id: string,
+  ): Promise<
+    Order & {
+      customer?: Customer
+      items?: OrderItem[]
+      activeCourier?: {
+        name: string
+        phone: string
+        vehicle: string | null
+        assignmentStatus: AssignmentStatus
+        pickedUpAt: string | null
+      } | null
+      events?: DeliveryEvent[]
+    }
+  > => apiFetch(`/v1/orders/${id}`),
 }
 
 // ─── POS ──────────────────────────────────────────────────────────────────────

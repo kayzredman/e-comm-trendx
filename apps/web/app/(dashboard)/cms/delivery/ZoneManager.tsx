@@ -13,6 +13,7 @@ type FormState = {
   feePerKm: string
   freeThreshold: string
   isActive: boolean
+  requiresPrepayment: boolean
 }
 
 const emptyForm: FormState = {
@@ -22,6 +23,7 @@ const emptyForm: FormState = {
   feePerKm: '',
   freeThreshold: '',
   isActive: true,
+  requiresPrepayment: false,
 }
 
 const STRATEGY_LABEL: Record<FeeStrategy, string> = {
@@ -63,6 +65,7 @@ export default function ZoneManager({ initialZones }: { initialZones: DeliveryZo
       feePerKm: zone.feePerKm ?? '',
       freeThreshold: zone.freeThreshold ?? '',
       isActive: zone.isActive,
+      requiresPrepayment: zone.requiresPrepayment ?? false,
     })
     setShowForm(true)
     setError(null)
@@ -89,6 +92,7 @@ export default function ZoneManager({ initialZones }: { initialZones: DeliveryZo
         feePerKm: form.feePerKm || null,
         freeThreshold: form.freeThreshold || null,
         isActive: form.isActive,
+        requiresPrepayment: form.requiresPrepayment,
       }
       const saved = await deliveryApi.upsert(payload, token)
       setZones(prev =>
@@ -238,6 +242,21 @@ export default function ZoneManager({ initialZones }: { initialZones: DeliveryZo
               />
               <label htmlFor="isActive" className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
                 Zone is active (shown to customers)
+              </label>
+            </div>
+
+            <div className="sm:col-span-2 flex items-start gap-3 p-3 rounded-lg" style={{ background: '#FEF3C7' }}>
+              <input
+                id="requiresPrepayment"
+                type="checkbox"
+                checked={form.requiresPrepayment}
+                onChange={e => setForm(f => ({ ...f, requiresPrepayment: e.target.checked }))}
+                className="w-4 h-4 rounded mt-0.5"
+                style={{ accentColor: '#B45309' }}
+              />
+              <label htmlFor="requiresPrepayment" className="text-sm" style={{ color: '#78350F' }}>
+                <span className="font-semibold">Require prepayment for this zone</span>
+                <span className="block text-xs mt-0.5">Cash on Delivery will be blocked at checkout. Use for high-fraud or far-out areas.</span>
               </label>
             </div>
           </div>
