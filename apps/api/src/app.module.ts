@@ -8,6 +8,7 @@ import { OrdersModule } from './orders/orders.module'
 import { CustomersModule } from './customers/customers.module'
 import { CmsModule } from './cms/cms.module'
 import { DeliveryModule } from './delivery/delivery.module'
+import { CourierPortalModule } from './courier-portal/courier-portal.module'
 import { StorefrontModule } from './storefront/storefront.module'
 import { AnalyticsModule } from './analytics/analytics.module'
 import { UsersModule } from './users/users.module'
@@ -31,6 +32,7 @@ import { StorageModule } from './storage/storage.module'
     CustomersModule,
     CmsModule,
     DeliveryModule,
+    CourierPortalModule,
     StorefrontModule,
     AnalyticsModule,
     HealthModule,

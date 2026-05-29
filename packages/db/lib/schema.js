@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.paymentProviderEnum = exports.payoutMethodEnum = exports.paymentVerificationStatusEnum = exports.deliveryEventTypeEnum = exports.assignmentStatusEnum = exports.courierTypeEnum = exports.productVariantsRelations = exports.productVariants = exports.productImagesRelations = exports.productImages = exports.imageSourceEnum = exports.posHoldsRelations = exports.posShiftsRelations = exports.posRegistersRelations = exports.posHolds = exports.posShifts = exports.posRegisters = exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.posHoldStatusEnum = exports.posShiftStatusEnum = exports.orderSourceEnum = exports.paymentMethodEnum = exports.paymentStatusEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
-exports.paymentVerificationsRelations = exports.payoutsRelations = exports.deliveryEventsRelations = exports.deliveryAssignmentsRelations = exports.couriersRelations = exports.paymentVerifications = exports.payouts = exports.deliveryEvents = exports.deliveryAssignments = exports.couriers = void 0;
+exports.courierSessionsRelations = exports.courierSessions = exports.courierOtps = exports.paymentVerificationsRelations = exports.payoutsRelations = exports.deliveryEventsRelations = exports.deliveryAssignmentsRelations = exports.couriersRelations = exports.paymentVerifications = exports.payouts = exports.deliveryEvents = exports.deliveryAssignments = exports.couriers = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 const drizzle_orm_1 = require("drizzle-orm");
 const cuid2_1 = require("@paralleldrive/cuid2");
@@ -419,5 +419,27 @@ exports.payoutsRelations = (0, drizzle_orm_1.relations)(exports.payouts, ({ one,
 }));
 exports.paymentVerificationsRelations = (0, drizzle_orm_1.relations)(exports.paymentVerifications, ({ one }) => ({
     order: one(exports.orders, { fields: [exports.paymentVerifications.orderId], references: [exports.orders.id] }),
+}));
+// ── Courier PWA — OTP login + session tokens ─────────────────────────────────
+exports.courierOtps = (0, pg_core_1.pgTable)('courier_otps', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    phone: (0, pg_core_1.varchar)('phone', { length: 30 }).notNull(),
+    codeHash: (0, pg_core_1.varchar)('code_hash', { length: 128 }).notNull(),
+    attempts: (0, pg_core_1.integer)('attempts').notNull().default(0),
+    expiresAt: (0, pg_core_1.timestamp)('expires_at').notNull(),
+    consumedAt: (0, pg_core_1.timestamp)('consumed_at'),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+});
+exports.courierSessions = (0, pg_core_1.pgTable)('courier_sessions', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    courierId: (0, pg_core_1.varchar)('courier_id', { length: 128 }).notNull(),
+    tokenHash: (0, pg_core_1.varchar)('token_hash', { length: 128 }).notNull().unique(),
+    userAgent: (0, pg_core_1.text)('user_agent'),
+    expiresAt: (0, pg_core_1.timestamp)('expires_at').notNull(),
+    lastUsedAt: (0, pg_core_1.timestamp)('last_used_at').notNull().defaultNow(),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+});
+exports.courierSessionsRelations = (0, drizzle_orm_1.relations)(exports.courierSessions, ({ one }) => ({
+    courier: one(exports.couriers, { fields: [exports.courierSessions.courierId], references: [exports.couriers.id] }),
 }));
 //# sourceMappingURL=schema.js.map
