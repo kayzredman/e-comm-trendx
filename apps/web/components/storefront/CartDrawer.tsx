@@ -158,6 +158,11 @@ export default function CartDrawer() {
                           >
                             {item.name}
                           </Link>
+                          {item.variantLabel && (
+                            <p className="text-[10px] font-semibold -mt-0.5 mb-1" style={{ color: 'var(--color-text-muted)' }}>
+                              {item.variantLabel}
+                            </p>
+                          )}
                           <div className="mt-auto flex items-center justify-between">
                             <div className="font-bold text-sm" style={{ color: 'var(--color-text)' }}>
                               {formatPrice(item.price)}
@@ -168,7 +173,7 @@ export default function CartDrawer() {
                             >
                               <button
                                 type="button"
-                                onClick={() => updateQty(item.id, item.quantity - 1)}
+                                onClick={() => updateQty(item.id, item.quantity - 1, item.variantId)}
                                 aria-label="Decrease quantity"
                                 className="w-7 h-7 flex items-center justify-center transition-colors hover:bg-slate-100"
                                 style={{ color: 'var(--color-text-muted)' }}
@@ -183,7 +188,7 @@ export default function CartDrawer() {
                               </span>
                               <button
                                 type="button"
-                                onClick={() => updateQty(item.id, item.quantity + 1)}
+                                onClick={() => updateQty(item.id, item.quantity + 1, item.variantId)}
                                 aria-label="Increase quantity"
                                 className="w-7 h-7 flex items-center justify-center transition-colors hover:bg-slate-100"
                                 style={{ color: 'var(--color-text-muted)' }}
@@ -195,7 +200,7 @@ export default function CartDrawer() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => removeItem(item.id)}
+                          onClick={() => removeItem(item.id, item.variantId)}
                           aria-label="Remove item"
                           className="self-start w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-rose-50"
                           style={{ color: 'var(--color-text-subtle)' }}

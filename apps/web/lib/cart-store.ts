@@ -8,18 +8,26 @@ export type CartItem = {
   price: number
   image: string
   quantity: number
+  /** Selected product variant, when the product has variants. */
+  variantId?: string
+  variantLabel?: string
 }
 
 type CartStore = {
   items: CartItem[]
   drawerOpen: boolean
   addItem: (product: Omit<CartItem, 'quantity'>, qty?: number) => void
-  removeItem: (id: string) => void
-  updateQty: (id: string, qty: number) => void
+  removeItem: (id: string, variantId?: string) => void
+  updateQty: (id: string, qty: number, variantId?: string) => void
   clearCart: () => void
   openDrawer: () => void
   closeDrawer: () => void
   toggleDrawer: () => void
+}
+
+/** A cart line is uniquely identified by (productId, variantId?). */
+function sameLine(a: { id: string; variantId?: string }, b: { id: string; variantId?: string }) {
+  return a.id === b.id && (a.variantId ?? null) === (b.variantId ?? null)
 }
 
 export const useCartStore = create<CartStore>()(
@@ -33,24 +41,32 @@ export const useCartStore = create<CartStore>()(
 
       addItem: (product, qty = 1) =>
         set((state) => {
-          const existing = state.items.find((i) => i.id === product.id)
+          const existing = state.items.find((i) => sameLine(i, product))
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.id === product.id ? { ...i, quantity: i.quantity + qty } : i,
+                sameLine(i, product) ? { ...i, quantity: i.quantity + qty } : i,
               ),
             }
           }
           return { items: [...state.items, { ...product, quantity: qty }] }
         }),
 
-      removeItem: (id) =>
-        set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
+      removeItem: (id, variantId) =>
+        set((state) => ({
+          items: state.items.filter((i) => !sameLine(i, { id, variantId })),
+        })),
 
-      updateQty: (id, qty) =>
+      updateQty: (id, qty, variantId) =>
         set((state) => {
-          if (qty <= 0) return { items: state.items.filter((i) => i.id !== id) }
-          return { items: state.items.map((i) => (i.id === id ? { ...i, quantity: qty } : i)) }
+          if (qty <= 0) {
+            return { items: state.items.filter((i) => !sameLine(i, { id, variantId })) }
+          }
+          return {
+            items: state.items.map((i) =>
+              sameLine(i, { id, variantId }) ? { ...i, quantity: qty } : i,
+            ),
+          }
         }),
 
       clearCart: () => set({ items: [] }),
