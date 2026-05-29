@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>trendMarga — Courier PWA Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',sans-serif;background:#0A0A0B;color:#0F172A;font-size:14px;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:80px 16px 40px}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input{font-family:inherit;outline:none;border:none}
+
+:root{
+  --cobalt:#1E40AF;
+  --cobalt-2:#2563EB;
+  --cobalt-3:#3B82F6;
+  --emerald:#10B981;
+  --emerald-dark:#059669;
+  --orange:#F97316;
+  --orange-dark:#EA580C;
+  --ink:#0A0A0B;
+  --ash:#9CA3AF;
+  --ash-2:#E5E7EB;
+  --ash-3:#F3F4F6;
+  --rose:#E11D48;
+  --amber:#F59E0B;
+  --page:#F9FAFB;
+  --surface:#fff;
+  --border:#E5E7EB;
+  --text:#0F172A;
+  --muted:#6B7280;
+}
+
+/* ── DEMO BAR ── */
+#demo-bar{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:rgba(10,10,11,.96);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  padding:10px 20px;display:flex;gap:6px;align-items:center;flex-wrap:wrap
+}
+#demo-bar .brand{font-family:'Clash Display',sans-serif;font-weight:700;color:#fff;font-size:14px;margin-right:14px;display:flex;align-items:center;gap:6px}
+#demo-bar .brand .dot{width:6px;height:6px;border-radius:50%;background:var(--emerald);animation:pulse 1.6s ease-in-out infinite}
+#demo-bar .label{color:#6B7280;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-right:4px}
+#demo-bar button{
+  padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;
+  background:rgba(255,255,255,.06);color:#9CA3AF;border:1px solid rgba(255,255,255,.08);
+  transition:.15s
+}
+#demo-bar button.active,#demo-bar button:hover{background:var(--cobalt-2);color:#fff;border-color:var(--cobalt-2)}
+#demo-bar .note{margin-left:auto;font-size:10px;color:#6B7280}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+
+/* ── PHONE FRAME ── */
+.phone{
+  width:390px;max-width:100%;height:844px;
+  background:var(--page);border-radius:44px;
+  border:10px solid #1F2937;
+  box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 2px #0A0A0B;
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column
+}
+.phone::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:120px;height:28px;background:#0A0A0B;border-radius:0 0 18px 18px;z-index:50
+}
+.statusbar{
+  height:44px;flex-shrink:0;display:flex;justify-content:space-between;align-items:center;
+  padding:0 28px;font-size:14px;font-weight:600;color:var(--ink);
+  background:var(--page)
+}
+.statusbar .right{display:flex;gap:5px;align-items:center;font-size:12px}
+
+.screen{flex:1;display:none;flex-direction:column;overflow-y:auto;background:var(--page)}
+.screen.active{display:flex}
+.screen::-webkit-scrollbar{display:none}
+
+/* ── SHARED ── */
+.appbar{
+  padding:14px 20px 12px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;flex-shrink:0
+}
+.appbar .back{width:36px;height:36px;border-radius:10px;background:var(--ash-3);display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.appbar h1{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.appbar .sub{font-size:11px;color:var(--muted);margin-top:1px}
+.appbar .spacer{flex:1}
+.appbar .menu{width:36px;height:36px;border-radius:10px;background:var(--ash-3);display:flex;align-items:center;justify-content:center;color:var(--ink)}
+
+.body{flex:1;padding:18px 16px 100px;display:flex;flex-direction:column;gap:14px}
+
+/* ── BOTTOM TAB BAR ── */
+.tabbar{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:10px 12px 22px;display:flex;justify-content:space-around;
+  z-index:40
+}
+.tabbar .tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--muted);padding:4px 14px;border-radius:10px;background:transparent}
+.tabbar .tab.active{color:var(--cobalt)}
+.tabbar .tab.active svg{stroke:var(--cobalt)}
+.tabbar .tab svg{width:22px;height:22px;stroke:var(--muted);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* ══════════════════════════════════════
+   1. LOGIN — Phone + OTP
+══════════════════════════════════════ */
+.login-wrap{flex:1;padding:32px 24px 24px;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--surface) 0%,var(--page) 100%)}
+.login-brand{font-family:'Clash Display',sans-serif;font-size:28px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:4px;margin-bottom:6px}
+.login-brand .t-glyph{display:inline-flex;width:18px;height:28px;align-items:flex-end;justify-content:center;color:var(--cobalt);font-weight:700;letter-spacing:-2px}
+.login-brand .m-emphasis{color:var(--cobalt);font-weight:700}
+.login-brand .pulse{width:8px;height:8px;border-radius:50%;background:var(--emerald);margin-left:4px;animation:pulse 1.6s ease-in-out infinite;align-self:flex-end;margin-bottom:6px}
+.login-tag{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:38px}
+
+.login-h{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.2;color:var(--ink);margin-bottom:8px}
+.login-sub{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:28px}
+
+.field{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.field label{font-size:12px;font-weight:600;color:var(--ink);letter-spacing:.02em}
+.phone-input{
+  display:flex;align-items:center;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:14px;padding:0 14px;height:54px
+}
+.phone-input:focus-within{border-color:var(--cobalt-2);box-shadow:0 0 0 4px rgba(37,99,235,.1)}
+.phone-input .cc{font-weight:700;color:var(--ink);padding-right:10px;border-right:1px solid var(--border);margin-right:12px;font-size:15px;display:flex;align-items:center;gap:6px}
+.phone-input .cc::before{content:'🇬🇭';font-size:16px}
+.phone-input input{flex:1;font-size:17px;font-weight:600;color:var(--ink);letter-spacing:.04em;background:transparent;border:none;width:100%}
+
+.otp-row{display:flex;gap:10px;margin-bottom:8px;justify-content:space-between}
+.otp-box{
+  width:50px;height:60px;border-radius:14px;
+  background:var(--surface);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:700;color:var(--ink)
+}
+.otp-box.filled{border-color:var(--cobalt-2);background:#EFF6FF}
+.otp-box.active{border-color:var(--cobalt-2);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+
+.btn{
+  width:100%;height:54px;border-radius:14px;
+  background:var(--cobalt);color:#fff;font-weight:700;font-size:15px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  letter-spacing:.02em;margin-top:8px;
+  box-shadow:0 8px 20px rgba(30,64,175,.25)
+}
+.btn:active{transform:translateY(1px);box-shadow:0 4px 10px rgba(30,64,175,.2)}
+.btn.ghost{background:transparent;color:var(--muted);font-weight:600;box-shadow:none;height:44px;font-size:13px}
+.btn.emerald{background:var(--emerald);box-shadow:0 8px 20px rgba(16,185,129,.3)}
+.btn.orange{background:var(--orange);box-shadow:0 8px 20px rgba(249,115,22,.3)}
+.btn.rose{background:var(--rose);box-shadow:0 8px 20px rgba(225,29,72,.25)}
+.btn.outline{background:var(--surface);color:var(--ink);border:1.5px solid var(--border);box-shadow:none}
+
+.resend{text-align:center;font-size:13px;color:var(--muted);margin-top:18px}
+.resend a{color:var(--cobalt-2);font-weight:700}
+
+/* ══════════════════════════════════════
+   2. MY JOBS
+══════════════════════════════════════ */
+.jobs-hero{
+  margin:0 16px 4px;padding:18px;border-radius:18px;
+  background:linear-gradient(135deg,var(--cobalt) 0%,var(--cobalt-2) 100%);
+  color:#fff;display:flex;justify-content:space-between;align-items:center;
+  box-shadow:0 10px 30px rgba(30,64,175,.25)
+}
+.jobs-hero .label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+.jobs-hero .count{font-size:32px;font-weight:800;letter-spacing:-.02em;margin-top:2px;line-height:1}
+.jobs-hero .sub{font-size:11px;opacity:.85;margin-top:4px}
+.jobs-hero .badge{background:rgba(255,255,255,.18);padding:6px 12px;border-radius:999px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.2)}
+.jobs-hero .badge .pulse-dot{width:6px;height:6px;border-radius:50%;background:var(--emerald);animation:pulse 1.6s ease-in-out infinite}
+
+.filter-pills{display:flex;gap:8px;padding:4px 16px 0;overflow-x:auto}
+.filter-pills::-webkit-scrollbar{display:none}
+.pill{padding:8px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.pill.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pill .badge-num{margin-left:6px;background:rgba(255,255,255,.2);padding:1px 7px;border-radius:999px;font-size:10px}
+.pill:not(.active) .badge-num{background:var(--ash-2);color:var(--ink)}
+
+.job-card{
+  background:var(--surface);border-radius:16px;padding:14px;
+  border:1px solid var(--border);
+  display:flex;flex-direction:column;gap:10px;
+  transition:.15s
+}
+.job-card:active{transform:scale(.99)}
+.job-card.priority{border-left:3px solid var(--orange)}
+.job-card.in-transit{border-left:3px solid var(--cobalt-2);background:#EFF6FF}
+
+.job-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.job-id{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em;font-family:'SF Mono',Menlo,monospace}
+.job-status{padding:3px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.job-status.assigned{background:#EFF6FF;color:var(--cobalt)}
+.job-status.picked{background:#FEF3C7;color:#92400E}
+.job-status.transit{background:#DBEAFE;color:var(--cobalt)}
+
+.job-customer{display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--ash-3);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--ink);flex-shrink:0;border:1px solid var(--border)}
+.job-customer .name{font-size:14px;font-weight:700;color:var(--ink);line-height:1.2}
+.job-customer .phone{font-size:11px;color:var(--muted);margin-top:1px;letter-spacing:.04em}
+
+.job-address{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-top:1px dashed var(--border);border-bottom:1px dashed var(--border)}
+.job-address svg{flex-shrink:0;margin-top:1px;color:var(--orange);width:16px;height:16px}
+.job-address .text{font-size:12px;color:var(--ink);line-height:1.4}
+.job-address .zone{font-size:10px;color:var(--muted);margin-top:2px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+
+.job-foot{display:flex;justify-content:space-between;align-items:center}
+.job-payout{display:flex;flex-direction:column}
+.job-payout .label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.job-payout .amount{font-size:16px;font-weight:800;color:var(--emerald-dark);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.job-cod{font-size:10px;color:var(--orange-dark);font-weight:700;background:#FFEDD5;padding:3px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:.04em}
+.job-go{padding:8px 14px;border-radius:10px;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;gap:5px}
+
+.section-h{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:8px 16px 2px}
+
+/* ══════════════════════════════════════
+   3. JOB DETAIL
+══════════════════════════════════════ */
+.detail-hero{
+  margin:0;padding:18px 20px 20px;
+  background:var(--surface);border-bottom:1px solid var(--border)
+}
+.detail-status{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.detail-status .id{font-family:'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:var(--muted)}
+.detail-customer{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.detail-customer .avatar{width:48px;height:48px;font-size:16px}
+.detail-customer .name{font-size:18px;font-weight:700;color:var(--ink)}
+.detail-customer .meta{font-size:12px;color:var(--muted);margin-top:2px}
+.action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.action-row .btn-mini{
+  height:42px;border-radius:12px;background:var(--ash-3);color:var(--ink);
+  font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px
+}
+.action-row .btn-mini.call{background:var(--emerald);color:#fff}
+.action-row .btn-mini.wa{background:#25D366;color:#fff}
+
+.detail-map{
+  margin:14px 16px 0;height:160px;border-radius:16px;
+  background:linear-gradient(135deg,#DBEAFE 0%,#BFDBFE 50%,#A5D6F2 100%);
+  position:relative;overflow:hidden;border:1px solid var(--border)
+}
+.detail-map::before{content:'';position:absolute;inset:0;background:
+  radial-gradient(circle at 30% 40%,rgba(255,255,255,.6) 0%,transparent 30%),
+  radial-gradient(circle at 70% 70%,rgba(255,255,255,.4) 0%,transparent 30%)}
+.detail-map .pin{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);
+  width:36px;height:36px;border-radius:50% 50% 50% 0;background:var(--orange);
+  transform:translate(-50%,-100%) rotate(-45deg);
+  box-shadow:0 6px 20px rgba(249,115,22,.4);
+  display:flex;align-items:center;justify-content:center
+}
+.detail-map .pin::after{content:'';width:12px;height:12px;border-radius:50%;background:#fff;transform:rotate(45deg)}
+.detail-map .open-maps{
+  position:absolute;top:10px;right:10px;padding:7px 12px;background:rgba(255,255,255,.95);
+  border-radius:10px;font-size:11px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:5px;
+  box-shadow:0 4px 12px rgba(0,0,0,.12)
+}
+
+.detail-card{margin:0 16px;padding:14px;background:var(--surface);border-radius:14px;border:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+.detail-card h3{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.addr-block{display:flex;gap:10px}
+.addr-block svg{flex-shrink:0;color:var(--orange);width:18px;height:18px;margin-top:2px}
+.addr-block .text{font-size:14px;color:var(--ink);line-height:1.5;font-weight:500}
+.addr-block .zone{font-size:11px;color:var(--muted);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.addr-block .notes{font-size:12px;color:var(--muted);margin-top:6px;font-style:italic;padding-top:6px;border-top:1px dashed var(--border)}
+
+.line-items{display:flex;flex-direction:column;gap:8px}
+.line-item{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.line-item .name{color:var(--ink);font-weight:500}
+.line-item .qty{color:var(--muted);font-size:11px;margin-left:6px}
+.line-item .price{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.line-total{padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.line-total .total{font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
+
+.pay-status{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:#ECFDF5;border:1px solid #A7F3D0}
+.pay-status.cod{background:#FFEDD5;border-color:#FED7AA}
+.pay-status .left{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink)}
+.pay-status .badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--emerald-dark)}
+.pay-status.cod .badge{color:var(--orange-dark)}
+
+/* sticky action bar at bottom of detail */
+.action-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:14px 16px 28px;display:flex;flex-direction:column;gap:10px;z-index:40
+}
+
+/* ══════════════════════════════════════
+   4. VERIFY DELIVERY CODE
+══════════════════════════════════════ */
+.verify-wrap{flex:1;padding:32px 24px 24px;display:flex;flex-direction:column;background:linear-gradient(180deg,#ECFDF5 0%,var(--page) 50%)}
+.verify-icon{
+  width:72px;height:72px;border-radius:20px;
+  background:var(--emerald);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;box-shadow:0 12px 30px rgba(16,185,129,.35)
+}
+.verify-h{font-size:24px;font-weight:800;text-align:center;letter-spacing:-.02em;color:var(--ink);margin-bottom:8px}
+.verify-sub{font-size:14px;color:var(--muted);line-height:1.5;text-align:center;margin-bottom:8px}
+.verify-customer{text-align:center;margin-bottom:28px;font-size:13px;color:var(--ink);font-weight:700}
+
+.code-row{display:flex;gap:12px;margin:12px 0 8px;justify-content:center}
+.code-box{
+  width:56px;height:68px;border-radius:14px;
+  background:var(--surface);border:1.5px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:800;color:var(--ink)
+}
+.code-box.filled{border-color:var(--emerald);background:#ECFDF5;color:var(--emerald-dark)}
+.code-box.active{border-color:var(--emerald);box-shadow:0 0 0 4px rgba(16,185,129,.15)}
+
+.verify-hint{text-align:center;font-size:12px;color:var(--muted);margin-top:8px;margin-bottom:24px}
+
+.fail-link{text-align:center;font-size:13px;color:var(--rose);font-weight:600;margin-top:14px}
+
+/* ══════════════════════════════════════
+   5. EARNINGS
+══════════════════════════════════════ */
+.earn-hero{
+  margin:0 16px;padding:22px;border-radius:20px;
+  background:linear-gradient(135deg,var(--emerald) 0%,var(--emerald-dark) 100%);
+  color:#fff;text-align:center;
+  box-shadow:0 12px 30px rgba(16,185,129,.3)
+}
+.earn-hero .label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.earn-hero .amount{font-size:42px;font-weight:800;letter-spacing:-.02em;margin:6px 0 2px;line-height:1;font-variant-numeric:tabular-nums}
+.earn-hero .period{font-size:12px;opacity:.85}
+.earn-hero .pay-pill{display:inline-block;margin-top:14px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.18);font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,.2)}
+
+.kpi-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
+.kpi .num{font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.kpi .lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+
+.earn-list{display:flex;flex-direction:column;gap:8px}
+.earn-row{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;display:flex;justify-content:space-between;align-items:center
+}
+.earn-row .left .id{font-family:'SF Mono',Menlo,monospace;font-size:12px;color:var(--muted);font-weight:600}
+.earn-row .left .desc{font-size:13px;color:var(--ink);font-weight:600;margin-top:2px}
+.earn-row .left .when{font-size:11px;color:var(--muted);margin-top:1px}
+.earn-row .amt{font-size:15px;font-weight:800;color:var(--emerald-dark);font-variant-numeric:tabular-nums}
+
+.payout-card{
+  margin:0 16px;padding:14px;border-radius:14px;
+  background:#FEF3C7;border:1px solid #FCD34D;
+  display:flex;justify-content:space-between;align-items:center
+}
+.payout-card .left{display:flex;align-items:center;gap:10px}
+.payout-card svg{color:#B45309;width:22px;height:22px}
+.payout-card .t{font-size:13px;font-weight:700;color:#78350F;line-height:1.3}
+.payout-card .s{font-size:11px;color:#92400E;margin-top:2px}
+</style>
+</head>
+<body>
+
+<div id="demo-bar">
+  <span class="brand"><span style="font-family:'Clash Display'">trendMarga</span><span class="dot"></span></span>
+  <span class="label">Courier PWA</span>
+  <button data-screen="login" class="active">1. Login</button>
+  <button data-screen="jobs">2. My Jobs</button>
+  <button data-screen="detail">3. Job Detail</button>
+  <button data-screen="verify">4. Verify Code</button>
+  <button data-screen="earnings">5. Earnings</button>
+  <span class="note">390 × 844 — installable PWA</span>
+</div>
+
+<div class="phone">
+  <div class="statusbar">
+    <span>9:41</span>
+    <span class="right">
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><rect x="0" y="6" width="3" height="5" rx=".5"/><rect x="4" y="4" width="3" height="7" rx=".5"/><rect x="8" y="2" width="3" height="9" rx=".5"/><rect x="12" y="0" width="3" height="11" rx=".5"/></svg>
+      <span>5G</span>
+      <svg width="24" height="11" viewBox="0 0 24 11" fill="none" stroke="currentColor" stroke-width="1"><rect x=".5" y=".5" width="20" height="10" rx="2.5"/><rect x="2" y="2" width="14" height="7" rx="1" fill="currentColor"/><rect x="21.5" y="3.5" width="1.5" height="4" rx=".5" fill="currentColor"/></svg>
+    </span>
+  </div>
+
+  <!-- ═══════════════ 1. LOGIN ═══════════════ -->
+  <div class="screen active" data-screen="login">
+    <div class="login-wrap">
+      <div class="login-brand">
+        <span class="t-glyph">t</span>rend<span class="m-emphasis">M</span>arga<span class="pulse"></span>
+      </div>
+      <div class="login-tag">Courier</div>
+
+      <div class="login-h">Sign in</div>
+      <div class="login-sub">We'll send a 6-digit code to your phone to verify it's you. Standard SMS rates apply.</div>
+
+      <div class="field">
+        <label>Phone number</label>
+        <div class="phone-input">
+          <span class="cc">+233</span>
+          <input value="24 555 0142" />
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:4px">
+        <label>Verification code</label>
+        <div class="otp-row">
+          <div class="otp-box filled">4</div>
+          <div class="otp-box filled">2</div>
+          <div class="otp-box filled">9</div>
+          <div class="otp-box filled">1</div>
+          <div class="otp-box active">_</div>
+          <div class="otp-box"></div>
+        </div>
+      </div>
+
+      <button class="btn">Verify &amp; continue</button>
+
+      <div class="resend">Didn't get the code? <a>Resend in 0:34</a></div>
+
+      <div style="flex:1"></div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;padding-top:18px">By continuing you accept the courier terms. v1.0.0</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 2. MY JOBS ═══════════════ -->
+  <div class="screen" data-screen="jobs">
+    <div class="appbar">
+      <div class="avatar" style="width:38px;height:38px">KA</div>
+      <div>
+        <h1 style="font-size:15px">Hi, Kojo</h1>
+        <div class="sub">Online · Ready for jobs</div>
+      </div>
+      <div class="spacer"></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);font-weight:600">
+        <span>Online</span>
+        <span style="width:36px;height:20px;background:var(--emerald);border-radius:999px;position:relative;display:inline-block">
+          <span style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>
+        </span>
+      </label>
+    </div>
+
+    <div class="body" style="padding-top:14px">
+      <div class="jobs-hero">
+        <div>
+          <div class="label">Active jobs</div>
+          <div class="count">4</div>
+          <div class="sub">2 to pick up · 2 in transit</div>
+        </div>
+        <div class="badge"><span class="pulse-dot"></span>LIVE</div>
+      </div>
+
+      <div class="filter-pills">
+        <div class="pill active">All <span class="badge-num">4</span></div>
+        <div class="pill">Assigned <span class="badge-num">2</span></div>
+        <div class="pill">In transit <span class="badge-num">2</span></div>
+        <div class="pill">Completed <span class="badge-num">7</span></div>
+      </div>
+
+      <div class="section-h" style="padding:8px 0 0">In transit · deliver now</div>
+
+      <div class="job-card in-transit" onclick="showScreen('detail')">
+        <div class="job-row">
+          <span class="job-id">#TM-4540</span>
+          <span class="job-status transit">Out for delivery</span>
+        </div>
+        <div class="job-customer">
+          <div class="avatar">AK</div>
+          <div>
+            <div class="name">Akua Mensah</div>
+            <div class="phone">+233 24 555 0142</div>
+          </div>
+        </div>
+        <div class="job-address">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="text">
+            12 Spintex Road, Coastal Estate Phase 2, Block B Apt 4
+            <div class="zone">Greater Accra · 2.4 km away</div>
+          </div>
+        </div>
+        <div class="job-foot">
+          <div class="job-payout">
+            <span class="label">Your earn</span>
+            <span class="amount">GH₵ 22.00</span>
+          </div>
+          <div class="job-go">Open <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+      </div>
+
+      <div class="job-card in-transit">
+        <div class="job-row">
+          <span class="job-id">#TM-4538</span>
+          <span class="job-status transit">Out for delivery</span>
+        </div>
+        <div class="job-customer">
+          <div class="avatar">YO</div>
+          <div>
+            <div class="name">Yaw Owusu</div>
+            <div class="phone">+233 20 778 9921</div>
+          </div>
+        </div>
+        <div class="job-address">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="text">
+            45 Cantonments Road, North Ridge
+            <div class="zone">Greater Accra · 4.1 km away</div>
+          </div>
+        </div>
+        <div class="job-foot">
+          <div class="job-payout">
+            <span class="label">Your earn</span>
+            <span class="amount">GH₵ 28.00</span>
+          </div>
+          <div class="job-cod">COD GH₵ 285</div>
+        </div>
+      </div>
+
+      <div class="section-h" style="padding:14px 0 0">Ready to pick up</div>
+
+      <div class="job-card priority">
+        <div class="job-row">
+          <span class="job-id">#TM-4545</span>
+          <span class="job-status assigned">Pickup ready</span>
+        </div>
+        <div class="job-customer">
+          <div class="avatar">EA</div>
+          <div>
+            <div class="name">Efua Asante</div>
+            <div class="phone">+233 55 211 4500</div>
+          </div>
+        </div>
+        <div class="job-address">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="text">
+            7 Independence Ave, Adabraka
+            <div class="zone">Greater Accra · pickup from warehouse</div>
+          </div>
+        </div>
+        <div class="job-foot">
+          <div class="job-payout">
+            <span class="label">Your earn</span>
+            <span class="amount">GH₵ 18.00</span>
+          </div>
+          <div class="job-go" style="background:var(--cobalt)">Mark picked</div>
+        </div>
+      </div>
+
+      <div class="job-card">
+        <div class="job-row">
+          <span class="job-id">#TM-4546</span>
+          <span class="job-status assigned">Pickup ready</span>
+        </div>
+        <div class="job-customer">
+          <div class="avatar">KB</div>
+          <div>
+            <div class="name">Kwesi Boateng</div>
+            <div class="phone">+233 27 334 8800</div>
+          </div>
+        </div>
+        <div class="job-address">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="text">
+            22 Liberation Link, Airport Residential
+            <div class="zone">Greater Accra · pickup from warehouse</div>
+          </div>
+        </div>
+        <div class="job-foot">
+          <div class="job-payout">
+            <span class="label">Your earn</span>
+            <span class="amount">GH₵ 24.00</span>
+          </div>
+          <div class="job-go" style="background:var(--cobalt)">Mark picked</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab active">
+        <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+        Jobs
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        History
+      </div>
+      <div class="tab" onclick="showScreen('earnings')">
+        <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H7"/></svg>
+        Earnings
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        Profile
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 3. JOB DETAIL ═══════════════ -->
+  <div class="screen" data-screen="detail">
+    <div class="appbar">
+      <div class="back" onclick="showScreen('jobs')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <div>
+        <h1>Job #TM-4540</h1>
+        <div class="sub">Out for delivery</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+      </div>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding-bottom:160px">
+      <div class="detail-hero">
+        <div class="detail-customer">
+          <div class="avatar">AK</div>
+          <div style="flex:1">
+            <div class="name">Akua Mensah</div>
+            <div class="meta">+233 24 555 0142 · Customer</div>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn-mini call">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>
+            Call
+          </button>
+          <button class="btn-mini wa">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.3-.1-.5-.1-.7.1s-.8.9-1 1.1c-.2.2-.4.2-.7.1-.3-.1-1.2-.4-2.3-1.4-.8-.7-1.4-1.6-1.6-1.9-.2-.3 0-.4.1-.6.1-.1.3-.4.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.6-.9-2.2-.2-.5-.4-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1 2.9 1.2 3.1c.1.2 2 3 4.8 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.6-.7 1.9-1.3.2-.6.2-1.2.1-1.3-.1-.1-.3-.2-.6-.3M12 2C6.5 2 2 6.5 2 12c0 1.7.4 3.4 1.3 4.9L2 22l5.2-1.4c1.5.8 3.1 1.2 4.8 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2"/></svg>
+            WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <div class="detail-map">
+        <div class="pin"></div>
+        <div class="open-maps">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M21 3l-9 9"/><path d="M21 14v7H3V3h7"/></svg>
+          Navigate
+        </div>
+      </div>
+
+      <div class="body" style="padding:14px 0;gap:10px">
+
+        <div class="detail-card">
+          <h3>Drop-off address</h3>
+          <div class="addr-block">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <div>
+              <div class="text">12 Spintex Road, Coastal Estate Phase 2, Block B Apt 4</div>
+              <div class="zone">Greater Accra · 2.4 km</div>
+              <div class="notes">"Gate 3, second floor. Call when you arrive — gate is closed."</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <h3>Items (3)</h3>
+          <div class="line-items">
+            <div class="line-item">
+              <span class="name">Linen Shirt — White<span class="qty">× 2</span></span>
+              <span class="price">GH₵ 180.00</span>
+            </div>
+            <div class="line-item">
+              <span class="name">Canvas Tote<span class="qty">× 1</span></span>
+              <span class="price">GH₵ 75.00</span>
+            </div>
+            <div class="line-item">
+              <span class="name">Delivery</span>
+              <span class="price">GH₵ 30.00</span>
+            </div>
+            <div class="line-total">
+              <span>Total</span>
+              <span class="total">GH₵ 285.00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-card" style="gap:8px">
+          <h3>Payment</h3>
+          <div class="pay-status">
+            <div class="left">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--emerald-dark)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+              <div>
+                Paid · MoMo ✓
+                <div style="font-size:11px;color:var(--muted);font-weight:500;margin-top:1px">No collection needed</div>
+              </div>
+            </div>
+            <span class="badge">PAID</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn emerald" onclick="showScreen('verify')">
+        Verify code &amp; deliver
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <button class="btn outline" style="height:42px;font-size:13px;color:var(--rose);border-color:#FECACA">
+        Report failed delivery
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 4. VERIFY CODE ═══════════════ -->
+  <div class="screen" data-screen="verify">
+    <div class="appbar" style="background:transparent;border:none">
+      <div class="back" onclick="showScreen('detail')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <div>
+        <h1 style="font-size:15px">Verify delivery</h1>
+        <div class="sub">Job #TM-4540</div>
+      </div>
+    </div>
+
+    <div class="verify-wrap">
+      <div class="verify-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 10 10"/><path d="M22 4 12 14.01l-3-3"/></svg>
+      </div>
+      <div class="verify-h">Ask Akua for her code</div>
+      <div class="verify-sub">She received a 4-digit delivery code by SMS when the order shipped. Enter it below to confirm hand-off.</div>
+      <div class="verify-customer">Akua Mensah · +233 24 555 0142</div>
+
+      <div class="code-row">
+        <div class="code-box filled">7</div>
+        <div class="code-box filled">4</div>
+        <div class="code-box active">_</div>
+        <div class="code-box"></div>
+      </div>
+      <div class="verify-hint">Enter all 4 digits to unlock the button</div>
+
+      <button class="btn emerald" style="margin-top:auto">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        Confirm delivered
+      </button>
+      <button class="btn outline" style="height:44px;font-size:13px;margin-top:8px">
+        Customer can't find code
+      </button>
+      <div class="fail-link">Cancel and report problem</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ 5. EARNINGS ═══════════════ -->
+  <div class="screen" data-screen="earnings">
+    <div class="appbar">
+      <div class="back" onclick="showScreen('jobs')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <div>
+        <h1>Earnings</h1>
+        <div class="sub">May 2026 cycle</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></svg>
+      </div>
+    </div>
+
+    <div class="body" style="padding-top:18px;gap:14px">
+      <div class="earn-hero">
+        <div class="label">Earned this cycle</div>
+        <div class="amount">GH₵ 412.00</div>
+        <div class="period">May 15 – May 28 · 19 deliveries</div>
+        <span class="pay-pill">Next payout: Fri 30 May</span>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi">
+          <div class="num">19</div>
+          <div class="lbl">Delivered</div>
+        </div>
+        <div class="kpi">
+          <div class="num">2</div>
+          <div class="lbl">Failed</div>
+        </div>
+        <div class="kpi">
+          <div class="num">4.9</div>
+          <div class="lbl">Rating</div>
+        </div>
+      </div>
+
+      <div class="payout-card">
+        <div class="left">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/><path d="M6 10v.01M18 14.99V15"/></svg>
+          <div>
+            <div class="t">MoMo · ****0142</div>
+            <div class="s">Default payout method</div>
+          </div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+
+      <div class="section-h" style="padding:6px 0 0">Recent deliveries</div>
+
+      <div class="earn-list">
+        <div class="earn-row">
+          <div class="left">
+            <div class="id">#TM-4540</div>
+            <div class="desc">Akua Mensah · Spintex</div>
+            <div class="when">Today, 2:34 PM</div>
+          </div>
+          <div class="amt">+ GH₵ 22.00</div>
+        </div>
+        <div class="earn-row">
+          <div class="left">
+            <div class="id">#TM-4537</div>
+            <div class="desc">Nana Aba · East Legon</div>
+            <div class="when">Today, 11:12 AM</div>
+          </div>
+          <div class="amt">+ GH₵ 26.00</div>
+        </div>
+        <div class="earn-row">
+          <div class="left">
+            <div class="id">#TM-4531</div>
+            <div class="desc">Kojo Asare · Cantonments</div>
+            <div class="when">Yesterday, 6:08 PM</div>
+          </div>
+          <div class="amt">+ GH₵ 24.00</div>
+        </div>
+        <div class="earn-row">
+          <div class="left">
+            <div class="id">#TM-4528</div>
+            <div class="desc">Ama Boateng · Osu</div>
+            <div class="when">Yesterday, 3:41 PM</div>
+          </div>
+          <div class="amt">+ GH₵ 18.00</div>
+        </div>
+        <div class="earn-row">
+          <div class="left">
+            <div class="id">#TM-4525</div>
+            <div class="desc">Yaw Owusu · North Ridge</div>
+            <div class="when">May 27, 5:22 PM</div>
+          </div>
+          <div class="amt">+ GH₵ 28.00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab" onclick="showScreen('jobs')">
+        <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+        Jobs
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        History
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H7"/></svg>
+        Earnings
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        Profile
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.dataset.screen===name));
+  document.querySelectorAll('#demo-bar button').forEach(b=>b.classList.toggle('active',b.dataset.screen===name));
+  document.querySelector('.phone').scrollTop=0;
+}
+document.querySelectorAll('#demo-bar button').forEach(b=>{
+  b.addEventListener('click',()=>showScreen(b.dataset.screen));
+});
+</script>
+</body>
+</html>

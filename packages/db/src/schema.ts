@@ -472,3 +472,28 @@ export const paymentVerificationsRelations = relations(paymentVerifications, ({ 
   order: one(orders, { fields: [paymentVerifications.orderId], references: [orders.id] }),
 }))
 
+// ── Courier PWA — OTP login + session tokens ─────────────────────────────────
+export const courierOtps = pgTable('courier_otps', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  phone: varchar('phone', { length: 30 }).notNull(),
+  codeHash: varchar('code_hash', { length: 128 }).notNull(),
+  attempts: integer('attempts').notNull().default(0),
+  expiresAt: timestamp('expires_at').notNull(),
+  consumedAt: timestamp('consumed_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+export const courierSessions = pgTable('courier_sessions', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  courierId: varchar('courier_id', { length: 128 }).notNull(),
+  tokenHash: varchar('token_hash', { length: 128 }).notNull().unique(),
+  userAgent: text('user_agent'),
+  expiresAt: timestamp('expires_at').notNull(),
+  lastUsedAt: timestamp('last_used_at').notNull().defaultNow(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+export const courierSessionsRelations = relations(courierSessions, ({ one }) => ({
+  courier: one(couriers, { fields: [courierSessions.courierId], references: [couriers.id] }),
+}))
+
