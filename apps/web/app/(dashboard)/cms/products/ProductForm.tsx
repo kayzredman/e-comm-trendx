@@ -72,14 +72,18 @@ export default function ProductForm({ categories, product }: Props) {
     })
   }
 
+  /** Always returns a non-stale Clerk JWT, refusing to fall back to cached null. */
+  async function freshToken(): Promise<string> {
+    const t = await getToken({ skipCache: true })
+    if (!t) throw new Error('Your session expired. Please sign in again.')
+    return t
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
     try {
-      const token = await getToken()
-      if (!token) throw new Error('Not authenticated')
-
       const payload: ProductInput = {
         name: form.name,
         slug: form.slug,
@@ -89,34 +93,27 @@ export default function ProductForm({ categories, product }: Props) {
         sku: form.sku || undefined,
         inventory: parseInt(form.inventory, 10) || 0,
         categoryId: form.categoryId || undefined,
-        // Images are managed via the ImageUploader → product_images table.
-        // We intentionally don't touch the legacy products.images[] column here
-        // so existing URL strings are preserved until the migration script runs.
         status: form.status,
       }
 
       if (isEdit) {
-        await productsApi.update(product.id, payload, token)
-        const freshV = (await getToken()) ?? token
-        await variantsApi.replaceAll(product.id, variants.map(fromDraft), freshV)
+        await productsApi.update(product.id, payload, await freshToken())
+        await variantsApi.replaceAll(product.id, variants.map(fromDraft), await freshToken())
       } else {
-        const created = await productsApi.create(payload, token) as { id: string }
-        // Upload any queued images now that we have a product ID
+        const created = await productsApi.create(payload, await freshToken()) as { id: string }
         if (pendingFiles.length > 0) {
           for (let i = 0; i < pendingFiles.length; i++) {
             const f = pendingFiles[i]
             setUploadStatus(`Uploading image ${i + 1} of ${pendingFiles.length}…`)
             try {
-              const fresh = (await getToken()) ?? token
               const presigned = await imagesApi.presign(
                 { productId: created.id, contentType: f.type, size: f.size },
-                fresh,
+                await freshToken(),
               )
               await uploadToPresignedUrl(presigned, f)
-              const fresh2 = (await getToken()) ?? token
               await imagesApi.finalize(
                 { productId: created.id, tempKey: presigned.key, alt: f.name.replace(/\.[^.]+$/, '') },
-                fresh2,
+                await freshToken(),
               )
             } catch (uploadErr) {
               console.error('Image upload failed', uploadErr)
@@ -126,8 +123,7 @@ export default function ProductForm({ categories, product }: Props) {
         }
         if (variants.length > 0) {
           setUploadStatus('Saving variants…')
-          const freshV = (await getToken()) ?? token
-          await variantsApi.replaceAll(created.id, variants.map(fromDraft), freshV)
+          await variantsApi.replaceAll(created.id, variants.map(fromDraft), await freshToken())
           setUploadStatus(null)
         }
       }
@@ -135,7 +131,12 @@ export default function ProductForm({ categories, product }: Props) {
       router.push('/cms/products')
       router.refresh()
     } catch (err: any) {
-      setError(err.message ?? 'Something went wrong')
+      const msg = err?.message ?? 'Something went wrong'
+      const friendly = /401/.test(msg)
+        ? 'Your sign-in expired while editing. Refresh the page and try again.'
+        : msg
+      setError(friendly)
+      console.error('Product save failed:', err)
     } finally {
       setLoading(false)
     }
@@ -784,12 +785,12 @@ function VariantsEditor({
 
       {variants.length > 0 && (
         <div className="overflow-x-auto -mx-5 px-5">
-          <table className="w-full text-sm" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+          <table className="w-full text-sm" style={{ borderCollapse: 'separate', borderSpacing: 0, minWidth: 600 }}>
             <thead>
               <tr style={{ color: 'var(--color-text-muted)' }}>
-                {['Size', 'Color', 'Hex', 'SKU', `Price (${basePrice ? 'override' : 'GH₵'})`, 'Stock', 'Active', ''].map((h) => (
+                {['Swatch', 'Size', 'Color', 'SKU', `Price (${basePrice ? 'override' : 'GH₵'})`, 'Stock', '', ''].map((h, idx) => (
                   <th
-                    key={h}
+                    key={`${h}-${idx}`}
                     className="text-left text-[10px] font-bold uppercase tracking-wider pb-2 pr-2"
                   >
                     {h}
@@ -802,10 +803,20 @@ function VariantsEditor({
                 <tr key={v.id ?? `new-${i}`} style={{ borderTop: '1px solid var(--color-border)' }}>
                   <td className="py-2 pr-2">
                     <input
+                      type="color"
+                      value={v.colorHex || '#000000'}
+                      onChange={(e) => update(i, { colorHex: e.target.value })}
+                      className="w-9 h-9 rounded-md border cursor-pointer"
+                      style={{ borderColor: 'var(--color-border)', padding: 0 }}
+                      title={v.colorHex || 'Pick swatch colour'}
+                    />
+                  </td>
+                  <td className="py-2 pr-2">
+                    <input
                       value={v.size}
                       onChange={(e) => update(i, { size: e.target.value })}
                       placeholder="M"
-                      className="w-20 rounded-md border px-2 py-1.5 text-sm"
+                      className="w-16 rounded-md border px-2 py-1.5 text-sm"
                       style={{ borderColor: 'var(--color-border)' }}
                     />
                   </td>
@@ -814,35 +825,16 @@ function VariantsEditor({
                       value={v.color}
                       onChange={(e) => update(i, { color: e.target.value })}
                       placeholder="Black"
-                      className="w-28 rounded-md border px-2 py-1.5 text-sm"
+                      className="w-24 rounded-md border px-2 py-1.5 text-sm"
                       style={{ borderColor: 'var(--color-border)' }}
                     />
-                  </td>
-                  <td className="py-2 pr-2">
-                    <div className="flex items-center gap-1.5">
-                      <input
-                        type="color"
-                        value={v.colorHex || '#000000'}
-                        onChange={(e) => update(i, { colorHex: e.target.value })}
-                        className="w-8 h-8 rounded-md border cursor-pointer"
-                        style={{ borderColor: 'var(--color-border)', padding: 0 }}
-                        title="Swatch colour"
-                      />
-                      <input
-                        value={v.colorHex}
-                        onChange={(e) => update(i, { colorHex: e.target.value })}
-                        placeholder="#000000"
-                        className="w-24 rounded-md border px-2 py-1.5 text-xs font-mono"
-                        style={{ borderColor: 'var(--color-border)' }}
-                      />
-                    </div>
                   </td>
                   <td className="py-2 pr-2">
                     <input
                       value={v.sku}
                       onChange={(e) => update(i, { sku: e.target.value })}
                       placeholder="auto"
-                      className="w-32 rounded-md border px-2 py-1.5 text-sm font-mono"
+                      className="w-28 rounded-md border px-2 py-1.5 text-sm font-mono"
                       style={{ borderColor: 'var(--color-border)' }}
                     />
                   </td>
@@ -854,7 +846,7 @@ function VariantsEditor({
                       value={v.priceOverride}
                       onChange={(e) => update(i, { priceOverride: e.target.value })}
                       placeholder={basePrice || '—'}
-                      className="w-24 rounded-md border px-2 py-1.5 text-sm"
+                      className="w-20 rounded-md border px-2 py-1.5 text-sm"
                       style={{ borderColor: 'var(--color-border)' }}
                     />
                   </td>
@@ -864,7 +856,7 @@ function VariantsEditor({
                       min="0"
                       value={v.inventory}
                       onChange={(e) => update(i, { inventory: e.target.value })}
-                      className="w-20 rounded-md border px-2 py-1.5 text-sm"
+                      className="w-16 rounded-md border px-2 py-1.5 text-sm"
                       style={{ borderColor: 'var(--color-border)' }}
                     />
                   </td>

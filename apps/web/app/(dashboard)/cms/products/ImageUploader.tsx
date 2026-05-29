@@ -68,8 +68,8 @@ export default function ImageUploader({ productId }: Props) {
     const getIdx = placeholderIdx
 
     try {
-      const token = await getToken()
-      if (!token) throw new Error('Not authenticated')
+      const token = await getToken({ skipCache: true })
+      if (!token) throw new Error('Your sign-in expired. Please refresh and try again.')
 
       const presigned = await imagesApi.presign(
         { productId, contentType: file.type, size: file.size },
@@ -91,7 +91,7 @@ export default function ImageUploader({ productId }: Props) {
         }
         return next
       })
-      const freshToken = (await getToken()) ?? token
+      const freshToken = (await getToken({ skipCache: true })) ?? token
       const finalized = await imagesApi.finalize(
         { productId, tempKey: presigned.key, alt: file.name.replace(/\.[^.]+$/, '') },
         freshToken,
