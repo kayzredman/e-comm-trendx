@@ -17,9 +17,12 @@ type Props = {
   style?: CSSProperties
   /** Override the button content (idle state) */
   label?: ReactNode
+  /** Optional variant selected on the PDP. Phase 4 wires these into the cart store. */
+  variantId?: string
+  variantLabel?: string | null
 }
 
-export default function AddToCartButton({ product, disabled, className, style, label }: Props) {
+export default function AddToCartButton({ product, disabled, className, style, label, variantId, variantLabel }: Props) {
   const [added, setAdded] = useState(false)
   const addItem = useCartStore((s) => s.addItem)
 
@@ -30,6 +33,8 @@ export default function AddToCartButton({ product, disabled, className, style, l
       slug: product.slug,
       price: Number(product.price),
       image: product.images?.[0] ?? '',
+      variantId,
+      variantLabel: variantLabel ?? undefined,
     })
     setAdded(true)
     setTimeout(() => setAdded(false), 1500)

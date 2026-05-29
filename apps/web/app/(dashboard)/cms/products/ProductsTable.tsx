@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Search, X, Pencil } from 'lucide-react'
-import type { Product, Category } from '@/lib/api'
+import { resolveProductImage, type Product, type Category } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import ProductDeleteButton from './ProductDeleteButton'
 
@@ -103,12 +104,24 @@ export default function ProductsTable({ products, categories }: Props) {
                   <tr key={product.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {product.images?.[0] ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={product.images[0]} alt={product.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center text-lg" style={{ background: 'var(--color-surface-muted)' }}>📦</div>
-                        )}
+                        {(() => {
+                          const img = resolveProductImage(product, 'thumb')
+                          if (!img) return (
+                            <div className="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center text-lg" style={{ background: 'var(--color-surface-muted)' }}>📦</div>
+                          )
+                          return (
+                            <Image
+                              src={img.url}
+                              alt={img.alt}
+                              width={40}
+                              height={40}
+                              placeholder={img.blurDataUrl ? 'blur' : 'empty'}
+                              blurDataURL={img.blurDataUrl}
+                              className="w-10 h-10 rounded-lg object-cover shrink-0"
+                              style={{ width: 40, height: 40 }}
+                            />
+                          )
+                        })()}
                         <div>
                           <p className="font-medium" style={{ color: 'var(--color-text)' }}>{product.name}</p>
                           {product.sku && <p className="text-xs" style={{ color: 'var(--color-text-subtle)' }}>SKU: {product.sku}</p>}

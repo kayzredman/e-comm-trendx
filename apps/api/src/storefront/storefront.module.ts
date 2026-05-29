@@ -6,9 +6,10 @@ import { CustomersModule } from '../customers/customers.module'
 import { OrdersModule } from '../orders/orders.module'
 import { DeliveryModule } from '../delivery/delivery.module'
 import { CmsModule } from '../cms/cms.module'
+import { DiscountsModule } from '../discounts/discounts.module'
 
 @Module({
-  imports: [ProductsModule, CustomersModule, OrdersModule, DeliveryModule, CmsModule],
+  imports: [ProductsModule, CustomersModule, OrdersModule, DeliveryModule, CmsModule, DiscountsModule],
   controllers: [StorefrontController],
   providers: [StorefrontService],
 })

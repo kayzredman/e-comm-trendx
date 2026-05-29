@@ -27,6 +27,20 @@ const envSchema = z.object({
 
   // Redis (Phase 2)
   REDIS_URL: z.string().optional(),
+
+  // ── Image storage (R2 / S3-compatible) ──────────────────────────────────
+  // When ALL R2_* are present, the API uses R2. Otherwise it falls back to
+  // local disk storage at apps/api/uploads/ (dev only).
+  R2_ACCOUNT_ID: z.string().optional(),
+  R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_SECRET_ACCESS_KEY: z.string().optional(),
+  R2_BUCKET: z.string().optional(),
+  /** Public base URL for the bucket (custom domain or r2.dev URL). No trailing slash. */
+  R2_PUBLIC_URL: z.string().url().optional(),
+  /** Where the API serves locally-stored uploads from in dev. No trailing slash. */
+  LOCAL_UPLOADS_BASE_URL: z.string().url().optional(),
+  /** Max single-image upload size in bytes (default 10MB). */
+  IMAGE_MAX_BYTES: z.coerce.number().default(10 * 1024 * 1024),
 })
 
 export type Env = z.infer<typeof envSchema>

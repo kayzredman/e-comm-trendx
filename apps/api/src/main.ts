@@ -11,8 +11,20 @@ async function bootstrap() {
 
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({ logger: env.NODE_ENV === 'development' }),
+    new FastifyAdapter({ logger: env.NODE_ENV === 'development', bodyLimit: 20 * 1024 * 1024 }),
   )
+
+  // Accept raw binary uploads on PUT /uploads/sign (local dev storage driver).
+  const fastify = app.getHttpAdapter().getInstance()
+  const binaryParser = (
+    _req: unknown,
+    payload: Buffer,
+    done: (err: Error | null, body?: Buffer) => void,
+  ) => {
+    done(null, payload)
+  }
+  fastify.addContentTypeParser('application/octet-stream', { parseAs: 'buffer' }, binaryParser as any)
+  fastify.addContentTypeParser(/^image\/.+$/, { parseAs: 'buffer' }, binaryParser as any)
 
   app.useGlobalPipes(
     new ValidationPipe({

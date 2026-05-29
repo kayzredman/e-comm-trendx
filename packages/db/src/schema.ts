@@ -102,6 +102,10 @@ export const orderItems = pgTable('order_items', {
   orderId: varchar('order_id', { length: 128 }).notNull(),
   productId: varchar('product_id', { length: 128 }).notNull(),
   productName: varchar('product_name', { length: 255 }).notNull(),
+  /** Snapshot of the variant at order time. NULL for variant-less products
+   *  or legacy orders placed before the variants feature. */
+  variantId: varchar('variant_id', { length: 128 }),
+  variantLabel: varchar('variant_label', { length: 255 }),
   unitPrice: numeric('unit_price', { precision: 12, scale: 2 }).notNull(),
   quantity: integer('quantity').notNull(),
 })
@@ -145,6 +149,8 @@ export const categoriesRelations = relations(categories, ({ one, many }) => ({
 export const productsRelations = relations(products, ({ one, many }) => ({
   category: one(categories, { fields: [products.categoryId], references: [categories.id] }),
   orderItems: many(orderItems),
+  imageAssets: many(productImages),
+  variants: many(productVariants),
 }))
 
 export const ordersRelations = relations(orders, ({ one, many }) => ({
@@ -195,6 +201,10 @@ export const discountCodes = pgTable('discount_codes', {
   usedCount: integer('used_count').notNull().default(0),
   expiresAt: timestamp('expires_at'),
   isActive: boolean('is_active').notNull().default(true),
+  // Surface this code passively on storefront (top strip + checkout suggestion).
+  isPromoted: boolean('is_promoted').notNull().default(false),
+  // Optional human-friendly tagline shown alongside the code.
+  promoLabel: varchar('promo_label', { length: 140 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
@@ -275,5 +285,66 @@ export const posHoldsRelations = relations(posHolds, ({ one }) => ({
   shift: one(posShifts, { fields: [posHolds.shiftId], references: [posShifts.id] }),
   cashier: one(users, { fields: [posHolds.cashierId], references: [users.id] }),
   customer: one(customers, { fields: [posHolds.customerId], references: [customers.id] }),
+}))
+
+// ── Product images (FEATURE_IMAGE_UPLOAD) ────────────────────────────────────
+// Per-image metadata for uploaded product photos. URL-only images (legacy
+// products.images[] strings, or merchant-pasted external URLs) live as
+// rows with source='external' and storageKey=NULL.
+export const imageSourceEnum = pgEnum('image_source', ['upload', 'external'])
+
+export const productImages = pgTable('product_images', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  productId: varchar('product_id', { length: 128 }).notNull(),
+  source: imageSourceEnum('source').notNull().default('upload'),
+  /** R2/local object key (e.g. "products/abc/9f3.../original.jpg"). NULL for source='external'. */
+  storageKey: text('storage_key'),
+  /** For external images: the raw URL. For uploads: NULL (URL is computed from storageKey + variant). */
+  externalUrl: text('external_url'),
+  /** Original file metadata. */
+  width: integer('width'),
+  height: integer('height'),
+  format: varchar('format', { length: 16 }),
+  byteSize: integer('byte_size'),
+  /** Tiny base64 placeholder for next/image blur, e.g. "data:image/webp;base64,...". */
+  blurDataUrl: text('blur_data_url'),
+  alt: varchar('alt', { length: 255 }),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isPrimary: boolean('is_primary').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+export const productImagesRelations = relations(productImages, ({ one }) => ({
+  product: one(products, { fields: [productImages.productId], references: [products.id] }),
+}))
+
+// ── Product variants (FEATURE_VARIANTS) ──────────────────────────────────────
+// One row per purchasable SKU within a product. A product is sold as a single
+// SKU when it has zero variants (legacy products.inventory / products.price
+// still apply). When variants exist, they override stock and (optionally) price
+// at the variant level.
+export const productVariants = pgTable('product_variants', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  productId: varchar('product_id', { length: 128 }).notNull(),
+  /** Optional human-readable axes. NULL is allowed so a "color-only" or
+   *  "size-only" product is supported without inventing a placeholder. */
+  size: varchar('size', { length: 64 }),
+  color: varchar('color', { length: 64 }),
+  /** Hex like "#1a1a2e" — used by storefront swatches. */
+  colorHex: varchar('color_hex', { length: 16 }),
+  /** Open-ended extra axes for future use (material, width, fit, …). */
+  attributes: jsonb('attributes').$type<Record<string, string>>().notNull().default({}),
+  sku: varchar('sku', { length: 100 }),
+  /** NULL = use the parent product's price. */
+  priceOverride: numeric('price_override', { precision: 12, scale: 2 }),
+  inventory: integer('inventory').notNull().default(0),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const productVariantsRelations = relations(productVariants, ({ one }) => ({
+  product: one(products, { fields: [productVariants.productId], references: [products.id] }),
 }))
 

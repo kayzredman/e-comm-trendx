@@ -749,6 +749,30 @@ export declare const orderItems: import("drizzle-orm/pg-core").PgTableWithColumn
             enumValues: [string, ...string[]];
             baseColumn: never;
         }, {}, {}>;
+        variantId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "variant_id";
+            tableName: "order_items";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        variantLabel: import("drizzle-orm/pg-core").PgColumn<{
+            name: "variant_label";
+            tableName: "order_items";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
         unitPrice: import("drizzle-orm/pg-core").PgColumn<{
             name: "unit_price";
             tableName: "order_items";
@@ -1021,6 +1045,8 @@ export declare const categoriesRelations: import("drizzle-orm").Relations<"categ
 export declare const productsRelations: import("drizzle-orm").Relations<"products", {
     category: import("drizzle-orm").One<"categories", false>;
     orderItems: import("drizzle-orm").Many<"order_items">;
+    imageAssets: import("drizzle-orm").Many<"product_images">;
+    variants: import("drizzle-orm").Many<"product_variants">;
 }>;
 export declare const ordersRelations: import("drizzle-orm").Relations<"orders", {
     customer: import("drizzle-orm").One<"customers", false>;
@@ -1265,6 +1291,30 @@ export declare const discountCodes: import("drizzle-orm/pg-core").PgTableWithCol
             notNull: true;
             hasDefault: true;
             enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        isPromoted: import("drizzle-orm/pg-core").PgColumn<{
+            name: "is_promoted";
+            tableName: "discount_codes";
+            dataType: "boolean";
+            columnType: "PgBoolean";
+            data: boolean;
+            driverParam: boolean;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        promoLabel: import("drizzle-orm/pg-core").PgColumn<{
+            name: "promo_label";
+            tableName: "discount_codes";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
             baseColumn: never;
         }, {}, {}>;
         createdAt: import("drizzle-orm/pg-core").PgColumn<{
@@ -1779,5 +1829,350 @@ export declare const posHoldsRelations: import("drizzle-orm").Relations<"pos_hol
     shift: import("drizzle-orm").One<"pos_shifts", true>;
     cashier: import("drizzle-orm").One<"users", true>;
     customer: import("drizzle-orm").One<"customers", false>;
+}>;
+export declare const imageSourceEnum: import("drizzle-orm/pg-core").PgEnum<["upload", "external"]>;
+export declare const productImages: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "product_images";
+    schema: undefined;
+    columns: {
+        id: import("drizzle-orm/pg-core").PgColumn<{
+            name: "id";
+            tableName: "product_images";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        productId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "product_id";
+            tableName: "product_images";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        source: import("drizzle-orm/pg-core").PgColumn<{
+            name: "source";
+            tableName: "product_images";
+            dataType: "string";
+            columnType: "PgEnumColumn";
+            data: "upload" | "external";
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            enumValues: ["upload", "external"];
+            baseColumn: never;
+        }, {}, {}>;
+        storageKey: import("drizzle-orm/pg-core").PgColumn<{
+            name: "storage_key";
+            tableName: "product_images";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        externalUrl: import("drizzle-orm/pg-core").PgColumn<{
+            name: "external_url";
+            tableName: "product_images";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        width: import("drizzle-orm/pg-core").PgColumn<{
+            name: "width";
+            tableName: "product_images";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: false;
+            hasDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        height: import("drizzle-orm/pg-core").PgColumn<{
+            name: "height";
+            tableName: "product_images";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: false;
+            hasDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        format: import("drizzle-orm/pg-core").PgColumn<{
+            name: "format";
+            tableName: "product_images";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        byteSize: import("drizzle-orm/pg-core").PgColumn<{
+            name: "byte_size";
+            tableName: "product_images";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: false;
+            hasDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        blurDataUrl: import("drizzle-orm/pg-core").PgColumn<{
+            name: "blur_data_url";
+            tableName: "product_images";
+            dataType: "string";
+            columnType: "PgText";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        alt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "alt";
+            tableName: "product_images";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        sortOrder: import("drizzle-orm/pg-core").PgColumn<{
+            name: "sort_order";
+            tableName: "product_images";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        isPrimary: import("drizzle-orm/pg-core").PgColumn<{
+            name: "is_primary";
+            tableName: "product_images";
+            dataType: "boolean";
+            columnType: "PgBoolean";
+            data: boolean;
+            driverParam: boolean;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        createdAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "created_at";
+            tableName: "product_images";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+    };
+    dialect: "pg";
+}>;
+export declare const productImagesRelations: import("drizzle-orm").Relations<"product_images", {
+    product: import("drizzle-orm").One<"products", true>;
+}>;
+export declare const productVariants: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "product_variants";
+    schema: undefined;
+    columns: {
+        id: import("drizzle-orm/pg-core").PgColumn<{
+            name: "id";
+            tableName: "product_variants";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        productId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "product_id";
+            tableName: "product_variants";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        size: import("drizzle-orm/pg-core").PgColumn<{
+            name: "size";
+            tableName: "product_variants";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        color: import("drizzle-orm/pg-core").PgColumn<{
+            name: "color";
+            tableName: "product_variants";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        colorHex: import("drizzle-orm/pg-core").PgColumn<{
+            name: "color_hex";
+            tableName: "product_variants";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        attributes: import("drizzle-orm/pg-core").PgColumn<{
+            name: "attributes";
+            tableName: "product_variants";
+            dataType: "json";
+            columnType: "PgJsonb";
+            data: Record<string, string>;
+            driverParam: unknown;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        sku: import("drizzle-orm/pg-core").PgColumn<{
+            name: "sku";
+            tableName: "product_variants";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        priceOverride: import("drizzle-orm/pg-core").PgColumn<{
+            name: "price_override";
+            tableName: "product_variants";
+            dataType: "string";
+            columnType: "PgNumeric";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        inventory: import("drizzle-orm/pg-core").PgColumn<{
+            name: "inventory";
+            tableName: "product_variants";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        sortOrder: import("drizzle-orm/pg-core").PgColumn<{
+            name: "sort_order";
+            tableName: "product_variants";
+            dataType: "number";
+            columnType: "PgInteger";
+            data: number;
+            driverParam: string | number;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        isActive: import("drizzle-orm/pg-core").PgColumn<{
+            name: "is_active";
+            tableName: "product_variants";
+            dataType: "boolean";
+            columnType: "PgBoolean";
+            data: boolean;
+            driverParam: boolean;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        createdAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "created_at";
+            tableName: "product_variants";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        updatedAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "updated_at";
+            tableName: "product_variants";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+    };
+    dialect: "pg";
+}>;
+export declare const productVariantsRelations: import("drizzle-orm").Relations<"product_variants", {
+    product: import("drizzle-orm").One<"products", true>;
 }>;
 //# sourceMappingURL=schema.d.ts.map

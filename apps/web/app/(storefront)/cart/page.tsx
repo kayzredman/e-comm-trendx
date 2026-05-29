@@ -98,6 +98,11 @@ export default function CartPage() {
                 >
                   {item.name}
                 </Link>
+                {item.variantLabel && (
+                  <p className="text-[11px] font-semibold mt-0.5" style={{ color: 'var(--color-text-muted)' }}>
+                    {item.variantLabel}
+                  </p>
+                )}
                 <p className="text-base font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
                   {formatPrice(item.price)}
                 </p>
@@ -109,7 +114,7 @@ export default function CartPage() {
                     style={{ borderColor: 'var(--color-border)' }}
                   >
                     <button
-                      onClick={() => updateQty(item.id, item.quantity - 1)}
+                      onClick={() => updateQty(item.id, item.quantity - 1, item.variantId)}
                       className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors"
                       style={{ color: 'var(--color-text)' }}
                       aria-label="Decrease quantity"
@@ -123,7 +128,7 @@ export default function CartPage() {
                       {item.quantity}
                     </span>
                     <button
-                      onClick={() => updateQty(item.id, item.quantity + 1)}
+                      onClick={() => updateQty(item.id, item.quantity + 1, item.variantId)}
                       className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors"
                       style={{ color: 'var(--color-text)' }}
                       aria-label="Increase quantity"
@@ -134,7 +139,7 @@ export default function CartPage() {
 
                   {/* Remove */}
                   <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeItem(item.id, item.variantId)}
                     className="p-1.5 rounded-lg hover:bg-red-50 transition-colors"
                     style={{ color: '#DC2626' }}
                     aria-label="Remove item"

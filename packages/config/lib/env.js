@@ -24,6 +24,19 @@ const envSchema = zod_1.z.object({
     GOOGLE_MAPS_API_KEY: zod_1.z.string().optional(),
     // Redis (Phase 2)
     REDIS_URL: zod_1.z.string().optional(),
+    // ── Image storage (R2 / S3-compatible) ──────────────────────────────────
+    // When ALL R2_* are present, the API uses R2. Otherwise it falls back to
+    // local disk storage at apps/api/uploads/ (dev only).
+    R2_ACCOUNT_ID: zod_1.z.string().optional(),
+    R2_ACCESS_KEY_ID: zod_1.z.string().optional(),
+    R2_SECRET_ACCESS_KEY: zod_1.z.string().optional(),
+    R2_BUCKET: zod_1.z.string().optional(),
+    /** Public base URL for the bucket (custom domain or r2.dev URL). No trailing slash. */
+    R2_PUBLIC_URL: zod_1.z.string().url().optional(),
+    /** Where the API serves locally-stored uploads from in dev. No trailing slash. */
+    LOCAL_UPLOADS_BASE_URL: zod_1.z.string().url().optional(),
+    /** Max single-image upload size in bytes (default 10MB). */
+    IMAGE_MAX_BYTES: zod_1.z.coerce.number().default(10 * 1024 * 1024),
 });
 exports.envSchema = envSchema;
 function validateEnv() {
