@@ -684,28 +684,33 @@ type VariantDraft = {
   isActive: boolean
 }
 
+function s(v: unknown): string {
+  return v == null ? '' : String(v)
+}
+
 function toDraft(v: ProductVariant): VariantDraft {
   return {
     id: v.id,
-    size: v.size ?? '',
-    color: v.color ?? '',
-    colorHex: v.colorHex ?? '',
-    sku: v.sku ?? '',
-    priceOverride: v.priceOverride ?? '',
-    inventory: String(v.inventory ?? 0),
+    size: s(v.size),
+    color: s(v.color),
+    colorHex: s(v.colorHex),
+    sku: s(v.sku),
+    priceOverride: s(v.priceOverride),
+    inventory: s(v.inventory ?? 0),
     isActive: v.isActive,
   }
 }
 
 function fromDraft(d: VariantDraft, idx: number): ProductVariantInput {
+  const price = s(d.priceOverride).trim()
   return {
     id: d.id,
-    size: d.size.trim() || null,
-    color: d.color.trim() || null,
-    colorHex: d.colorHex.trim() || null,
-    sku: d.sku.trim() || null,
-    priceOverride: d.priceOverride.trim() ? d.priceOverride.trim() : null,
-    inventory: parseInt(d.inventory, 10) || 0,
+    size: s(d.size).trim() || null,
+    color: s(d.color).trim() || null,
+    colorHex: s(d.colorHex).trim() || null,
+    sku: s(d.sku).trim() || null,
+    priceOverride: price || null,
+    inventory: parseInt(s(d.inventory), 10) || 0,
     sortOrder: idx,
     isActive: d.isActive,
   }
