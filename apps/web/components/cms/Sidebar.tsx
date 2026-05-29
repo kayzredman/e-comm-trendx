@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import {
   LayoutDashboard, Package, Tag, ShoppingCart, BarChart3,
-  Users, FileText, Truck, Menu, X, LogOut, UserCog, Activity, Flag, ScanLine,
+  Users, FileText, Truck, Menu, X, LogOut, UserCog, Activity, Flag, ScanLine, TicketPercent,
 } from 'lucide-react'
 import { useClerk, useUser } from '@clerk/nextjs'
 import type { UserRole } from '@/lib/api'
@@ -42,6 +42,7 @@ const sections: NavSection[] = [
       { label: 'POS Terminal', href: '/pos',          icon: ScanLine, roles: ['OWNER', 'MANAGER', 'CASHIER'], badge: { text: 'New', kind: 'brand' } },
       { label: 'Customers',    href: '/cms/customers', icon: Users,    roles: ['OWNER', 'MANAGER', 'ORDER_MANAGER', 'VIEWER'] },
       { label: 'Delivery',     href: '/cms/delivery',  icon: Truck,    roles: ['OWNER', 'MANAGER', 'ORDER_MANAGER'] },
+      { label: 'Discounts',    href: '/cms/discounts', icon: TicketPercent, roles: ['OWNER', 'MANAGER'] },
       { label: 'CMS Pages',    href: '/cms/content',   icon: FileText, roles: ['OWNER', 'MANAGER', 'CONTENT_EDITOR'] },
     ],
   },

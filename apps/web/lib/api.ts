@@ -545,6 +545,45 @@ export const cmsApi = {
     apiFetch(`/cms/sections/${id}`, { method: 'DELETE', token }),
 }
 
+// ─── Discount codes (FEATURE_DISCOUNTS) ──────────────────────────────────────
+
+export type DiscountType = 'PERCENT' | 'FIXED'
+
+export type DiscountCode = {
+  id: string
+  code: string
+  type: DiscountType
+  value: string
+  minSubtotal: string
+  maxUses: number | null
+  usedCount: number
+  expiresAt: string | null
+  isActive: boolean
+  createdAt: string
+}
+
+export type DiscountCodeInput = {
+  id?: string
+  code: string
+  type: DiscountType
+  value: number
+  minSubtotal?: number
+  maxUses?: number | null
+  expiresAt?: string | null
+  isActive?: boolean
+}
+
+export const discountsApi = {
+  list: (token: string): Promise<DiscountCode[]> =>
+    apiFetch('/discounts', { token }),
+  upsert: (data: DiscountCodeInput, token: string): Promise<DiscountCode> =>
+    apiFetch('/discounts', { method: 'POST', body: JSON.stringify(data), token }),
+  delete: (id: string, token: string): Promise<void> =>
+    apiFetch(`/discounts/${id}`, { method: 'DELETE', token }),
+  validate: (code: string, subtotal: number): Promise<{ code: DiscountCode; discount: number }> =>
+    apiFetch('/discounts/validate', { method: 'POST', body: JSON.stringify({ code, subtotal }) }),
+}
+
 // ─── Storefront (public v1 endpoints) ─────────────────────────────────────────
 
 export type PlaceOrderInput = {
