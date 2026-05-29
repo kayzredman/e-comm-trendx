@@ -34,7 +34,14 @@ export class StorefrontService {
 
   async placeOrder(body: {
     customer: { name: string; phone: string; email?: string; address: any }
-    items: Array<{ productId: string; productName: string; unitPrice: number; quantity: number }>
+    items: Array<{
+      productId: string
+      productName: string
+      unitPrice: number
+      quantity: number
+      variantId?: string
+      variantLabel?: string
+    }>
     zoneId: string
     notes?: string
     paymentMethod?: 'CASH_ON_DELIVERY' | 'MOBILE_MONEY' | 'CARD'
@@ -57,6 +64,8 @@ export class StorefrontService {
         productName: i.productName,
         unitPrice: String(i.unitPrice),
         quantity: i.quantity,
+        variantId: i.variantId,
+        variantLabel: i.variantLabel,
       })),
     })
   }

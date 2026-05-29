@@ -224,6 +224,11 @@ export default async function OrderTrackingPage({ params }: Props) {
                   <p className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
                     {item.productName}
                   </p>
+                  {item.variantLabel ? (
+                    <p className="text-[11px] font-medium" style={{ color: 'var(--color-text-subtle)' }}>
+                      {item.variantLabel}
+                    </p>
+                  ) : null}
                   <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                     Qty: {item.quantity} × {formatPrice(item.unitPrice)}
                   </p>

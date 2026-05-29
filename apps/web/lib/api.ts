@@ -283,6 +283,8 @@ export type OrderItem = {
   productName: string
   unitPrice: string
   quantity: number
+  variantId?: string | null
+  variantLabel?: string | null
 }
 
 export type Order = {
@@ -552,7 +554,14 @@ export type PlaceOrderInput = {
     email?: string
     address: { street: string; city: string; region: string; country: string; zip?: string }
   }
-  items: Array<{ productId: string; productName: string; unitPrice: number; quantity: number }>
+  items: Array<{
+    productId: string
+    productName: string
+    unitPrice: number
+    quantity: number
+    variantId?: string
+    variantLabel?: string
+  }>
   zoneId: string
   notes?: string
   paymentMethod?: 'CASH_ON_DELIVERY' | 'MOBILE_MONEY' | 'CARD'

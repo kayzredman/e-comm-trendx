@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { DbService } from '../db/db.service'
-import { orders, orderItems, customers, products } from '@trendmarga/db'
+import { orders, orderItems, customers, products, productVariants } from '@trendmarga/db'
 import { eq, desc, sql } from 'drizzle-orm'
 import { NotificationsService } from '../notifications/notifications.service'
 import { features } from '@trendmarga/config'
@@ -75,12 +75,18 @@ export class OrdersService {
         data.items.map(item => ({ ...item, orderId: order.id }))
       ).returning()
 
-      // Decrement product inventory (no-op unless FEATURE_INVENTORY=true)
+      // Decrement product / variant inventory (no-op unless FEATURE_INVENTORY=true)
       if (features.inventory) {
         for (const item of data.items) {
-          await tx.update(products)
-            .set({ inventory: sql`GREATEST(${products.inventory} - ${item.quantity}, 0)` })
-            .where(eq(products.id, item.productId))
+          if (item.variantId) {
+            await tx.update(productVariants)
+              .set({ inventory: sql`GREATEST(${productVariants.inventory} - ${item.quantity}, 0)` })
+              .where(eq(productVariants.id, item.variantId))
+          } else {
+            await tx.update(products)
+              .set({ inventory: sql`GREATEST(${products.inventory} - ${item.quantity}, 0)` })
+              .where(eq(products.id, item.productId))
+          }
         }
       }
 

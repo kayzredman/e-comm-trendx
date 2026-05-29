@@ -134,6 +134,8 @@ export default function CheckoutPage() {
           productName: i.name,
           unitPrice: i.price,
           quantity: i.quantity,
+          variantId: i.variantId,
+          variantLabel: i.variantLabel,
         })),
         zoneId: selectedZoneId,
         notes: form.notes.trim() || undefined,
