@@ -14,6 +14,8 @@ type FormState = {
   maxUses: string
   expiresAt: string
   isActive: boolean
+  isPromoted: boolean
+  promoLabel: string
 }
 
 const emptyForm: FormState = {
@@ -24,6 +26,8 @@ const emptyForm: FormState = {
   maxUses: '',
   expiresAt: '',
   isActive: true,
+  isPromoted: false,
+  promoLabel: '',
 }
 
 function toFormState(c: DiscountCode): FormState {
@@ -35,6 +39,8 @@ function toFormState(c: DiscountCode): FormState {
     maxUses: c.maxUses == null ? '' : String(c.maxUses),
     expiresAt: c.expiresAt ? c.expiresAt.slice(0, 10) : '',
     isActive: c.isActive,
+    isPromoted: c.isPromoted ?? false,
+    promoLabel: c.promoLabel ?? '',
   }
 }
 
@@ -102,6 +108,8 @@ export default function DiscountsManager({ initialCodes }: { initialCodes: Disco
         maxUses: form.maxUses === '' ? null : Number(form.maxUses),
         expiresAt: form.expiresAt ? new Date(form.expiresAt).toISOString() : null,
         isActive: form.isActive,
+        isPromoted: form.isPromoted,
+        promoLabel: form.promoLabel.trim() || null,
       }, token)
 
       setCodes(prev =>
@@ -142,6 +150,8 @@ export default function DiscountsManager({ initialCodes }: { initialCodes: Disco
         maxUses: c.maxUses,
         expiresAt: c.expiresAt,
         isActive: !c.isActive,
+        isPromoted: c.isPromoted,
+        promoLabel: c.promoLabel,
       }, token)
       setCodes(prev => prev.map(x => x.id === c.id ? saved : x))
     } catch (err: unknown) {
@@ -280,6 +290,48 @@ export default function DiscountsManager({ initialCodes }: { initialCodes: Disco
                 Code is active (customers can redeem at checkout)
               </label>
             </div>
+
+            <div className="sm:col-span-2">
+              <div className="flex items-start gap-3">
+                <input
+                  id="discountPromoted"
+                  type="checkbox"
+                  checked={form.isPromoted}
+                  onChange={e => setForm(f => ({ ...f, isPromoted: e.target.checked }))}
+                  className="w-4 h-4 rounded mt-0.5"
+                  style={{ accentColor: 'var(--color-primary)' }}
+                />
+                <label htmlFor="discountPromoted" className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+                  Promote this code
+                  <span className="block text-xs font-normal mt-0.5" style={{ color: 'var(--color-text-subtle)' }}>
+                    Shows a dismissible strip above the header and a one-click apply suggestion at checkout.
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {form.isPromoted && (
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text)' }}>
+                  Promo label{' '}
+                  <span className="text-xs font-normal" style={{ color: 'var(--color-text-subtle)' }}>
+                    (optional)
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  maxLength={140}
+                  value={form.promoLabel}
+                  onChange={e => setForm(f => ({ ...f, promoLabel: e.target.value }))}
+                  placeholder="e.g. Weekend sale — 10% off everything"
+                  className={inputCls}
+                  style={{ borderColor: 'var(--color-border)' }}
+                />
+                <p className="text-xs mt-1" style={{ color: 'var(--color-text-subtle)' }}>
+                  Leave blank to auto-generate from value + min subtotal.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 mt-5">
@@ -346,7 +398,17 @@ export default function DiscountsManager({ initialCodes }: { initialCodes: Disco
                 return (
                   <tr key={c.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                     <td className="px-4 py-3 font-mono font-semibold tracking-wider" style={{ color: 'var(--color-text)' }}>
-                      {c.code}
+                      <div className="flex items-center gap-2">
+                        <span>{c.code}</span>
+                        {c.isPromoted && (
+                          <span
+                            className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider font-sans"
+                            style={{ background: '#FFEDD5', color: '#9A3412' }}
+                          >
+                            Promoted
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 font-semibold" style={{ color: 'var(--color-text)' }}>
                       {c.type === 'PERCENT' ? `${Number(c.value)}%` : formatPrice(c.value)}

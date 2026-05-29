@@ -43,6 +43,13 @@
       "when": 1780010149988,
       "tag": "0005_smart_screwball",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780069819500,
+      "tag": "0006_promoted_discounts",
+      "breakpoints": true
     }
   ]
 }

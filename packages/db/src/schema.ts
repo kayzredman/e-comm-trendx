@@ -201,6 +201,10 @@ export const discountCodes = pgTable('discount_codes', {
   usedCount: integer('used_count').notNull().default(0),
   expiresAt: timestamp('expires_at'),
   isActive: boolean('is_active').notNull().default(true),
+  // Surface this code passively on storefront (top strip + checkout suggestion).
+  isPromoted: boolean('is_promoted').notNull().default(false),
+  // Optional human-friendly tagline shown alongside the code.
+  promoLabel: varchar('promo_label', { length: 140 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 

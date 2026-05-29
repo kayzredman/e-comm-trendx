@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useCartStore, selectTotal } from '@/lib/cart-store'
-import { storefrontApi, type DeliveryZone } from '@/lib/api'
+import { storefrontApi, discountsApi, type DeliveryZone, type DiscountCode } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import {
   ShoppingBag,
@@ -14,6 +14,8 @@ import {
   ChevronRight,
   Loader2,
   ArrowLeft,
+  Tag,
+  X,
 } from 'lucide-react'
 
 const GH_REGIONS = [
@@ -52,6 +54,13 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Promo / discount state
+  const [promoInput, setPromoInput] = useState('')
+  const [promoApplying, setPromoApplying] = useState(false)
+  const [promoError, setPromoError] = useState('')
+  const [appliedPromo, setAppliedPromo] = useState<{ code: DiscountCode; discount: number } | null>(null)
+  const [promoted, setPromoted] = useState<DiscountCode[]>([])
+
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -73,7 +82,31 @@ export default function CheckoutPage() {
         if (active.length > 0) setSelectedZoneId(active[0].id)
       })
       .catch(() => {})
+    discountsApi.listPromoted().then(setPromoted).catch(() => {})
   }, [])
+
+  // Re-validate applied promo whenever subtotal changes (e.g. cart edited in another tab).
+  // Server is the source of truth; if it now fails (min-subtotal not met, exhausted, etc.),
+  // drop the discount silently and surface a small error to the user.
+  useEffect(() => {
+    if (!appliedPromo) return
+    if (subtotal === 0) { setAppliedPromo(null); return }
+    let cancelled = false
+    discountsApi
+      .validate(appliedPromo.code.code, subtotal)
+      .then((res) => {
+        if (cancelled) return
+        if (res.discount !== appliedPromo.discount) {
+          setAppliedPromo({ code: res.code, discount: res.discount })
+        }
+      })
+      .catch(() => {
+        if (cancelled) return
+        setAppliedPromo(null)
+        setPromoError('Discount no longer applies to this cart')
+      })
+    return () => { cancelled = true }
+  }, [subtotal, appliedPromo])
 
   // Recalculate fee whenever zone or subtotal changes
   useEffect(() => {
@@ -90,7 +123,48 @@ export default function CheckoutPage() {
   }, [selectedZoneId, subtotal, zones])
 
   const selectedZone = zones.find((z) => z.id === selectedZoneId)
-  const total = subtotal + deliveryFee
+  const discountAmount = appliedPromo?.discount ?? 0
+  const total = Math.max(0, subtotal - discountAmount) + deliveryFee
+
+  // First promoted code that the current cart actually qualifies for and that still has quota.
+  const suggestedPromo = promoted.find((p) => {
+    if (appliedPromo && appliedPromo.code.id === p.id) return false
+    if (subtotal < Number(p.minSubtotal)) return false
+    if (p.maxUses != null && p.usedCount >= p.maxUses) return false
+    return true
+  })
+
+  async function handleApplyPromo(codeOverride?: string) {
+    const raw = (codeOverride ?? promoInput).trim()
+    if (!raw) return
+    setPromoApplying(true)
+    setPromoError('')
+    try {
+      const res = await discountsApi.validate(raw, subtotal)
+      setAppliedPromo({ code: res.code, discount: res.discount })
+      setPromoInput('')
+    } catch (err: unknown) {
+      let msg = err instanceof Error ? err.message : 'Invalid code'
+      // apiFetch wraps non-2xx as `API 4xx: {json}`; strip to user-friendly message
+      const m = msg.match(/^API \d+:\s*(.*)$/)
+      if (m) {
+        try {
+          const body = JSON.parse(m[1])
+          msg = body.message || body.error || msg
+        } catch {
+          msg = m[1]
+        }
+      }
+      setPromoError(msg)
+    } finally {
+      setPromoApplying(false)
+    }
+  }
+
+  function handleRemovePromo() {
+    setAppliedPromo(null)
+    setPromoError('')
+  }
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
@@ -142,6 +216,8 @@ export default function CheckoutPage() {
         paymentMethod: form.paymentMethod,
         subtotal,
         deliveryFee,
+        discountCode: appliedPromo?.code.code,
+        discountAmount: appliedPromo?.discount,
         total,
       })
       clearCart()
@@ -517,6 +593,16 @@ export default function CheckoutPage() {
                     {formatPrice(subtotal)}
                   </span>
                 </div>
+                {appliedPromo && (
+                  <div className="flex justify-between text-sm">
+                    <span style={{ color: 'var(--color-text-muted)' }}>
+                      Discount ({appliedPromo.code.code})
+                    </span>
+                    <span className="font-semibold" style={{ color: '#059669' }}>
+                      −{formatPrice(appliedPromo.discount)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span style={{ color: 'var(--color-text-muted)' }}>Delivery</span>
                   <span className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--color-text)' }}>
@@ -527,6 +613,79 @@ export default function CheckoutPage() {
                         : '—'}
                   </span>
                 </div>
+              </div>
+
+              {/* Promo code */}
+              <div
+                className="border-t pt-4 mb-4"
+                style={{ borderColor: 'var(--color-border)' }}
+              >
+                {appliedPromo ? (
+                  <div
+                    className="flex items-center justify-between p-3 rounded-xl"
+                    style={{ background: '#ECFDF5', border: '1px solid #A7F3D0' }}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Tag size={14} style={{ color: '#059669' }} className="shrink-0" />
+                      <span className="text-sm font-semibold font-mono tracking-wider truncate" style={{ color: '#065F46' }}>
+                        {appliedPromo.code.code}
+                      </span>
+                      <span className="text-xs shrink-0" style={{ color: '#047857' }}>applied</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemovePromo}
+                      className="p-1 rounded hover:bg-emerald-100 shrink-0"
+                      aria-label="Remove promo code"
+                      style={{ color: '#047857' }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {suggestedPromo && (
+                      <button
+                        type="button"
+                        onClick={() => handleApplyPromo(suggestedPromo.code)}
+                        disabled={promoApplying}
+                        className="w-full mb-2 flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed text-xs text-left transition-colors hover:bg-blue-50 disabled:opacity-60"
+                        style={{ borderColor: '#BFDBFE', color: '#1E40AF' }}
+                      >
+                        <Tag size={12} className="shrink-0" />
+                        <span className="truncate">
+                          Apply <span className="font-mono font-bold tracking-wider">{suggestedPromo.code}</span>
+                          {suggestedPromo.promoLabel ? ` — ${suggestedPromo.promoLabel}` : ''}
+                        </span>
+                      </button>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={promoInput}
+                        onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoError('') }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') { e.preventDefault(); handleApplyPromo() }
+                        }}
+                        placeholder="Promo code"
+                        className="flex-1 rounded-xl border px-3 py-2 text-sm outline-none font-mono tracking-wider uppercase"
+                        style={{ borderColor: 'var(--color-border)', background: '#F8F9FA', color: 'var(--color-text)' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleApplyPromo()}
+                        disabled={promoApplying || !promoInput.trim()}
+                        className="px-4 py-2 rounded-xl text-sm font-semibold border disabled:opacity-50"
+                        style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+                      >
+                        {promoApplying ? <Loader2 size={14} className="animate-spin" /> : 'Apply'}
+                      </button>
+                    </div>
+                    {promoError && (
+                      <p className="mt-2 text-xs" style={{ color: '#DC2626' }}>{promoError}</p>
+                    )}
+                  </>
+                )}
               </div>
 
               <div

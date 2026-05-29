@@ -178,6 +178,10 @@ exports.discountCodes = (0, pg_core_1.pgTable)('discount_codes', {
     usedCount: (0, pg_core_1.integer)('used_count').notNull().default(0),
     expiresAt: (0, pg_core_1.timestamp)('expires_at'),
     isActive: (0, pg_core_1.boolean)('is_active').notNull().default(true),
+    // Surface this code passively on storefront (top strip + checkout suggestion).
+    isPromoted: (0, pg_core_1.boolean)('is_promoted').notNull().default(false),
+    // Optional human-friendly tagline shown alongside the code.
+    promoLabel: (0, pg_core_1.varchar)('promo_label', { length: 140 }),
     createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
 });
 // ── Notification log (FEATURE_NOTIFICATIONS) ─────────────────────────────────

@@ -377,6 +377,16 @@ export default function OrderDetail({ order: initial }: { order: Order }) {
                 <span style={{ color: 'var(--color-text-muted)' }}>Subtotal</span>
                 <span className="font-semibold tabular-nums" style={{ color: 'var(--color-text)' }}>{formatPrice(order.subtotal)}</span>
               </div>
+              {order.discountAmount && Number(order.discountAmount) > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--color-text-muted)' }}>
+                    Discount{order.discountReason ? ` (${order.discountReason})` : ''}
+                  </span>
+                  <span className="font-semibold tabular-nums" style={{ color: '#059669' }}>
+                    −{formatPrice(order.discountAmount)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span style={{ color: 'var(--color-text-muted)' }}>Delivery</span>
                 <span className="font-semibold tabular-nums" style={{ color: 'var(--color-text)' }}>

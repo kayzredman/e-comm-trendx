@@ -17,6 +17,13 @@ export class DiscountsController {
     return this.discounts.list()
   }
 
+  /** Public: list currently-redeemable promoted codes for storefront surfacing. */
+  @Get('promoted')
+  @Public()
+  listPromoted() {
+    return this.discounts.listPromoted()
+  }
+
   /** Admin: create or update a code. */
   @Post()
   @ApiBearerAuth()

@@ -295,6 +295,7 @@ export type Order = {
   subtotal: string
   deliveryFee: string
   discountAmount?: string
+  discountReason?: string | null
   taxAmount?: string
   total: string
   notes: string | null
@@ -559,6 +560,8 @@ export type DiscountCode = {
   usedCount: number
   expiresAt: string | null
   isActive: boolean
+  isPromoted: boolean
+  promoLabel: string | null
   createdAt: string
 }
 
@@ -571,11 +574,15 @@ export type DiscountCodeInput = {
   maxUses?: number | null
   expiresAt?: string | null
   isActive?: boolean
+  isPromoted?: boolean
+  promoLabel?: string | null
 }
 
 export const discountsApi = {
   list: (token: string): Promise<DiscountCode[]> =>
     apiFetch('/discounts', { token }),
+  listPromoted: (): Promise<DiscountCode[]> =>
+    apiFetch('/discounts/promoted'),
   upsert: (data: DiscountCodeInput, token: string): Promise<DiscountCode> =>
     apiFetch('/discounts', { method: 'POST', body: JSON.stringify(data), token }),
   delete: (id: string, token: string): Promise<void> =>
@@ -606,6 +613,8 @@ export type PlaceOrderInput = {
   paymentMethod?: 'CASH_ON_DELIVERY' | 'MOBILE_MONEY' | 'CARD'
   subtotal: number
   deliveryFee: number
+  discountCode?: string
+  discountAmount?: number
   total: number
 }
 

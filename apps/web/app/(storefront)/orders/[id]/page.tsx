@@ -259,6 +259,16 @@ export default async function OrderTrackingPage({ params }: Props) {
                 {formatPrice(order.subtotal)}
               </span>
             </div>
+            {order.discountAmount && Number(order.discountAmount) > 0 && (
+              <div className="flex justify-between">
+                <span style={{ color: 'var(--color-text-muted)' }}>
+                  Discount{order.discountReason ? ` (${order.discountReason})` : ''}
+                </span>
+                <span className="font-medium" style={{ color: '#059669' }}>
+                  −{formatPrice(order.discountAmount)}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span style={{ color: 'var(--color-text-muted)' }}>Delivery fee</span>
               <span className="font-medium" style={{ color: 'var(--color-text)' }}>

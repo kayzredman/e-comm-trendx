@@ -1293,6 +1293,30 @@ export declare const discountCodes: import("drizzle-orm/pg-core").PgTableWithCol
             enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
+        isPromoted: import("drizzle-orm/pg-core").PgColumn<{
+            name: "is_promoted";
+            tableName: "discount_codes";
+            dataType: "boolean";
+            columnType: "PgBoolean";
+            data: boolean;
+            driverParam: boolean;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        promoLabel: import("drizzle-orm/pg-core").PgColumn<{
+            name: "promo_label";
+            tableName: "discount_codes";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
         createdAt: import("drizzle-orm/pg-core").PgColumn<{
             name: "created_at";
             tableName: "discount_codes";
