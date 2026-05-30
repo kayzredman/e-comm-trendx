@@ -44,6 +44,8 @@ async function bootstrap() {
       if (!origin) return callback(null, true)
       // Allow any localhost port in dev
       if (/^http:\/\/localhost:\d+$/.test(origin)) return callback(null, true)
+      // Allow LAN IPs in dev (phone testing)
+      if (/^http:\/\/(?:192\.168|10\.|172\.(?:1[6-9]|2\d|3[01]))\.[\d.]+:\d+$/.test(origin)) return callback(null, true)
       // Allow any *.up.railway.app subdomain (staging / prod previews)
       if (allowedOrigins.includes(origin) || /^https:\/\/[^.]+\.up\.railway\.app$/.test(origin)) {
         return callback(null, true)

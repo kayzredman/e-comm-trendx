@@ -90,7 +90,8 @@ export const courierAuth = {
 }
 
 async function call<T = unknown>(path: string, opts?: RequestInit & { auth?: boolean }): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const headers: Record<string, string> = {}
+  if (opts?.body != null) headers['Content-Type'] = 'application/json'
   if (opts?.auth) {
     const t = courierAuth.getToken()
     if (!t) throw new Error('NO_SESSION')
