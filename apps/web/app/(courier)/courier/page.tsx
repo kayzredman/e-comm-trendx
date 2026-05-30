@@ -1,12 +1,16 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { courierApi, courierAuth } from '@/lib/courier-api'
 
 export default function CourierLoginPage() {
   const router = useRouter()
-  const search = useSearchParams()
-  const nextPath = search?.get('next') ?? '/courier/jobs'
+  const [nextPath, setNextPath] = useState('/courier/jobs')
+  useEffect(() => {
+    const u = new URL(window.location.href)
+    const n = u.searchParams.get('next')
+    if (n) setNextPath(n)
+  }, [])
 
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
   const [phone, setPhone] = useState('')
@@ -28,8 +32,7 @@ export default function CourierLoginPage() {
     return () => clearTimeout(t)
   }, [cooldown])
 
-  async function requestOtp(e?: React.FormEvent) {
-    e?.preventDefault()
+  async function requestOtp() {
     setError(null); setInfo(null)
     if (phone.replace(/\D/g, '').length < 9) {
       setError('Enter a valid Ghana phone number'); return
@@ -42,7 +45,7 @@ export default function CourierLoginPage() {
       setCooldown(45)
       setTimeout(() => inputs.current[0]?.focus(), 100)
     } catch (err) {
-      setError((err as Error).message)
+      setError((err as Error).message || 'Network error — check connection')
     } finally {
       setLoading(false)
     }
@@ -92,10 +95,10 @@ export default function CourierLoginPage() {
         <div style={{ fontSize: 12, color: '#6B7280', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 38 }}>Courier</div>
 
         {step === 'phone' ? (
-          <form onSubmit={requestOtp}>
+          <div>
             <div style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.2, color: '#0F172A', marginBottom: 8 }}>Sign in</div>
             <div style={{ fontSize: 14, color: '#6B7280', lineHeight: 1.5, marginBottom: 28 }}>
-              Enter your registered phone number. We'll text you a 6-digit code.
+              Enter your registered phone number. We&apos;ll text you a 6-digit code.
             </div>
 
             <div className="cr-field" style={{ marginBottom: 18 }}>
@@ -108,16 +111,17 @@ export default function CourierLoginPage() {
                   placeholder="24 555 0142"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); requestOtp() } }}
                 />
               </div>
             </div>
 
             {error && <div className="cr-error" style={{ marginBottom: 12 }}>{error}</div>}
 
-            <button className="cr-btn" type="submit" disabled={loading}>
+            <button className="cr-btn" type="button" onClick={requestOtp} disabled={loading}>
               {loading ? 'Sending…' : 'Send code'}
             </button>
-          </form>
+          </div>
         ) : (
           <>
             <div style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1.2, color: '#0F172A', marginBottom: 8 }}>Enter code</div>

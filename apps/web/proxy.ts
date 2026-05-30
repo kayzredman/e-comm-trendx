@@ -3,8 +3,12 @@ import { NextResponse } from 'next/server'
 
 // Dashboard and CMS routes require authentication
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/cms(.*)', '/pos(.*)'])
+// Courier PWA uses phone-OTP, never Clerk — skip middleware entirely to avoid
+// session-refresh redirect loops when loaded over LAN IPs.
+const isCourierRoute = createRouteMatcher(['/courier(.*)'])
 
 export default clerkMiddleware(async (auth, req) => {
+  if (isCourierRoute(req)) return NextResponse.next()
   if (isProtectedRoute(req)) {
     await auth.protect()
   }
