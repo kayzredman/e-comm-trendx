@@ -36,6 +36,11 @@ export class WhatsappController {
     return this.wa.startPairing(phone)
   }
 
+  @Post('qr')
+  async qr() {
+    return this.wa.startQrPairing()
+  }
+
   @Post('disconnect')
   async disconnect() {
     return this.wa.disconnect()

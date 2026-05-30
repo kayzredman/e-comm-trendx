@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@clerk/nextjs'
-import { CheckCircle2, AlertCircle, Loader2, Power, RefreshCw, Send, Smartphone, Wifi, WifiOff } from 'lucide-react'
+import { CheckCircle2, AlertCircle, Loader2, Power, QrCode, RefreshCw, Send, Smartphone, Wifi, WifiOff } from 'lucide-react'
 import type { WhatsappStatus, LogEntry } from './page'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4001'
@@ -17,8 +17,9 @@ export default function WhatsappManager({ initialStatus, initialLog }: Props) {
   const [status, setStatus] = useState<WhatsappStatus | null>(initialStatus)
   const [log, setLog] = useState<LogEntry[]>(initialLog)
   const [phone, setPhone] = useState('')
-  const [busy, setBusy] = useState<'pair' | 'disconnect' | 'test' | null>(null)
+  const [busy, setBusy] = useState<'pair' | 'qr' | 'disconnect' | 'test' | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [mode, setMode] = useState<'qr' | 'code'>('qr')
   const [testTo, setTestTo] = useState('')
   const [testBody, setTestBody] = useState('Hello from trendMarga')
 
@@ -41,11 +42,15 @@ export default function WhatsappManager({ initialStatus, initialLog }: Props) {
     return () => clearInterval(id)
   }, [refresh])
 
-  const action = async (kind: 'pair' | 'disconnect' | 'test', body?: unknown) => {
+  const action = async (kind: 'pair' | 'qr' | 'disconnect' | 'test', body?: unknown) => {
     setBusy(kind); setError(null)
     try {
       const t = await getToken()
-      const path = kind === 'pair' ? '/whatsapp/pair' : kind === 'disconnect' ? '/whatsapp/disconnect' : '/whatsapp/test'
+      const path =
+        kind === 'pair' ? '/whatsapp/pair'
+        : kind === 'qr' ? '/whatsapp/qr'
+        : kind === 'disconnect' ? '/whatsapp/disconnect'
+        : '/whatsapp/test'
       const res = await fetch(`${API}${path}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' },
@@ -104,15 +109,24 @@ export default function WhatsappManager({ initialStatus, initialLog }: Props) {
               Disconnect
             </button>
           </div>
+        ) : status.state === 'pairing' && status.qrDataUrl ? (
+          <QrDisplay status={status} onRefresh={() => action('qr')} busy={busy === 'qr'} />
         ) : status.state === 'pairing' && status.pairingCode ? (
           <PairingDisplay status={status} />
         ) : (
-          <PairForm
-            phone={phone}
-            onPhoneChange={setPhone}
-            onSubmit={() => action('pair', { phone })}
-            busy={busy === 'pair'}
-          />
+          <>
+            <ModeTabs mode={mode} setMode={setMode} />
+            {mode === 'qr' ? (
+              <QrStart onStart={() => action('qr')} busy={busy === 'qr'} />
+            ) : (
+              <PairForm
+                phone={phone}
+                onPhoneChange={setPhone}
+                onSubmit={() => action('pair', { phone })}
+                busy={busy === 'pair'}
+              />
+            )}
+          </>
         )}
 
         {error && (
@@ -248,6 +262,89 @@ function PairForm({ phone, onPhoneChange, onSubmit, busy }: { phone: string; onP
       >
         {busy ? <Loader2 size={14} className="animate-spin" /> : <Smartphone size={14} />}
         Generate pairing code
+      </button>
+    </div>
+  )
+}
+
+function ModeTabs({ mode, setMode }: { mode: 'qr' | 'code'; setMode: (m: 'qr' | 'code') => void }) {
+  return (
+    <div className="inline-flex rounded-lg p-1 mb-4" style={{ background: '#F1F5F9' }}>
+      {(['qr', 'code'] as const).map((m) => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => setMode(m)}
+          className="px-3 py-1.5 rounded-md text-xs font-bold inline-flex items-center gap-1.5"
+          style={{
+            background: mode === m ? '#fff' : 'transparent',
+            color: mode === m ? '#1E40AF' : '#64748B',
+            boxShadow: mode === m ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+          }}
+        >
+          {m === 'qr' ? <><QrCode size={12} /> QR code</> : <><Smartphone size={12} /> Pairing code</>}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function QrStart({ onStart, busy }: { onStart: () => void; busy: boolean }) {
+  return (
+    <div>
+      <div className="text-sm mb-3" style={{ color: 'var(--color-text-muted)' }}>
+        Scan a QR code with WhatsApp on the business phone — fastest and most reliable way to link.
+      </div>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={onStart}
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
+        style={{ background: '#1E40AF' }}
+      >
+        {busy ? <Loader2 size={14} className="animate-spin" /> : <QrCode size={14} />}
+        Show QR code
+      </button>
+    </div>
+  )
+}
+
+function QrDisplay({ status, onRefresh, busy }: { status: WhatsappStatus; onRefresh: () => void; busy: boolean }) {
+  return (
+    <div>
+      <div className="text-xs font-bold uppercase tracking-wider text-center mb-3" style={{ color: 'var(--color-text-muted)' }}>
+        Scan with WhatsApp on the business phone
+      </div>
+      <div className="flex justify-center my-3">
+        {status.qrDataUrl ? (
+          <img
+            src={status.qrDataUrl}
+            alt="WhatsApp pairing QR"
+            width={260}
+            height={260}
+            className="rounded-lg"
+            style={{ border: '2px solid #1E40AF', background: '#fff' }}
+          />
+        ) : (
+          <div className="w-65 h-65 rounded-lg flex items-center justify-center" style={{ background: '#F8FAFC', border: '2px dashed #CBD5E1' }}>
+            <Loader2 size={32} className="animate-spin" style={{ color: '#94A3B8' }} />
+          </div>
+        )}
+      </div>
+      <div className="rounded-lg p-3 mt-3 text-xs leading-relaxed" style={{ background: '#F0F9FF', borderLeft: '3px solid #1E40AF', color: '#1E40AF' }}>
+        <strong style={{ display: 'block', marginBottom: 4, color: '#1E3A8A' }}>How to scan</strong>
+        1. Open WhatsApp on the business phone<br />
+        2. Settings → Linked Devices → Link a Device<br />
+        3. Point the camera at the QR code above
+      </div>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={onRefresh}
+        className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold hover:underline"
+        style={{ color: '#1E40AF' }}
+      >
+        {busy ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />} New QR
       </button>
     </div>
   )

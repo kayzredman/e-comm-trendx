@@ -15,6 +15,8 @@ export type WhatsappStatus = {
   pairingCode: string | null
   pairingFor: string | null
   pairingExpiresAt: string | null
+  qrDataUrl: string | null
+  qrExpiresAt: string | null
   lastError: string | null
   stats: { sent: number; delivered: number; failed: number; dayKey: string }
   queueDepth: number

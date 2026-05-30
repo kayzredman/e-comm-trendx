@@ -9,12 +9,14 @@ import {
 import { DbService } from '../db/db.service'
 import { useDbAuthState, type DbAuthState } from './whatsapp-auth-state'
 import makeWASocket, {
+  Browsers,
   DisconnectReason,
   fetchLatestBaileysVersion,
   type WASocket,
 } from '@whiskeysockets/baileys'
 import { Boom } from '@hapi/boom'
 import pino from 'pino'
+import QRCode from 'qrcode'
 
 type ConnState = 'disconnected' | 'pairing' | 'connecting' | 'connected'
 
@@ -50,6 +52,8 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
   private pairingCode: string | null = null
   private pairingFor: string | null = null
   private pairingExpiresAt: Date | null = null
+  private qrDataUrl: string | null = null
+  private qrExpiresAt: Date | null = null
   private lastError: string | null = null
 
   private readonly log: LogEntry[] = []
@@ -99,6 +103,8 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
       pairingCode: this.pairingCode,
       pairingFor: this.pairingFor,
       pairingExpiresAt: this.pairingExpiresAt?.toISOString() ?? null,
+      qrDataUrl: this.qrDataUrl,
+      qrExpiresAt: this.qrExpiresAt?.toISOString() ?? null,
       lastError: this.lastError,
       stats: { ...this.statsForToday() },
       queueDepth: 0,
@@ -118,14 +124,29 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
     if (!this.enabled) throw new BadRequestException('WhatsApp is disabled — set WHATSAPP_ENABLED=true and restart the API.')
     if (this.connState === 'connected') throw new BadRequestException('Already connected. Disconnect first to re-pair.')
 
-    const phone = rawPhone.replace(/[^\d]/g, '')
-    if (phone.length < 8) throw new BadRequestException('Invalid phone number')
+    let phone = rawPhone.replace(/[^\d]/g, '')
+    // Ghana-friendly normalization: 0XXXXXXXXX (10 digits) → 233XXXXXXXXX
+    if (phone.length === 10 && phone.startsWith('0')) phone = '233' + phone.slice(1)
+    if (phone.length < 11) throw new BadRequestException('Phone must include country code (e.g. 233551481853)')
 
-    // Make sure we have a fresh socket in "pairing" state.
-    if (!this.sock || this.connState === 'disconnected') {
-      await this.boot()
+    // Always tear down any existing socket and start fresh — avoids "Connection Closed"
+    // if we're mid-reconnect or holding a stale socket from a previous logout.
+    try {
+      this.sock?.end(undefined)
+    } catch {
+      /* ignore */
     }
+    this.sock = null
+    if (this.auth) {
+      await this.auth.clear().catch(() => undefined)
+      this.auth = null
+    }
+    await this.boot()
     if (!this.sock) throw new ServiceUnavailableException('Socket not ready')
+
+    // Baileys requires the WS handshake to complete before requestPairingCode.
+    // A small delay is the canonical pattern from the Baileys docs.
+    await new Promise((r) => setTimeout(r, 2500))
 
     const code = await this.sock.requestPairingCode(phone)
     const formatted = code.match(/.{1,4}/g)?.join('-') ?? code
@@ -135,6 +156,27 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
     this.connState = 'pairing'
     this.pushLog('info', `Pairing code issued for +${phone}`)
     return { code: formatted, expiresInSec: 180 }
+  }
+
+  /**
+   * Start QR pairing — wipes any stale auth, boots fresh, and the QR will be
+   * exposed via getStatus().qrDataUrl as soon as Baileys emits it.
+   */
+  async startQrPairing(): Promise<{ ok: true }> {
+    if (!this.enabled) throw new BadRequestException('WhatsApp is disabled — set WHATSAPP_ENABLED=true and restart the API.')
+    if (this.connState === 'connected') throw new BadRequestException('Already connected. Disconnect first to re-pair.')
+
+    try { this.sock?.end(undefined) } catch { /* ignore */ }
+    this.sock = null
+    if (this.auth) {
+      await this.auth.clear().catch(() => undefined)
+      this.auth = null
+    }
+    this.qrDataUrl = null
+    this.qrExpiresAt = null
+    await this.boot()
+    this.pushLog('info', 'QR pairing started — waiting for QR…')
+    return { ok: true }
   }
 
   async disconnect() {
@@ -196,7 +238,7 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
       auth: this.auth.state,
       logger: pino({ level: 'silent' }) as never,
       printQRInTerminal: false,
-      browser: ['trendMarga', 'Chrome', '1.0.0'],
+      browser: Browsers.macOS('Safari'),
       syncFullHistory: false,
       markOnlineOnConnect: false,
     })
@@ -208,7 +250,18 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
 
     this.sock.ev.on('connection.update', (u) => {
       this.lastEventAt = new Date()
-      const { connection, lastDisconnect } = u
+      const { connection, lastDisconnect, qr } = u
+
+      if (qr) {
+        void QRCode.toDataURL(qr, { width: 320, margin: 1 })
+          .then((dataUrl) => {
+            this.qrDataUrl = dataUrl
+            this.qrExpiresAt = new Date(Date.now() + 60_000)
+            this.connState = 'pairing'
+            this.pushLog('info', 'QR code refreshed — scan within 60s')
+          })
+          .catch((err) => this.pushLog('err', `QR render failed: ${(err as Error).message}`))
+      }
 
       if (connection === 'open') {
         this.connState = 'connected'
@@ -216,6 +269,8 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
         this.pairingCode = null
         this.pairingFor = null
         this.pairingExpiresAt = null
+        this.qrDataUrl = null
+        this.qrExpiresAt = null
         this.lastError = null
         this.pushLog('ok', `Connected as ${this.sock?.user?.id ?? '?'}`)
       } else if (connection === 'close') {
@@ -236,6 +291,13 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
               this.pushLog('err', `Reconnect failed: ${this.lastError}`)
             })
           }, 3000)
+        } else if (statusCode === DisconnectReason.loggedOut) {
+          // Wipe stale creds so next pair attempt starts fresh.
+          void this.auth?.clear().then(() => {
+            this.auth = null
+            this.sock = null
+            this.pushLog('warn', 'Logged out — auth state wiped, ready to re-pair')
+          })
         }
       }
     })
@@ -258,6 +320,29 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
     const next = this.queue.then(run, run)
     this.queue = next.catch(() => undefined)
     return next as Promise<T>
+  }
+
+  /** Resolve when the Baileys WebSocket is open, or reject after timeoutMs. */
+  private waitForWsOpen(timeoutMs: number): Promise<void> {
+    const ws = (this.sock as unknown as { ws?: { readyState?: number } })?.ws
+    if (ws?.readyState === 1) return Promise.resolve()
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.sock?.ev.off('connection.update', onUpdate)
+        reject(new ServiceUnavailableException('Timed out waiting for WhatsApp socket to open'))
+      }, timeoutMs)
+      const onUpdate = (u: { connection?: string }) => {
+        if (u.connection === 'open' || u.connection === 'connecting') {
+          const wsNow = (this.sock as unknown as { ws?: { readyState?: number } })?.ws
+          if (wsNow?.readyState === 1) {
+            clearTimeout(timer)
+            this.sock?.ev.off('connection.update', onUpdate)
+            resolve()
+          }
+        }
+      }
+      this.sock?.ev.on('connection.update', onUpdate)
+    })
   }
 
   private pushLog(level: LogEntry['level'], message: string) {
