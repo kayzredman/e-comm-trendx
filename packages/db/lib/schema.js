@@ -195,7 +195,7 @@ exports.discountCodes = (0, pg_core_1.pgTable)('discount_codes', {
     createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
 });
 // ── Notification log (FEATURE_NOTIFICATIONS) ─────────────────────────────────
-exports.notificationChannelEnum = (0, pg_core_1.pgEnum)('notification_channel', ['SMS', 'EMAIL']);
+exports.notificationChannelEnum = (0, pg_core_1.pgEnum)('notification_channel', ['SMS', 'EMAIL', 'WHATSAPP']);
 exports.notificationStatusEnum = (0, pg_core_1.pgEnum)('notification_status', ['QUEUED', 'SENT', 'FAILED']);
 exports.notificationLog = (0, pg_core_1.pgTable)('notification_log', {
     id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),

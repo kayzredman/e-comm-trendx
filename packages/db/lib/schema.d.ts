@@ -1393,7 +1393,7 @@ export declare const discountCodes: import("drizzle-orm/pg-core").PgTableWithCol
     };
     dialect: "pg";
 }>;
-export declare const notificationChannelEnum: import("drizzle-orm/pg-core").PgEnum<["SMS", "EMAIL"]>;
+export declare const notificationChannelEnum: import("drizzle-orm/pg-core").PgEnum<["SMS", "EMAIL", "WHATSAPP"]>;
 export declare const notificationStatusEnum: import("drizzle-orm/pg-core").PgEnum<["QUEUED", "SENT", "FAILED"]>;
 export declare const notificationLog: import("drizzle-orm/pg-core").PgTableWithColumns<{
     name: "notification_log";
@@ -1440,11 +1440,11 @@ export declare const notificationLog: import("drizzle-orm/pg-core").PgTableWithC
             tableName: "notification_log";
             dataType: "string";
             columnType: "PgEnumColumn";
-            data: "SMS" | "EMAIL";
+            data: "SMS" | "EMAIL" | "WHATSAPP";
             driverParam: string;
             notNull: true;
             hasDefault: false;
-            enumValues: ["SMS", "EMAIL"];
+            enumValues: ["SMS", "EMAIL", "WHATSAPP"];
             baseColumn: never;
         }, {}, {}>;
         template: import("drizzle-orm/pg-core").PgColumn<{

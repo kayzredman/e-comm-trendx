@@ -41,6 +41,9 @@ importers:
       '@fastify/static':
         specifier: ^7.0.4
         version: 7.0.4
+      '@hapi/boom':
+        specifier: ^9.1.4
+        version: 9.1.4
       '@nestjs/common':
         specifier: ^10.3.10
         version: 10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)

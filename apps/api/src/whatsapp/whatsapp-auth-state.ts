@@ -65,7 +65,7 @@ export async function useDbAuthState(db: DbService): Promise<DbAuthState> {
           ids.map(async (id) => {
             let value = await readKey<SignalDataTypeMap[T]>(`${type}-${id}`)
             if (type === 'app-state-sync-key' && value) {
-              value = proto.Message.AppStateSyncKeyData.fromObject(value as object) as SignalDataTypeMap[T]
+              value = proto.Message.AppStateSyncKeyData.fromObject(value as object) as unknown as SignalDataTypeMap[T]
             }
             if (value !== null && value !== undefined) {
               data[id] = value
