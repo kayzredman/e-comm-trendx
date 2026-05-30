@@ -4,6 +4,7 @@ import { couriers, courierOtps, courierSessions } from '@trendmarga/db'
 import { and, desc, eq, gt, isNull, inArray } from 'drizzle-orm'
 import { createHash, randomBytes, randomInt } from 'crypto'
 import { sendSms } from '../notifications/providers/hubtel.provider'
+import { WhatsappService } from '../whatsapp/whatsapp.service'
 
 const OTP_TTL_MIN = 10
 const SESSION_TTL_DAYS = 30
@@ -26,7 +27,10 @@ function normalisePhone(input: string): string {
 export class CourierAuthService {
   private readonly logger = new Logger(CourierAuthService.name)
 
-  constructor(private readonly db: DbService) {}
+  constructor(
+    private readonly db: DbService,
+    private readonly whatsapp: WhatsappService,
+  ) {}
 
   /** Look up an active courier by phone. Throws if none / inactive. */
   private async findActiveCourier(phone: string) {
@@ -54,11 +58,7 @@ export class CourierAuthService {
     })
 
     const msg = `Your trendMarga courier code is ${code}. Expires in ${OTP_TTL_MIN} min. Do not share.`
-    try {
-      await sendSms(phone, msg)
-    } catch (err) {
-      this.logger.error(`Hubtel SMS failed for ${phone}: ${(err as Error).message}`)
-    }
+    await this.deliverOtp(phone, msg)
 
     return { ok: true, courierName: courier.name, expiresInMin: OTP_TTL_MIN }
   }
@@ -141,5 +141,25 @@ export class CourierAuthService {
   async signOut(token: string) {
     await this.db.client.delete(courierSessions).where(eq(courierSessions.tokenHash, hash(token)))
     return { ok: true }
+  }
+
+  /**
+   * Try WhatsApp first when connected; fall back to Hubtel SMS; finally log to console.
+   * Never throws — OTP issuance must not be blocked by messaging-provider outages.
+   */
+  private async deliverOtp(phone: string, msg: string) {
+    if (this.whatsapp.isReady()) {
+      try {
+        await this.whatsapp.sendText(phone, msg)
+        return
+      } catch (err) {
+        this.logger.warn(`WhatsApp OTP failed for ${phone}, falling back to SMS: ${(err as Error).message}`)
+      }
+    }
+    try {
+      await sendSms(phone, msg)
+    } catch (err) {
+      this.logger.error(`Hubtel SMS also failed for ${phone}: ${(err as Error).message}`)
+    }
   }
 }

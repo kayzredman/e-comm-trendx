@@ -6,7 +6,7 @@ import { useState } from 'react'
 import {
   LayoutDashboard, Package, Tag, ShoppingCart, BarChart3,
   Users, FileText, Truck, Menu, X, LogOut, UserCog, Activity, Flag, ScanLine, TicketPercent,
-  BadgeCheck, Wallet, Bike,
+  BadgeCheck, Wallet, Bike, MessageCircle,
 } from 'lucide-react'
 import { useClerk, useUser } from '@clerk/nextjs'
 import type { UserRole } from '@/lib/api'
@@ -53,6 +53,7 @@ const sections: NavSection[] = [
       { label: 'Verify payments', href: '/cms/delivery/verify-payments', icon: BadgeCheck, roles: ['OWNER', 'MANAGER', 'ORDER_MANAGER'] },
       { label: 'Courier payouts', href: '/cms/delivery/payouts',         icon: Wallet,     roles: ['OWNER', 'MANAGER'] },
       { label: 'Couriers',        href: '/cms/couriers',                  icon: Bike,       roles: ['OWNER', 'MANAGER', 'ORDER_MANAGER'] },
+      { label: 'WhatsApp',        href: '/cms/whatsapp',                  icon: MessageCircle, roles: ['OWNER'] },
     ],
   },
   {

@@ -3166,4 +3166,47 @@ export declare const courierSessions: import("drizzle-orm/pg-core").PgTableWithC
 export declare const courierSessionsRelations: import("drizzle-orm").Relations<"courier_sessions", {
     courier: import("drizzle-orm").One<"couriers", true>;
 }>;
+export declare const whatsappAuthState: import("drizzle-orm/pg-core").PgTableWithColumns<{
+    name: "whatsapp_auth_state";
+    schema: undefined;
+    columns: {
+        key: import("drizzle-orm/pg-core").PgColumn<{
+            name: "key";
+            tableName: "whatsapp_auth_state";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        value: import("drizzle-orm/pg-core").PgColumn<{
+            name: "value";
+            tableName: "whatsapp_auth_state";
+            dataType: "json";
+            columnType: "PgJsonb";
+            data: unknown;
+            driverParam: unknown;
+            notNull: true;
+            hasDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        updatedAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "updated_at";
+            tableName: "whatsapp_auth_state";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+    };
+    dialect: "pg";
+}>;
 //# sourceMappingURL=schema.d.ts.map

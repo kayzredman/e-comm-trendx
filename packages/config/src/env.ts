@@ -41,6 +41,14 @@ const envSchema = z.object({
   LOCAL_UPLOADS_BASE_URL: z.string().url().optional(),
   /** Max single-image upload size in bytes (default 10MB). */
   IMAGE_MAX_BYTES: z.coerce.number().default(10 * 1024 * 1024),
+
+  // ── WhatsApp (Baileys) ────────────────────────────────────────────────────
+  /** Master switch. When false (default), all messaging falls back to Hubtel SMS. */
+  WHATSAPP_ENABLED: z.coerce.boolean().default(false),
+  /** Optional E.164 phone number for the business WhatsApp account (display only). */
+  WHATSAPP_PHONE_NUMBER: z.string().optional(),
+  /** Throttle: minimum gap (ms) between outbound WA messages. */
+  WHATSAPP_MIN_GAP_MS: z.coerce.number().default(1000),
 })
 
 export type Env = z.infer<typeof envSchema>
