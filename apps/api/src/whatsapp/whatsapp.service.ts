@@ -324,15 +324,16 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
       for (const m of messages) {
         if (!m.message || m.key.fromMe) continue
         const jid = m.key.remoteJid ?? ''
-        // Only direct user chats (e.g. 233XXXX@s.whatsapp.net). Skip groups / status broadcasts.
-        if (!jid.endsWith('@s.whatsapp.net')) continue
+        // Direct user chats only: legacy phone JID OR new privacy LID. Skip groups / broadcasts / newsletters.
+        if (!jid.endsWith('@s.whatsapp.net') && !jid.endsWith('@lid')) continue
         const text =
           m.message.conversation ??
           m.message.extendedTextMessage?.text ??
           m.message.imageMessage?.caption ??
           ''
         if (!text.trim()) continue
-        const fromPhone = jid.split('@')[0]
+        // For LID messages the JID is the reply target; for phone JIDs it doubles as the phone.
+        const fromPhone = jid
         const handler = this.inbound
         if (!handler) continue
         Promise.resolve(handler({ fromPhone, text: text.trim(), messageId: m.key.id ?? '' }))
@@ -398,8 +399,12 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
   }
 }
 
-/** "+233 24 555 0142" → "233245550142@s.whatsapp.net". */
+/** "+233 24 555 0142" or "0245550142" → "233245550142@s.whatsapp.net". Pass-through if already a JID. */
 function toJid(phone: string): string {
-  const digits = phone.replace(/[^\d]/g, '')
+  // Already a JID (e.g. inbound reply target like "206927296475323@lid" or "233...@s.whatsapp.net")
+  if (phone.includes('@')) return phone
+  let digits = phone.replace(/[^\d]/g, '')
+  // Ghana-friendly: 10-digit local (0XXXXXXXXX) → 233XXXXXXXXX
+  if (digits.length === 10 && digits.startsWith('0')) digits = '233' + digits.slice(1)
   return `${digits}@s.whatsapp.net`
 }
