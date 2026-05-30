@@ -64,6 +64,20 @@
       "when": 1780444800000,
       "tag": "0008_courier_pwa",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1780531200000,
+      "tag": "0009_whatsapp",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1780617600000,
+      "tag": "0010_whatsapp_channel",
+      "breakpoints": true
     }
   ]
 }

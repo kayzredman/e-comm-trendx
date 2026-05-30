@@ -218,7 +218,7 @@ export const discountCodes = pgTable('discount_codes', {
 })
 
 // ── Notification log (FEATURE_NOTIFICATIONS) ─────────────────────────────────
-export const notificationChannelEnum = pgEnum('notification_channel', ['SMS', 'EMAIL'])
+export const notificationChannelEnum = pgEnum('notification_channel', ['SMS', 'EMAIL', 'WHATSAPP'])
 export const notificationStatusEnum = pgEnum('notification_status', ['QUEUED', 'SENT', 'FAILED'])
 
 export const notificationLog = pgTable('notification_log', {
@@ -496,4 +496,13 @@ export const courierSessions = pgTable('courier_sessions', {
 export const courierSessionsRelations = relations(courierSessions, ({ one }) => ({
   courier: one(couriers, { fields: [courierSessions.courierId], references: [couriers.id] }),
 }))
+
+// ── WhatsApp (Baileys) auth state ────────────────────────────────────────────
+// Key-value store for Baileys' session keys. One row per key — Baileys writes
+// ~50 small blobs (creds, app-state-sync-key-*, pre-key-*, session-*, …).
+export const whatsappAuthState = pgTable('whatsapp_auth_state', {
+  key: varchar('key', { length: 255 }).primaryKey(),
+  value: jsonb('value').notNull(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
 

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>trendMarga — WhatsApp Messaging Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0A0F1E;color:#1E293B;font-size:14px;padding:60px 20px 80px;min-height:100vh}
+
+.page-title{color:#fff;text-align:center;font-size:32px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.page-sub{color:#94A3B8;text-align:center;font-size:14px;margin-bottom:50px;max-width:640px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:32px;max-width:1320px;margin:0 auto}
+
+.scene{display:flex;flex-direction:column;gap:14px}
+.scene-label{color:#64748B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:center}
+.scene-desc{color:#94A3B8;font-size:12px;text-align:center;line-height:1.5;margin-top:-6px;margin-bottom:8px}
+
+/* ─── PHONE FRAME ─── */
+.phone{
+  width:340px;height:680px;background:#000;border-radius:46px;padding:12px;
+  box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 2px #1E293B;margin:0 auto;position:relative
+}
+.notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:108px;height:28px;background:#000;border-radius:0 0 18px 18px;z-index:10}
+.screen{width:100%;height:100%;background:#ECE5DD;border-radius:36px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+
+/* WA chat header */
+.wa-header{
+  background:#075E54;color:#fff;padding:32px 16px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0
+}
+.wa-back{font-size:20px;color:#fff;line-height:1}
+.wa-avatar{
+  width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1E40AF,#10B981);
+  display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:14px
+}
+.wa-id{flex:1;min-width:0}
+.wa-name{font-weight:600;font-size:15px;display:flex;align-items:center;gap:6px}
+.wa-verified{font-size:11px;color:#25D366}
+.wa-status{font-size:11px;color:rgba(255,255,255,.7)}
+.wa-icons{display:flex;gap:14px;color:#fff;font-size:18px}
+
+/* WA chat body */
+.wa-body{
+  flex:1;padding:14px 10px;overflow-y:auto;
+  background:#ECE5DD url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><circle cx='20' cy='20' r='1' fill='%23D9CDC1'/></svg>");
+  display:flex;flex-direction:column;gap:8px
+}
+.wa-date{align-self:center;background:rgba(225,245,254,.92);padding:4px 10px;border-radius:8px;font-size:11px;color:#5C6B73;font-weight:600;margin:4px 0}
+
+.bubble{
+  max-width:84%;background:#fff;padding:8px 10px 22px;border-radius:8px;position:relative;
+  font-size:13.5px;line-height:1.45;color:#111B21;box-shadow:0 1px 0.5px rgba(0,0,0,.13);
+  align-self:flex-start
+}
+.bubble.me{background:#DCF8C6;align-self:flex-end}
+.bubble .time{position:absolute;bottom:4px;right:8px;font-size:10px;color:rgba(0,0,0,.45);font-weight:500;display:flex;align-items:center;gap:3px}
+.bubble .time.read{color:#53BDEB}
+.bubble strong{font-weight:700;color:#000}
+
+.code-display{
+  font-family:'SF Mono','Monaco',monospace;font-size:30px;font-weight:700;letter-spacing:8px;
+  color:#1E40AF;text-align:center;padding:14px 8px;margin:6px -2px;
+  background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-radius:8px;border:1px dashed #2563EB
+}
+
+/* Static location card */
+.loc-card{
+  background:#fff;padding:4px 4px 8px;border-radius:8px;width:240px;
+  box-shadow:0 1px 0.5px rgba(0,0,0,.13);align-self:flex-start;margin-top:2px;overflow:hidden
+}
+.loc-card.me{align-self:flex-end;background:#DCF8C6}
+.loc-map{
+  height:140px;border-radius:6px;
+  background:
+    linear-gradient(135deg,rgba(16,185,129,.15),rgba(37,99,235,.18)),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='140'><rect width='200' height='140' fill='%23E0F2E9'/><path d='M0 70 Q50 50 100 70 T200 70' stroke='%2390CAF9' stroke-width='14' fill='none' opacity='.5'/><path d='M40 0 L60 140' stroke='%23A7C4BC' stroke-width='4'/><path d='M120 0 L140 140' stroke='%23A7C4BC' stroke-width='4'/><path d='M0 30 L200 35' stroke='%23A7C4BC' stroke-width='3'/><path d='M0 100 L200 105' stroke='%23A7C4BC' stroke-width='3'/></svg>");
+  background-size:cover;background-position:center;position:relative;display:flex;align-items:center;justify-content:center
+}
+.loc-pin{
+  width:36px;height:36px;background:#EA4335;border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);box-shadow:0 4px 10px rgba(0,0,0,.3);position:relative
+}
+.loc-pin::after{
+  content:'';position:absolute;top:8px;left:8px;width:20px;height:20px;background:#fff;border-radius:50%
+}
+.loc-meta{padding:6px 8px 0;font-size:12.5px;line-height:1.35}
+.loc-meta strong{color:#000;font-weight:700;display:block;margin-bottom:2px}
+.loc-meta span{color:#666;font-size:11.5px}
+
+/* Link preview card */
+.link-card{
+  border-left:3px solid #10B981;background:rgba(16,185,129,.06);
+  padding:8px 10px;margin:-2px -2px 6px;border-radius:4px
+}
+.link-card .lp-title{font-weight:600;font-size:13px;color:#000;margin-bottom:2px}
+.link-card .lp-desc{font-size:11.5px;color:#5C6B73;line-height:1.4}
+.link-card .lp-url{font-size:11px;color:#10B981;margin-top:3px;display:flex;align-items:center;gap:4px}
+
+/* WA input bar */
+.wa-input{
+  background:#ECE5DD;padding:6px 8px 8px;display:flex;align-items:center;gap:6px;flex-shrink:0
+}
+.wa-input-box{
+  flex:1;background:#fff;height:36px;border-radius:18px;display:flex;align-items:center;
+  padding:0 10px;font-size:13px;color:#9AA0A6
+}
+.wa-mic{
+  width:42px;height:42px;background:#075E54;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0
+}
+
+/* Annotation cards */
+.note{
+  background:#1E293B;color:#CBD5E1;padding:14px 16px;border-radius:12px;font-size:12px;line-height:1.6;
+  border-left:3px solid #10B981;max-width:340px;margin:0 auto
+}
+.note strong{color:#fff;font-weight:600}
+.note .pill{
+  display:inline-block;background:rgba(16,185,129,.15);color:#10B981;
+  padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-right:4px
+}
+
+/* footer */
+.footer{margin-top:60px;text-align:center;color:#475569;font-size:11px}
+.footer code{background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px;color:#94A3B8}
+
+/* scroll bar */
+.wa-body::-webkit-scrollbar{width:0}
+
+</style>
+</head>
+<body>
+
+<h1 class="page-title">WhatsApp Messaging — Phase 1 + 2</h1>
+<p class="page-sub">Three customer-facing WhatsApp messages we'll send via Baileys. Tap the location card / link card to see how it opens for the recipient. The phone numbers visible here are placeholders.</p>
+
+<div class="grid">
+
+  <!-- ─── SCENE 1: Courier OTP ─── -->
+  <div class="scene">
+    <div class="scene-label">Scene 1 · Courier login OTP</div>
+    <div class="scene-desc">Replaces SMS for rider login. Free, delivered in &lt;1s.</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="wa-header">
+          <span class="wa-back">‹</span>
+          <div class="wa-avatar">tM</div>
+          <div class="wa-id">
+            <div class="wa-name">trendMarga <span class="wa-verified">✓</span></div>
+            <div class="wa-status">online</div>
+          </div>
+          <div class="wa-icons">📞 ⋮</div>
+        </div>
+        <div class="wa-body">
+          <div class="wa-date">TODAY</div>
+          <div class="bubble">
+            <strong>trendMarga courier login</strong><br/>
+            Your one-time code:
+            <div class="code-display">613224</div>
+            Expires in 10 minutes.<br/>
+            Do not share this code with anyone.
+            <span class="time">08:12 <span style="color:#53BDEB">✓✓</span></span>
+          </div>
+        </div>
+        <div class="wa-input">
+          <div class="wa-input-box">Message</div>
+          <div class="wa-mic">🎤</div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <span class="pill">Phase 1</span>Triggered by <strong>Send code</strong> tap on the courier PWA. Same backend flow as today — only the transport changes from Hubtel SMS to Baileys WhatsApp.
+    </div>
+  </div>
+
+  <!-- ─── SCENE 2: Customer order ACK + location ─── -->
+  <div class="scene">
+    <div class="scene-label">Scene 2 · Order ACK with pickup pin</div>
+    <div class="scene-desc">Sent the moment a customer's order is confirmed.</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="wa-header">
+          <span class="wa-back">‹</span>
+          <div class="wa-avatar">tM</div>
+          <div class="wa-id">
+            <div class="wa-name">trendMarga <span class="wa-verified">✓</span></div>
+            <div class="wa-status">online</div>
+          </div>
+          <div class="wa-icons">📞 ⋮</div>
+        </div>
+        <div class="wa-body">
+          <div class="wa-date">TODAY</div>
+          <div class="bubble">
+            Hi Ama 👋<br/>
+            Your <strong>trendMarga</strong> order <strong>#A4F1</strong> is confirmed.<br/><br/>
+            • 2× items · <strong>GHS 245.00</strong><br/>
+            • Payment: Cash on delivery<br/>
+            • Delivery PIN: <strong>3131</strong> <span style="font-size:11px;color:#888">(give to rider on arrival)</span>
+            <span class="time">14:32 <span style="color:#53BDEB">✓✓</span></span>
+          </div>
+          <div class="bubble" style="padding-top:6px">
+            Your rider is heading here:
+            <span class="time">14:32 <span style="color:#53BDEB">✓✓</span></span>
+          </div>
+          <div class="loc-card">
+            <div class="loc-map">
+              <div class="loc-pin"></div>
+            </div>
+            <div class="loc-meta">
+              <strong>Delivery address</strong>
+              <span>12 Boundary Rd, East Legon, Accra</span>
+            </div>
+          </div>
+        </div>
+        <div class="wa-input">
+          <div class="wa-input-box">Message</div>
+          <div class="wa-mic">🎤</div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <span class="pill">Phase 1</span>Tap the map card → opens in Google Maps / Apple Maps native. Replaces our current "address as plain text" experience.
+    </div>
+  </div>
+
+  <!-- ─── SCENE 3: Dispatch with tracking link ─── -->
+  <div class="scene">
+    <div class="scene-label">Scene 3 · Out for delivery + live tracking</div>
+    <div class="scene-desc">Tracking link lives on trendmarga.com — no app install needed.</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="wa-header">
+          <span class="wa-back">‹</span>
+          <div class="wa-avatar">tM</div>
+          <div class="wa-id">
+            <div class="wa-name">trendMarga <span class="wa-verified">✓</span></div>
+            <div class="wa-status">online</div>
+          </div>
+          <div class="wa-icons">📞 ⋮</div>
+        </div>
+        <div class="wa-body">
+          <div class="wa-date">TODAY</div>
+          <div class="bubble">
+            Hi Ama 👋<br/>
+            Your <strong>trendMarga</strong> order <strong>#A4F1</strong> is confirmed. PIN: <strong>3131</strong>
+            <span class="time">14:32 <span style="color:#53BDEB">✓✓</span></span>
+          </div>
+          <div class="bubble" style="padding-top:6px">
+            Your rider <strong>Kwame</strong> is on the way 🛵<br/>
+            ETA: <strong>18 min</strong> · Tap to track:
+            <div class="link-card">
+              <div class="lp-title">📍 Live tracking · Order A4F1</div>
+              <div class="lp-desc">Kwame is 2.4 km away · 18 min ETA. See live position on map.</div>
+              <div class="lp-url">🌐 trendmarga.com/t/A4F1xK</div>
+            </div>
+            Call rider: <strong>+233 24 555 0142</strong>
+            <span class="time">14:48 <span style="color:#53BDEB">✓✓</span></span>
+          </div>
+          <div class="bubble" style="padding-top:6px">
+            ✅ <strong>Delivered</strong> at 15:06<br/>
+            Thank you for shopping with us! Reply <strong>HELP</strong> if you need anything.
+            <span class="time">15:06 <span style="color:#53BDEB">✓✓</span></span>
+          </div>
+        </div>
+        <div class="wa-input">
+          <div class="wa-input-box">Message</div>
+          <div class="wa-mic">🎤</div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <span class="pill">Phase 2</span>The tracking link opens our own public page (next mockup → <a href="tracking-page.html" style="color:#10B981">tracking-page.html</a>). Free, no WhatsApp ban risk, full UX control.
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Mockups · static HTML · <code>mockups/whatsapp-messaging.html</code><br/>
+  Backed by <code>@whiskeysockets/baileys</code> in <code>apps/api/src/whatsapp/</code> (to be built)
+</div>
+
+</body>
+</html>

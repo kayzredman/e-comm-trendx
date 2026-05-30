@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>trendMarga — Live Tracking Page Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0A0F1E;color:#1E293B;font-size:14px;padding:60px 20px 80px;min-height:100vh}
+
+.page-title{color:#fff;text-align:center;font-size:32px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.page-sub{color:#94A3B8;text-align:center;font-size:14px;margin-bottom:50px;max-width:680px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:32px;max-width:1320px;margin:0 auto;align-items:start}
+
+.scene{display:flex;flex-direction:column;gap:14px}
+.scene-label{color:#64748B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:center}
+.scene-desc{color:#94A3B8;font-size:12px;text-align:center;line-height:1.5;margin-top:-6px;margin-bottom:8px}
+
+/* phone */
+.phone{
+  width:340px;height:680px;background:#000;border-radius:46px;padding:12px;
+  box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 2px #1E293B;margin:0 auto;position:relative
+}
+.notch{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:108px;height:28px;background:#000;border-radius:0 0 18px 18px;z-index:10}
+.screen{width:100%;height:100%;background:#fff;border-radius:36px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+
+/* status bar */
+.status-bar{
+  background:#fff;padding:30px 18px 6px;display:flex;justify-content:space-between;align-items:center;
+  font-size:13px;font-weight:600;color:#0F172A;flex-shrink:0
+}
+
+/* ─── TRACKING SHELL ─── */
+.tr-header{
+  padding:10px 16px 12px;background:#fff;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:10px;flex-shrink:0
+}
+.tr-logo{
+  font-family:'Inter';font-weight:800;font-size:18px;color:#0A0A0B;
+  display:flex;align-items:center;gap:3px;letter-spacing:-.02em
+}
+.tr-logo .m{color:#1E40AF}
+.tr-logo .dot{
+  width:6px;height:6px;border-radius:50%;background:#10B981;margin-bottom:4px;
+  animation:pulse 1.6s ease-in-out infinite
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.4)}}
+.tr-order{margin-left:auto;font-size:11px;color:#64748B;text-align:right;line-height:1.3}
+.tr-order strong{color:#0F172A;font-weight:700;font-size:13px;display:block}
+
+/* Map */
+.tr-map{
+  flex:1;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 30% 40%,rgba(16,185,129,.08),transparent 50%),
+    radial-gradient(circle at 70% 60%,rgba(37,99,235,.08),transparent 50%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='340' height='400'><rect width='340' height='400' fill='%23E8F5E8'/><path d='M0 100 Q60 80 120 110 T240 110 T340 130' stroke='%2390CAF9' stroke-width='8' fill='none' opacity='.4'/><path d='M0 250 Q80 240 160 260 T340 270' stroke='%2390CAF9' stroke-width='10' fill='none' opacity='.4'/><path d='M40 0 L80 400' stroke='%23B0BEC5' stroke-width='2' opacity='.4'/><path d='M180 0 L220 400' stroke='%23B0BEC5' stroke-width='2' opacity='.4'/><path d='M280 0 L290 400' stroke='%23B0BEC5' stroke-width='2' opacity='.4'/><path d='M0 60 L340 70' stroke='%23B0BEC5' stroke-width='2' opacity='.4'/><path d='M0 180 L340 195' stroke='%23B0BEC5' stroke-width='2' opacity='.4'/><path d='M0 320 L340 335' stroke='%23B0BEC5' stroke-width='2' opacity='.4'/><circle cx='100' cy='150' r='30' fill='%23A5D6A7' opacity='.3'/><circle cx='250' cy='300' r='40' fill='%23A5D6A7' opacity='.3'/></svg>");
+  background-size:cover
+}
+
+/* Route line */
+.tr-route{
+  position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none
+}
+
+/* Pins */
+.pin{
+  position:absolute;transform:translate(-50%,-100%);
+  display:flex;flex-direction:column;align-items:center;gap:4px
+}
+.pin-bubble{
+  background:#0F172A;color:#fff;padding:4px 10px;border-radius:14px;
+  font-size:11px;font-weight:600;white-space:nowrap;box-shadow:0 4px 10px rgba(0,0,0,.2)
+}
+.pin-icon{
+  width:32px;height:32px;border-radius:50% 50% 50% 0;
+  transform:rotate(-45deg);box-shadow:0 6px 12px rgba(0,0,0,.3);position:relative;
+  display:flex;align-items:center;justify-content:center
+}
+.pin-icon::before{
+  content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;
+  top:9px;left:9px
+}
+
+/* Rider (moving) */
+.pin.rider{top:38%;left:42%}
+.pin.rider .pin-icon{background:#1E40AF}
+.pin.rider .pin-bubble{background:#1E40AF}
+.pin.rider .pulse-ring{
+  position:absolute;width:60px;height:60px;border-radius:50%;background:rgba(30,64,175,.25);
+  top:-4px;left:50%;transform:translateX(-50%);animation:ring 2s ease-out infinite
+}
+@keyframes ring{0%{transform:translateX(-50%) scale(.4);opacity:.8}100%{transform:translateX(-50%) scale(1.5);opacity:0}}
+
+/* Destination */
+.pin.dest{top:78%;left:68%}
+.pin.dest .pin-icon{background:#10B981}
+.pin.dest .pin-bubble{background:#10B981}
+
+/* Polyline path (fake) */
+.tr-path{
+  position:absolute;top:34%;left:40%;width:200px;height:200px;pointer-events:none
+}
+.tr-path svg{width:100%;height:100%;overflow:visible}
+
+/* ─── BOTTOM SHEET ─── */
+.tr-sheet{
+  background:#fff;border-radius:24px 24px 0 0;padding:16px 18px 22px;flex-shrink:0;
+  box-shadow:0 -10px 30px rgba(0,0,0,.1);position:relative;z-index:5
+}
+.tr-sheet::before{
+  content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:40px;height:4px;background:#CBD5E1;border-radius:2px
+}
+
+.tr-status-row{display:flex;align-items:center;gap:10px;margin:8px 0 14px}
+.tr-status-dot{
+  width:10px;height:10px;border-radius:50%;background:#10B981;
+  box-shadow:0 0 0 4px rgba(16,185,129,.2);animation:pulse 1.6s ease-in-out infinite
+}
+.tr-status-text{font-size:14px;font-weight:700;color:#0F172A;letter-spacing:-.01em}
+.tr-eta{margin-left:auto;font-size:13px;color:#64748B;font-weight:600}
+.tr-eta strong{color:#1E40AF;font-size:17px;display:block;line-height:1;font-weight:800}
+
+/* Rider card */
+.rider-card{
+  background:#F8FAFC;border:1px solid #E2E8F0;border-radius:14px;padding:12px;
+  display:flex;align-items:center;gap:12px
+}
+.rider-avatar{
+  width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#1E40AF,#3B82F6);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0
+}
+.rider-info{flex:1;min-width:0}
+.rider-name{font-size:14px;font-weight:700;color:#0F172A}
+.rider-meta{font-size:11px;color:#64748B;margin-top:2px}
+.rider-actions{display:flex;gap:6px}
+.rider-action{
+  width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #E2E8F0;
+  display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:.15s
+}
+.rider-action.call{background:#10B981;color:#fff;border-color:#10B981}
+.rider-action.wa{background:#25D366;color:#fff;border-color:#25D366}
+
+/* Steps */
+.steps{margin-top:14px;display:flex;flex-direction:column;gap:0;position:relative}
+.steps::before{content:'';position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:#E2E8F0}
+.step{display:flex;align-items:flex-start;gap:12px;padding:6px 0;position:relative}
+.step-dot{
+  width:20px;height:20px;border-radius:50%;background:#E2E8F0;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;
+  z-index:1;position:relative
+}
+.step-dot.done{background:#10B981}
+.step-dot.current{background:#1E40AF;box-shadow:0 0 0 4px rgba(30,64,175,.15)}
+.step-text{font-size:13px;color:#94A3B8;font-weight:500}
+.step.done .step-text{color:#0F172A;font-weight:600}
+.step.current .step-text{color:#0F172A;font-weight:700}
+.step-time{font-size:11px;color:#94A3B8;margin-left:auto;font-weight:500}
+
+/* notes */
+.note{
+  background:#1E293B;color:#CBD5E1;padding:14px 16px;border-radius:12px;font-size:12px;line-height:1.6;
+  border-left:3px solid #10B981;max-width:340px;margin:0 auto
+}
+.note strong{color:#fff;font-weight:600}
+.note .pill{
+  display:inline-block;background:rgba(16,185,129,.15);color:#10B981;
+  padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-right:4px
+}
+
+/* desktop version */
+.desktop-frame{
+  background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4);
+  max-width:540px;margin:0 auto
+}
+.desktop-bar{background:#F1F5F9;padding:10px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #E2E8F0}
+.desktop-bar .dot{width:11px;height:11px;border-radius:50%}
+.desktop-bar .url{
+  flex:1;background:#fff;padding:5px 12px;border-radius:6px;font-size:11px;color:#64748B;
+  border:1px solid #E2E8F0;margin-left:8px;display:flex;align-items:center;gap:5px
+}
+.desktop-bar .lock{color:#10B981;font-size:11px}
+
+.footer{margin-top:60px;text-align:center;color:#475569;font-size:11px}
+.footer code{background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px;color:#94A3B8}
+
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Live Tracking Page — Phase 2</h1>
+<p class="page-sub">Public page (no login) reached by tapping the tracking link in WhatsApp. Built on Next.js, Mapbox/Leaflet free tier, polls courier heartbeat every 15s. Works on any phone browser — no app install.</p>
+
+<div class="grid">
+
+  <!-- ─── PHONE VIEW ─── -->
+  <div class="scene">
+    <div class="scene-label">Mobile · what the customer sees</div>
+    <div class="scene-desc">Opens directly from WhatsApp link.</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="status-bar">
+          <span>3:14</span>
+          <span>📶 📡 🔋</span>
+        </div>
+        <div class="tr-header">
+          <div class="tr-logo">trend<span class="m">M</span>arga<span class="dot"></span></div>
+          <div class="tr-order"><strong>#A4F1</strong>Tracking</div>
+        </div>
+        <div class="tr-map">
+          <!-- fake route -->
+          <svg class="tr-route" viewBox="0 0 340 400" preserveAspectRatio="none">
+            <path d="M 145 200 Q 200 240 220 280 Q 235 310 230 330" stroke="#1E40AF" stroke-width="4" fill="none" stroke-dasharray="6 4" opacity=".7"/>
+          </svg>
+          <div class="pin rider">
+            <div class="pin-bubble">Kwame · 2.4 km</div>
+            <div style="position:relative">
+              <div class="pulse-ring"></div>
+              <div class="pin-icon"></div>
+            </div>
+          </div>
+          <div class="pin dest">
+            <div class="pin-bubble">You</div>
+            <div class="pin-icon"></div>
+          </div>
+        </div>
+        <div class="tr-sheet">
+          <div class="tr-status-row">
+            <div class="tr-status-dot"></div>
+            <div class="tr-status-text">On the way</div>
+            <div class="tr-eta">ETA<strong>18 min</strong></div>
+          </div>
+          <div class="rider-card">
+            <div class="rider-avatar">KO</div>
+            <div class="rider-info">
+              <div class="rider-name">Kwame Owusu</div>
+              <div class="rider-meta">Motorcycle · ★ 4.9 · 3 yrs</div>
+            </div>
+            <div class="rider-actions">
+              <div class="rider-action call">📞</div>
+              <div class="rider-action wa">💬</div>
+            </div>
+          </div>
+          <div class="steps">
+            <div class="step done">
+              <div class="step-dot done">✓</div>
+              <div class="step-text">Order confirmed</div>
+              <div class="step-time">14:32</div>
+            </div>
+            <div class="step done">
+              <div class="step-dot done">✓</div>
+              <div class="step-text">Picked up from store</div>
+              <div class="step-time">14:48</div>
+            </div>
+            <div class="step current">
+              <div class="step-dot current">3</div>
+              <div class="step-text">Out for delivery</div>
+              <div class="step-time">now</div>
+            </div>
+            <div class="step">
+              <div class="step-dot">4</div>
+              <div class="step-text">Delivered</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <span class="pill">Live</span>Rider's pin updates every 15s via courier PWA → API heartbeat. Route line, ETA, and "X km away" recalculate on each update.
+    </div>
+  </div>
+
+  <!-- ─── DESKTOP VIEW ─── -->
+  <div class="scene">
+    <div class="scene-label">Desktop · same page, responsive</div>
+    <div class="scene-desc">Works in any browser, fully shareable URL.</div>
+    <div class="desktop-frame">
+      <div class="desktop-bar">
+        <span class="dot" style="background:#EF4444"></span>
+        <span class="dot" style="background:#F59E0B"></span>
+        <span class="dot" style="background:#10B981"></span>
+        <div class="url"><span class="lock">🔒</span> trendmarga.com/t/A4F1xK</div>
+      </div>
+      <div style="display:flex;height:500px">
+        <div style="flex:1.4" class="tr-map">
+          <svg class="tr-route" viewBox="0 0 340 500" preserveAspectRatio="none">
+            <path d="M 145 250 Q 200 300 220 350 Q 235 410 230 430" stroke="#1E40AF" stroke-width="4" fill="none" stroke-dasharray="6 4" opacity=".7"/>
+          </svg>
+          <div class="pin rider" style="top:45%;left:42%">
+            <div class="pin-bubble">Kwame · 2.4 km</div>
+            <div style="position:relative">
+              <div class="pulse-ring"></div>
+              <div class="pin-icon"></div>
+            </div>
+          </div>
+          <div class="pin dest" style="top:82%;left:68%">
+            <div class="pin-bubble">You</div>
+            <div class="pin-icon"></div>
+          </div>
+        </div>
+        <div style="flex:1;background:#fff;padding:20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto">
+          <div class="tr-logo">trend<span class="m">M</span>arga<span class="dot"></span></div>
+          <div>
+            <div style="font-size:11px;color:#64748B;font-weight:700;letter-spacing:.08em;text-transform:uppercase">Order #A4F1</div>
+            <div style="font-size:20px;font-weight:800;color:#0F172A;letter-spacing:-.02em;margin-top:2px">On the way</div>
+            <div style="font-size:12px;color:#64748B;margin-top:4px">ETA · <strong style="color:#1E40AF;font-size:14px">18 min</strong></div>
+          </div>
+          <div class="rider-card">
+            <div class="rider-avatar">KO</div>
+            <div class="rider-info">
+              <div class="rider-name">Kwame Owusu</div>
+              <div class="rider-meta">Motorcycle · ★ 4.9</div>
+            </div>
+            <div class="rider-actions">
+              <div class="rider-action call">📞</div>
+              <div class="rider-action wa">💬</div>
+            </div>
+          </div>
+          <div class="steps">
+            <div class="step done"><div class="step-dot done">✓</div><div class="step-text">Order confirmed</div><div class="step-time">14:32</div></div>
+            <div class="step done"><div class="step-dot done">✓</div><div class="step-text">Picked up</div><div class="step-time">14:48</div></div>
+            <div class="step current"><div class="step-dot current">3</div><div class="step-text">Out for delivery</div><div class="step-time">now</div></div>
+            <div class="step"><div class="step-dot">4</div><div class="step-text">Delivered</div></div>
+          </div>
+          <div style="margin-top:auto;padding-top:14px;border-top:1px solid #E2E8F0">
+            <div style="font-size:11px;color:#94A3B8;text-align:center">Delivery PIN · share with rider on arrival</div>
+            <div style="font-family:'SF Mono','Monaco',monospace;font-size:26px;font-weight:700;letter-spacing:10px;color:#1E40AF;text-align:center;margin-top:4px">3131</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <span class="pill">Phase 2</span>Same URL works on phone (full-screen map + bottom sheet) and desktop (split map + sidebar). Built once.
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Mockups · static HTML · <code>mockups/tracking-page.html</code><br/>
+  Route: <code>apps/web/app/(public)/t/[token]/page.tsx</code> · API: <code>GET /v1/track/:token</code> · Heartbeat: <code>POST /courier/jobs/:id/heartbeat</code>
+</div>
+
+</body>
+</html>

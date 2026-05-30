@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>trendMarga — CMS WhatsApp Setup Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0A0F1E;color:#1E293B;font-size:14px;padding:60px 20px 80px;min-height:100vh}
+
+.page-title{color:#fff;text-align:center;font-size:32px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.page-sub{color:#94A3B8;text-align:center;font-size:14px;margin-bottom:50px;max-width:680px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:32px;max-width:1320px;margin:0 auto;align-items:start}
+
+.scene{display:flex;flex-direction:column;gap:14px}
+.scene-label{color:#64748B;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-align:center}
+.scene-desc{color:#94A3B8;font-size:12px;text-align:center;line-height:1.5;margin-top:-6px;margin-bottom:8px}
+
+/* CMS frame */
+.cms-frame{
+  background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4);
+  max-width:580px;margin:0 auto
+}
+.cms-bar{background:#F1F5F9;padding:10px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #E2E8F0}
+.cms-bar .dot{width:11px;height:11px;border-radius:50%}
+.cms-bar .url{
+  flex:1;background:#fff;padding:5px 12px;border-radius:6px;font-size:11px;color:#64748B;
+  border:1px solid #E2E8F0;margin-left:8px
+}
+
+.cms-body{padding:24px 28px;background:#EFF6FF;min-height:540px}
+
+.crumb{font-size:11px;color:#64748B;margin-bottom:6px;font-weight:600;letter-spacing:.04em}
+.crumb a{color:#2563EB}
+.h1{font-size:22px;font-weight:800;letter-spacing:-.02em;color:#0F172A}
+.h-sub{font-size:13px;color:#64748B;margin-top:4px;margin-bottom:22px;line-height:1.5}
+
+.card{
+  background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:22px;margin-bottom:14px
+}
+.card-h{font-size:14px;font-weight:700;color:#0F172A;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-h .badge{
+  font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;letter-spacing:.04em;text-transform:uppercase
+}
+.badge.ok{background:#DCFCE7;color:#166534}
+.badge.warn{background:#FEF3C7;color:#92400E}
+.badge.err{background:#FEE2E2;color:#991B1B}
+
+/* status row */
+.status-row{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid #F1F5F9}
+.status-row:last-child{border-bottom:none}
+.status-row .label{font-size:12px;color:#64748B;width:140px;flex-shrink:0;font-weight:500}
+.status-row .value{font-size:13px;color:#0F172A;font-weight:600;flex:1}
+.status-row .value.mono{font-family:'SF Mono','Monaco',monospace;font-size:12px}
+
+/* pairing code */
+.pair-row{display:flex;gap:8px;justify-content:center;margin:14px 0}
+.pair-digit{
+  width:42px;height:54px;background:linear-gradient(180deg,#F8FAFC,#EFF6FF);
+  border:2px solid #2563EB;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'SF Mono','Monaco',monospace;font-size:24px;font-weight:700;color:#1E40AF
+}
+.pair-help{
+  background:#F0F9FF;border-left:3px solid #2563EB;border-radius:6px;padding:10px 12px;
+  font-size:12px;color:#1E40AF;line-height:1.55;margin-top:10px
+}
+.pair-help strong{color:#1E3A8A;display:block;margin-bottom:4px}
+
+/* QR view alternative */
+.qr-box{
+  width:200px;height:200px;background:
+    linear-gradient(45deg,#000 25%,transparent 25%) 0 0 / 12px 12px,
+    linear-gradient(-45deg,#000 25%,transparent 25%) 0 0 / 12px 12px,
+    linear-gradient(45deg,transparent 75%,#000 75%) 0 0 / 12px 12px,
+    linear-gradient(-45deg,transparent 75%,#000 75%) 0 0 / 12px 12px,
+    #fff;
+  border:8px solid #fff;box-shadow:0 4px 20px rgba(0,0,0,.1);border-radius:8px;
+  margin:14px auto;position:relative;overflow:hidden
+}
+.qr-box::after{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:44px;height:44px;background:#1E40AF;border-radius:8px;
+  background-image:linear-gradient(135deg,#1E40AF,#3B82F6)
+}
+
+.tabs{display:flex;gap:4px;margin:0 -22px 14px;padding:0 22px;border-bottom:1px solid #E2E8F0}
+.tab{
+  padding:8px 0;font-size:13px;font-weight:600;color:#64748B;cursor:pointer;
+  border-bottom:2px solid transparent;margin-right:18px;transition:.15s
+}
+.tab.active{color:#1E40AF;border-bottom-color:#1E40AF}
+
+.btn{
+  padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;border:none;font-family:inherit
+}
+.btn.primary{background:#1E40AF;color:#fff}
+.btn.ghost{background:transparent;color:#64748B;border:1px solid #E2E8F0}
+.btn.danger{background:#fff;color:#DC2626;border:1px solid #FECACA}
+
+.actions{display:flex;gap:8px;margin-top:14px}
+
+/* log feed */
+.log{
+  background:#0F172A;color:#94A3B8;padding:12px 14px;border-radius:10px;
+  font-family:'SF Mono','Monaco',monospace;font-size:11px;line-height:1.7;
+  max-height:140px;overflow-y:auto
+}
+.log .ts{color:#475569;margin-right:6px}
+.log .ok{color:#10B981}
+.log .info{color:#60A5FA}
+.log .warn{color:#FBBF24}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.stat{background:#F8FAFC;border-radius:10px;padding:10px 12px}
+.stat .n{font-size:18px;font-weight:800;color:#0F172A;font-family:'SF Mono',monospace;letter-spacing:-.02em}
+.stat .l{font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-top:2px}
+
+.note{
+  background:#1E293B;color:#CBD5E1;padding:14px 16px;border-radius:12px;font-size:12px;line-height:1.6;
+  border-left:3px solid #10B981;max-width:580px;margin:0 auto
+}
+.note strong{color:#fff;font-weight:600}
+.note .pill{
+  display:inline-block;background:rgba(16,185,129,.15);color:#10B981;
+  padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-right:4px
+}
+
+.footer{margin-top:60px;text-align:center;color:#475569;font-size:11px}
+.footer code{background:rgba(255,255,255,.05);padding:2px 6px;border-radius:4px;color:#94A3B8}
+
+</style>
+</head>
+<body>
+
+<h1 class="page-title">CMS · WhatsApp Setup Page</h1>
+<p class="page-sub">One-time pairing screen. After pairing, this becomes a status + activity dashboard. Owner-only access.</p>
+
+<div class="grid">
+
+  <!-- ─── BEFORE PAIRING ─── -->
+  <div class="scene">
+    <div class="scene-label">State 1 · First-time pairing</div>
+    <div class="scene-desc">Owner sets it up once. ~30 seconds.</div>
+    <div class="cms-frame">
+      <div class="cms-bar">
+        <span class="dot" style="background:#EF4444"></span>
+        <span class="dot" style="background:#F59E0B"></span>
+        <span class="dot" style="background:#10B981"></span>
+        <div class="url">trendmarga.com/cms/whatsapp/setup</div>
+      </div>
+      <div class="cms-body">
+        <div class="crumb"><a>CMS</a> / <a>Settings</a> / WhatsApp</div>
+        <div class="h1">Connect WhatsApp</div>
+        <div class="h-sub">Link a WhatsApp account once. We'll use it to send courier OTPs, order confirmations, and tracking links. No charge per message.</div>
+
+        <div class="card">
+          <div class="card-h">
+            Connection status
+            <span class="badge err">Not connected</span>
+          </div>
+
+          <div class="tabs">
+            <div class="tab active">Pairing code</div>
+            <div class="tab">QR code</div>
+          </div>
+
+          <div style="text-align:center;padding:10px 0">
+            <div style="font-size:12px;color:#64748B;font-weight:600;text-transform:uppercase;letter-spacing:.08em">Enter this code on your phone</div>
+            <div class="pair-row">
+              <div class="pair-digit">9</div>
+              <div class="pair-digit">A</div>
+              <div class="pair-digit">3</div>
+              <div class="pair-digit">B</div>
+              <div class="pair-digit">7</div>
+              <div class="pair-digit">K</div>
+              <div class="pair-digit">2</div>
+              <div class="pair-digit">M</div>
+            </div>
+            <div style="font-size:11px;color:#94A3B8;font-family:'SF Mono',monospace">Expires in 02:47</div>
+          </div>
+
+          <div class="pair-help">
+            <strong>How to pair</strong>
+            1. Open WhatsApp on the dedicated business phone<br/>
+            2. Tap <strong>Settings → Linked Devices → Link a Device</strong><br/>
+            3. Tap <strong>Link with phone number instead</strong><br/>
+            4. Enter the 8-character code above
+          </div>
+
+          <div class="actions" style="justify-content:center">
+            <button class="btn ghost">Regenerate code</button>
+            <button class="btn primary">I've linked it ↻</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="note">
+      <span class="pill">Setup</span>Owner does this <strong>once</strong>. Session keys persist in Postgres → survives every redeploy. Only need to re-pair if WhatsApp logs us out (~rare).
+    </div>
+  </div>
+
+  <!-- ─── AFTER PAIRING ─── -->
+  <div class="scene">
+    <div class="scene-label">State 2 · Connected & operational</div>
+    <div class="scene-desc">Status dashboard for ongoing health checks.</div>
+    <div class="cms-frame">
+      <div class="cms-bar">
+        <span class="dot" style="background:#EF4444"></span>
+        <span class="dot" style="background:#F59E0B"></span>
+        <span class="dot" style="background:#10B981"></span>
+        <div class="url">trendmarga.com/cms/whatsapp</div>
+      </div>
+      <div class="cms-body">
+        <div class="crumb"><a>CMS</a> / <a>Settings</a> / WhatsApp</div>
+        <div class="h1">WhatsApp</div>
+        <div class="h-sub">Active. Sending courier OTPs and customer notifications via Baileys.</div>
+
+        <div class="card">
+          <div class="card-h">
+            Connection
+            <span class="badge ok">● Connected</span>
+          </div>
+          <div class="status-row">
+            <div class="label">Account</div>
+            <div class="value">trendMarga Ops</div>
+          </div>
+          <div class="status-row">
+            <div class="label">Phone number</div>
+            <div class="value mono">+233 24 555 0142</div>
+          </div>
+          <div class="status-row">
+            <div class="label">Linked</div>
+            <div class="value">May 30, 2026 · 14:48</div>
+          </div>
+          <div class="status-row">
+            <div class="label">Last heartbeat</div>
+            <div class="value">2 seconds ago</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">Today's activity</div>
+          <div class="stats">
+            <div class="stat"><div class="n">147</div><div class="l">Sent</div></div>
+            <div class="stat"><div class="n">142</div><div class="l">Delivered</div></div>
+            <div class="stat"><div class="n">2</div><div class="l">Failed</div></div>
+          </div>
+          <div class="log" style="margin-top:12px">
+            <div><span class="ts">15:06</span><span class="ok">✓</span> OTP sent to +233 55 148 1853</div>
+            <div><span class="ts">15:04</span><span class="ok">✓</span> Order ACK #A4F2 → +233 24 555 0143</div>
+            <div><span class="ts">15:03</span><span class="info">→</span> Dispatch ping to courier · Order #A4F1</div>
+            <div><span class="ts">15:01</span><span class="ok">✓</span> Tracking link → +233 24 555 0142</div>
+            <div><span class="ts">14:58</span><span class="warn">!</span> Retry queued · recipient offline</div>
+            <div><span class="ts">14:52</span><span class="ok">✓</span> OTP sent to +233 20 800 1212</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">Rate limiting</div>
+          <div class="status-row">
+            <div class="label">Max send rate</div>
+            <div class="value">1 msg/sec</div>
+          </div>
+          <div class="status-row">
+            <div class="label">Queue depth</div>
+            <div class="value">0 pending</div>
+          </div>
+          <div class="actions">
+            <button class="btn ghost">View full log</button>
+            <button class="btn danger">Disconnect</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="note">
+      <span class="pill">Live</span>Heartbeat polls every 30s. If connection drops, an alert badge surfaces in the CMS sidebar and the system auto-falls-back to Hubtel SMS until reconnected.
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Mockups · static HTML · <code>mockups/whatsapp-setup.html</code><br/>
+  Route: <code>apps/web/app/(dashboard)/cms/whatsapp/page.tsx</code> · API: <code>apps/api/src/whatsapp/</code> (Baileys + Postgres auth-state)
+</div>
+
+</body>
+</html>

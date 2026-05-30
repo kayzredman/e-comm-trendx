@@ -19,6 +19,8 @@ import { NotificationsModule } from './notifications/notifications.module'
 import { PosModule } from './pos/pos.module'
 import { ImagesModule } from './images/images.module'
 import { StorageModule } from './storage/storage.module'
+import { WhatsappModule } from './whatsapp/whatsapp.module'
+import { SmokeModule } from './smoke/smoke.module'
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { StorageModule } from './storage/storage.module'
     PosModule,
     StorageModule,
     ImagesModule,
+    WhatsappModule,
+    SmokeModule,
   ],
 })
 export class AppModule {}
