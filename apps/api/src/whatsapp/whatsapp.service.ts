@@ -64,6 +64,8 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
   private queue: Promise<unknown> = Promise.resolve()
   private lastSendAt = 0
 
+  private inbound: ((msg: { fromPhone: string; text: string; messageId: string }) => Promise<void> | void) | null = null
+
   private readonly enabled = process.env.WHATSAPP_ENABLED === 'true' || process.env.WHATSAPP_ENABLED === '1'
   private readonly minGapMs = Number(process.env.WHATSAPP_MIN_GAP_MS ?? 1000)
 
@@ -208,6 +210,14 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Register a handler for inbound text messages from real users (not self / not status@broadcast).
+   * Only one handler is supported — last registration wins.
+   */
+  setInboundHandler(handler: (msg: { fromPhone: string; text: string; messageId: string }) => Promise<void> | void) {
+    this.inbound = handler
+  }
+
+  /**
    * Send a text message. Returns providerId on success.
    * Throttled by WHATSAPP_MIN_GAP_MS. Throws if not connected.
    */
@@ -306,6 +316,27 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
       for (const u of updates) {
         // status: 3 = delivered, 4 = read
         if (u.update.status && u.update.status >= 3) this.bumpStat('delivered')
+      }
+    })
+
+    this.sock.ev.on('messages.upsert', ({ messages, type }) => {
+      if (type !== 'notify') return
+      for (const m of messages) {
+        if (!m.message || m.key.fromMe) continue
+        const jid = m.key.remoteJid ?? ''
+        // Only direct user chats (e.g. 233XXXX@s.whatsapp.net). Skip groups / status broadcasts.
+        if (!jid.endsWith('@s.whatsapp.net')) continue
+        const text =
+          m.message.conversation ??
+          m.message.extendedTextMessage?.text ??
+          m.message.imageMessage?.caption ??
+          ''
+        if (!text.trim()) continue
+        const fromPhone = jid.split('@')[0]
+        const handler = this.inbound
+        if (!handler) continue
+        Promise.resolve(handler({ fromPhone, text: text.trim(), messageId: m.key.id ?? '' }))
+          .catch((err: Error) => this.pushLog('err', `Inbound handler failed: ${err.message}`))
       }
     })
   }

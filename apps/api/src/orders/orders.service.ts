@@ -90,6 +90,7 @@ export class OrdersService {
             customerName: cust.name,
             total: order.total,
             status,
+            deliveryCode: order.deliveryCode ?? undefined,
           },
         })
       }
@@ -151,6 +152,7 @@ export class OrdersService {
             orderId: result.id,
             customerName: cust.name,
             total: result.total,
+            deliveryCode: result.deliveryCode ?? undefined,
           },
         })
       }
