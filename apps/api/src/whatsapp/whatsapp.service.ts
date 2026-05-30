@@ -20,7 +20,7 @@ import QRCode from 'qrcode'
 
 type ConnState = 'disconnected' | 'pairing' | 'connecting' | 'connected'
 
-interface LogEntry {
+export interface LogEntry {
   ts: string
   level: 'info' | 'ok' | 'warn' | 'err'
   message: string
@@ -150,7 +150,10 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
     // A small delay is the canonical pattern from the Baileys docs.
     await new Promise((r) => setTimeout(r, 2500))
 
-    const code = await this.sock.requestPairingCode(phone)
+    const sock = this.sock
+    if (!sock) throw new ServiceUnavailableException('Socket not ready')
+    // baileys rc13 types narrow WASocket | null to never inside class fields; cast to any.
+    const code = await (sock as any).requestPairingCode(phone)
     const formatted = code.match(/.{1,4}/g)?.join('-') ?? code
     this.pairingCode = formatted
     this.pairingFor = phone

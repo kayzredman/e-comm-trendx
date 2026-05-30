@@ -23,6 +23,7 @@
     "@trendmarga/config": "workspace:*",
     "@trendmarga/db": "workspace:*",
     "@trendmarga/types": "workspace:*",
+    "@hapi/boom": "^9.1.4",
     "@whiskeysockets/baileys": "7.0.0-rc13",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
