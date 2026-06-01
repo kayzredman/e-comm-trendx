@@ -39,6 +39,12 @@ declare const envSchema: z.ZodObject<{
     PAYSTACK_API_BASE: z.ZodDefault<z.ZodString>;
     /** Where Paystack redirects after card/MoMo flow finishes. Falls back to WEB_URL + /checkout/return. */
     PAYSTACK_CALLBACK_URL: z.ZodOptional<z.ZodString>;
+    /** ISO 4217 code used for orders, intents, refunds, and money formatting.
+     *  Must be a Paystack-supported currency: GHS | NGN | ZAR | KES | USD. */
+    STORE_CURRENCY: z.ZodDefault<z.ZodEnum<["GHS", "NGN", "ZAR", "KES", "USD"]>>;
+    /** BCP-47 locale for Intl.NumberFormat. Defaults match STORE_CURRENCY country.
+     *  Override only when you want a different number-grouping/locale convention. */
+    STORE_LOCALE: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     DATABASE_URL: string;
     CLERK_SECRET_KEY: string;
@@ -49,6 +55,7 @@ declare const envSchema: z.ZodObject<{
     WHATSAPP_MIN_GAP_MS: number;
     PAYSTACK_ENABLED: boolean;
     PAYSTACK_API_BASE: string;
+    STORE_CURRENCY: "GHS" | "NGN" | "ZAR" | "KES" | "USD";
     CLERK_WEBHOOK_SECRET?: string | undefined;
     WEB_URL?: string | undefined;
     STOREFRONT_URL?: string | undefined;
@@ -68,6 +75,7 @@ declare const envSchema: z.ZodObject<{
     PAYSTACK_SECRET_KEY?: string | undefined;
     PAYSTACK_PUBLIC_KEY?: string | undefined;
     PAYSTACK_CALLBACK_URL?: string | undefined;
+    STORE_LOCALE?: string | undefined;
 }, {
     DATABASE_URL: string;
     CLERK_SECRET_KEY: string;
@@ -97,6 +105,8 @@ declare const envSchema: z.ZodObject<{
     PAYSTACK_PUBLIC_KEY?: string | undefined;
     PAYSTACK_API_BASE?: string | undefined;
     PAYSTACK_CALLBACK_URL?: string | undefined;
+    STORE_CURRENCY?: "GHS" | "NGN" | "ZAR" | "KES" | "USD" | undefined;
+    STORE_LOCALE?: string | undefined;
 }>;
 export type Env = z.infer<typeof envSchema>;
 export declare function validateEnv(): Env;

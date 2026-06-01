@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { courierApi, courierAuth, type CourierJob, type CourierProfile } from '@/lib/courier-api'
 import { CourierGate, CourierTabBar } from '../_components'
+import { currencySymbol } from '@/lib/utils'
 
 type Filter = 'all' | 'pickup' | 'transit'
 
@@ -169,10 +170,10 @@ function JobCard({ job }: { job: CourierJob }) {
       <div className="cr-foot">
         <div className="cr-payout">
           <span className="cr-payout-label">Your earn</span>
-          <span className="cr-amount">GH₵ {Number(job.commissionAmount).toFixed(2)}</span>
+          <span className="cr-amount">{currencySymbol()} {Number(job.commissionAmount).toFixed(2)}</span>
         </div>
         {codPending
-          ? <span className="cr-cod">COD GH₵ {Number(job.order?.total ?? 0).toFixed(0)}</span>
+          ? <span className="cr-cod">COD {currencySymbol()} {Number(job.order?.total ?? 0).toFixed(0)}</span>
           : <span className="cr-go cr-go-cobalt">Open</span>}
       </div>
     </Link>

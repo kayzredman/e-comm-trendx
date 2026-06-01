@@ -78,8 +78,8 @@ export default async function AnalyticsPage() {
         <KpiCard
           icon={<Wallet size={16} />}
           label="Revenue · 30 days"
-          value={stats ? `GH₵ ${Number(stats.revenue30d).toFixed(2)}` : '—'}
-          sub={stats ? `All time: GH₵ ${Number(stats.revenueAll).toFixed(2)}` : ''}
+          value={stats ? formatPrice(stats.revenue30d) : '—'}
+          sub={stats ? `All time: ${formatPrice(stats.revenueAll)}` : ''}
           tint="#2563EB"
           bg="#DBEAFE"
           index={0}
@@ -87,7 +87,7 @@ export default async function AnalyticsPage() {
         <KpiCard
           icon={<TrendingUp size={16} />}
           label="Avg order value"
-          value={stats ? `GH₵ ${Number(stats.avgOrderValue).toFixed(2)}` : '—'}
+          value={stats ? formatPrice(stats.avgOrderValue) : '—'}
           sub={stats ? `${totalOrders} orders total` : ''}
           tint="#F97316"
           bg="#FFEDD5"
@@ -205,7 +205,7 @@ export default async function AnalyticsPage() {
                     </div>
                     <div className="text-right shrink-0 ml-4">
                       <p className="text-sm font-bold font-mono tabular-nums" style={{ color: 'var(--color-text)' }}>
-                        GH₵ {Number(p.totalRevenue).toFixed(2)}
+                        {formatPrice(p.totalRevenue)}
                       </p>
                       <p className="text-xs font-mono tabular-nums" style={{ color: 'var(--color-text-muted)' }}>{p.unitsSold} sold</p>
                     </div>

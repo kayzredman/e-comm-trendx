@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { AlertCircle, Loader2, Smartphone, CreditCard } from 'lucide-react'
 import { paymentsApi } from '@/lib/api'
+import { formatMoney } from '@/lib/utils'
 
 type Props = {
   orderId: string
@@ -57,8 +58,8 @@ export default function PaymentRetryBanner({ orderId, paymentMethod, paymentStat
           </h3>
           <p className="text-sm" style={{ color: '#475569' }}>
             {isFailed
-              ? `Your last payment attempt didn't go through. No charge was made. Pay ₵${total} to confirm your order.`
-              : `Complete payment of ₵${total} to confirm your order. Cash on delivery is also available — just contact us.`}
+              ? `Your last payment attempt didn't go through. No charge was made. Pay ${formatMoney(total)} to confirm your order.`
+              : `Complete payment of ${formatMoney(total)} to confirm your order. Cash on delivery is also available — just contact us.`}
           </p>
         </div>
       </div>

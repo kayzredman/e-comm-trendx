@@ -280,7 +280,7 @@ Each remediation action must be:
 ### Payments (built, follow-ups)
 - [x] Refund flow — Paystack `/refund` API, admin button, `REFUNDED` status transition
 - [x] Dispute / chargeback webhook events (`charge.dispute.create` etc.)
-- [ ] Multi-currency support (currently `GHS` hard-assumption — Paystack already covers card / MoMo / bank for GHS, NGN, ZAR, KES; no Stripe needed)
+- [x] Multi-currency support (currently `GHS` hard-assumption — Paystack already covers card / MoMo / bank for GHS, NGN, ZAR, KES; no Stripe needed)
 
 ### Storefront feature-flag UIs (backends exist, UIs missing)
 - [ ] Reviews — product-page widget + submit flow + moderation queue

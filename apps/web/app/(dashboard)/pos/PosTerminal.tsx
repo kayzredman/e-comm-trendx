@@ -34,18 +34,14 @@ import {
 } from '@/lib/api'
 import { usePosCart, selectPosSubtotal, selectPosItemCount } from '@/lib/pos-cart-store'
 import { Logo } from '@/components/brand/Logo'
+import { formatMoney } from '@/lib/utils'
 
 type PaymentMethod = 'CASH' | 'MOBILE_MONEY' | 'CARD'
 
 const TAX_RATE = 0.15 // 15% VAT (Ghana)
-const CURRENCY = 'GHS'
+const CURRENCY = (process.env.NEXT_PUBLIC_STORE_CURRENCY ?? 'GHS').toUpperCase()
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-GH', {
-    style: 'currency',
-    currency: CURRENCY,
-    minimumFractionDigits: 2,
-  }).format(Math.max(n, 0))
+const fmt = (n: number) => formatMoney(Math.max(n, 0))
 
 type CashierInfo = { id: string; name: string; role: string }
 

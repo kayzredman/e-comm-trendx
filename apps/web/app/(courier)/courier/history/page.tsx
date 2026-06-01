@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { courierApi, type CourierJob } from '@/lib/courier-api'
 import { CourierGate, CourierTabBar } from '../_components'
+import { currencySymbol } from '@/lib/utils'
 
 export default function HistoryPage() {
   return (
@@ -57,7 +58,7 @@ function Inner() {
                   <span style={{ fontSize: 11, color: '#6B7280' }}>
                     {(j.deliveredAt ?? j.failedAt ?? j.assignedAt) && new Date(j.deliveredAt ?? j.failedAt ?? j.assignedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </span>
-                  {ok && <span className="cr-amount" style={{ fontSize: 14 }}>+ GH₵ {Number(j.commissionAmount).toFixed(2)}</span>}
+                  {ok && <span className="cr-amount" style={{ fontSize: 14 }}>+ {currencySymbol()} {Number(j.commissionAmount).toFixed(2)}</span>}
                 </div>
               </div>
             )

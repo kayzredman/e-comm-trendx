@@ -60,6 +60,7 @@ export class PaymentsService {
     const amountKobo = Math.round(Number(order.total) * 100)
     const callbackUrl = process.env.PAYSTACK_CALLBACK_URL
       ?? (process.env.WEB_URL ? `${process.env.WEB_URL}/checkout/return` : undefined)
+    const currency = (process.env.STORE_CURRENCY ?? 'GHS').toUpperCase()
 
     const channels = opts.channel
       ? [this.toPaystackChannel(opts.channel)]
@@ -68,7 +69,7 @@ export class PaymentsService {
     const init = await this.paystack.initializeTransaction({
       email,
       amountKobo,
-      currency: 'GHS',
+      currency,
       reference,
       callbackUrl,
       channels,
@@ -79,7 +80,7 @@ export class PaymentsService {
       orderId,
       providerReference: reference,
       amount: order.total,
-      currency: 'GHS',
+      currency,
       channel: opts.channel ?? 'UNKNOWN',
       status: 'REQUIRES_AUTH',
       authorizationUrl: init.authorization_url,

@@ -60,7 +60,7 @@ export class WhatsappInboundService implements OnModuleInit {
       return reply(
         `Order *#${order.id.slice(0, 8).toUpperCase()}*\n` +
         `Status: ${label}\n` +
-        `Total: GH₵${order.total}\n\n` +
+        `Total: ${({GHS:'GH₵',NGN:'₦',ZAR:'R',KES:'KSh',USD:'$'} as Record<string,string>)[(process.env.STORE_CURRENCY ?? 'GHS').toUpperCase()] ?? 'GH₵'}${order.total}\n\n` +
         `Reply *HELP* for more options.`,
       )
     }

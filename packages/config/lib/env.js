@@ -55,6 +55,13 @@ const envSchema = zod_1.z.object({
     PAYSTACK_API_BASE: zod_1.z.string().url().default('https://api.paystack.co'),
     /** Where Paystack redirects after card/MoMo flow finishes. Falls back to WEB_URL + /checkout/return. */
     PAYSTACK_CALLBACK_URL: zod_1.z.string().url().optional(),
+    // ── Currency ──────────────────────────────────────────────────────────────
+    /** ISO 4217 code used for orders, intents, refunds, and money formatting.
+     *  Must be a Paystack-supported currency: GHS | NGN | ZAR | KES | USD. */
+    STORE_CURRENCY: zod_1.z.enum(['GHS', 'NGN', 'ZAR', 'KES', 'USD']).default('GHS'),
+    /** BCP-47 locale for Intl.NumberFormat. Defaults match STORE_CURRENCY country.
+     *  Override only when you want a different number-grouping/locale convention. */
+    STORE_LOCALE: zod_1.z.string().optional(),
 });
 exports.envSchema = envSchema;
 function validateEnv() {

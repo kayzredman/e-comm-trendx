@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, XCircle, Loader2, AlertCircle } from 'lucide-react'
 import { paymentsApi, type PaymentLookup } from '@/lib/api'
+import { formatMoney } from '@/lib/utils'
 
 type Phase = 'verifying' | 'success' | 'failed' | 'pending' | 'missing'
 
@@ -115,7 +116,7 @@ function CheckoutReturnInner() {
             </p>
             {info && (
               <p className="text-xs mb-4 font-mono" style={{ color: 'var(--color-text-muted)' }}>
-                ₵{info.amount} · {info.reference}
+                {formatMoney(info.amount)} · {info.reference}
               </p>
             )}
             <Link

@@ -16,19 +16,24 @@ export type OrderTemplateData = {
 const short = (id: string) => id.slice(0, 8).toUpperCase()
 const brand = 'trendMarga'
 
+const CURRENCY_SYMBOL: Record<string, string> = {
+  GHS: 'GH₵', NGN: '₦', ZAR: 'R', KES: 'KSh', USD: '$',
+}
+const sym = () => CURRENCY_SYMBOL[(process.env.STORE_CURRENCY ?? 'GHS').toUpperCase()] ?? 'GH₵'
+
 export const templates = {
   orderPlaced: (d: OrderTemplateData) => ({
-    sms: `Hi ${d.customerName}, your ${brand} order #${short(d.orderId)} for GH₵${d.total} has been received. We'll text you when it ships.`,
+    sms: `Hi ${d.customerName}, your ${brand} order #${short(d.orderId)} for ${sym()}${d.total} has been received. We'll text you when it ships.`,
     whatsapp:
       `Hi ${d.customerName} 👋\n\n` +
       `Your *${brand}* order *#${short(d.orderId)}* has been received.\n` +
-      `Total: *GH₵${d.total}*\n\n` +
+      `Total: *${sym()}${d.total}*\n\n` +
       (d.deliveryCode ? `Your delivery PIN: *${d.deliveryCode}*\n_Share with courier on arrival_\n\n` : '') +
       `Reply *TRACK ${short(d.orderId)}* anytime to check status.\n` +
       `Reply *CANCEL ${short(d.orderId)}* within 30 min to cancel.`,
     email: {
       subject: `Order #${short(d.orderId)} received`,
-      html: `<p>Hi ${d.customerName},</p><p>Thanks for shopping with ${brand}. Your order <strong>#${short(d.orderId)}</strong> totalling <strong>GH₵${d.total}</strong> has been received.</p>${d.trackingUrl ? `<p><a href="${d.trackingUrl}">Track your order</a></p>` : ''}`,
+      html: `<p>Hi ${d.customerName},</p><p>Thanks for shopping with ${brand}. Your order <strong>#${short(d.orderId)}</strong> totalling <strong>${sym()}${d.total}</strong> has been received.</p>${d.trackingUrl ? `<p><a href="${d.trackingUrl}">Track your order</a></p>` : ''}`,
     },
   }),
 
