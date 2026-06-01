@@ -5,6 +5,8 @@ import { ChevronRight } from 'lucide-react'
 import type { Metadata } from 'next'
 import ProductGallery from './ProductGallery'
 import ProductDetailsPanel from './ProductDetailsPanel'
+import ProductReviews from './ProductReviews'
+import { publicFeatures } from '@trendmarga/config'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -73,6 +75,10 @@ export default async function ProductDetailPage({ params }: Props) {
           <ProductGallery product={product} />
           <ProductDetailsPanel product={product} />
         </div>
+
+        {publicFeatures.reviews && (
+          <ProductReviews productId={product.id} productName={product.name} />
+        )}
       </div>
     </div>
   )

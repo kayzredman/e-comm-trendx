@@ -283,7 +283,7 @@ Each remediation action must be:
 - [x] Multi-currency support (currently `GHS` hard-assumption — Paystack already covers card / MoMo / bank for GHS, NGN, ZAR, KES; no Stripe needed)
 
 ### Storefront feature-flag UIs (backends exist, UIs missing)
-- [ ] Reviews — product-page widget + submit flow + moderation queue
+- [x] Reviews — product-page widget + submit flow + moderation queue
 - [ ] Inventory — out-of-stock badge on PDP / cart, low-stock warning
 - [ ] Search — `/v1/search` endpoint + header search box + results page
 - [ ] PWA — install prompt + push notifications (manifest already shipped)

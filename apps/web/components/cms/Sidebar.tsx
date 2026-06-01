@@ -6,7 +6,7 @@ import { useState } from 'react'
 import {
   LayoutDashboard, Package, Tag, ShoppingCart, BarChart3,
   Users, FileText, Truck, Menu, X, LogOut, UserCog, Activity, Flag, ScanLine, TicketPercent,
-  BadgeCheck, Wallet, Bike, MessageCircle, CreditCard,
+  BadgeCheck, Wallet, Bike, MessageCircle, CreditCard, Star,
 } from 'lucide-react'
 import { useClerk, useUser } from '@clerk/nextjs'
 import type { UserRole } from '@/lib/api'
@@ -45,6 +45,7 @@ const sections: NavSection[] = [
       { label: 'Delivery',     href: '/cms/delivery',  icon: Truck,    roles: ['OWNER', 'MANAGER', 'ORDER_MANAGER'] },
       { label: 'Discounts',    href: '/cms/discounts', icon: TicketPercent, roles: ['OWNER', 'MANAGER'] },
       { label: 'Payments',     href: '/cms/payments',  icon: CreditCard,    roles: ['OWNER', 'MANAGER', 'ORDER_MANAGER'] },
+      { label: 'Reviews',      href: '/cms/reviews',   icon: Star,          roles: ['OWNER', 'MANAGER', 'CONTENT_EDITOR'] },
       { label: 'CMS Pages',    href: '/cms/content',   icon: FileText, roles: ['OWNER', 'MANAGER', 'CONTENT_EDITOR'] },
     ],
   },

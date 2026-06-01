@@ -1044,3 +1044,55 @@ export const posApi = {
   checkout: (data: PosCheckoutInput, token: string): Promise<Order> =>
     apiFetch('/pos/checkout', { method: 'POST', body: JSON.stringify(data), token }),
 }
+
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+export type ReviewRow = {
+  id: string
+  productId: string
+  customerId: string
+  orderId: string | null
+  rating: number
+  title: string | null
+  body: string | null
+  status: 'PENDING' | 'PUBLISHED' | 'HIDDEN'
+  createdAt: string
+  customer?: { name: string; email?: string | null }
+  product?: { name: string; slug: string }
+}
+
+export type ReviewSummary = {
+  count: number
+  avg: number
+  distribution: { 1: number; 2: number; 3: number; 4: number; 5: number }
+}
+
+export type ReviewSubmitInput = {
+  productId: string
+  orderId: string
+  email: string
+  rating: number
+  title?: string
+  body?: string
+}
+
+export const reviewsApi = {
+  listForProduct: (productId: string): Promise<ReviewRow[]> =>
+    apiFetch(`/v1/reviews/product/${encodeURIComponent(productId)}`),
+  summary: (productId: string): Promise<ReviewSummary> =>
+    apiFetch(`/v1/reviews/product/${encodeURIComponent(productId)}/summary`),
+  submit: (data: ReviewSubmitInput): Promise<{ id: string; status: 'PENDING' | 'PUBLISHED' | 'HIDDEN' }> =>
+    apiFetch('/v1/reviews', { method: 'POST', body: JSON.stringify(data) }),
+}
+
+export const reviewsAdminApi = {
+  list: (token: string): Promise<ReviewRow[]> => apiFetch('/cms/reviews', { token }),
+  setStatus: (id: string, status: 'PENDING' | 'PUBLISHED' | 'HIDDEN', token: string): Promise<ReviewRow> =>
+    apiFetch(`/cms/reviews/${encodeURIComponent(id)}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+      token,
+    }),
+  remove: (id: string, token: string): Promise<void> =>
+    apiFetch(`/cms/reviews/${encodeURIComponent(id)}`, { method: 'DELETE', token }),
+}
