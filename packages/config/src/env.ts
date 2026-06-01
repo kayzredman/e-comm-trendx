@@ -69,6 +69,15 @@ const envSchema = z.object({
   /** BCP-47 locale for Intl.NumberFormat. Defaults match STORE_CURRENCY country.
    *  Override only when you want a different number-grouping/locale convention. */
   STORE_LOCALE: z.string().optional(),
+
+  // ── Web Push (PWA notifications) ──────────────────────────────────────────
+  /** Public VAPID key (base64url). Exposed via /v1/push/vapid-key for browsers. */
+  VAPID_PUBLIC_KEY: z.string().optional(),
+  /** Private VAPID key (base64url). When missing, push send is disabled but
+   *  subscribe/unsubscribe still work so the FE can warm up. */
+  VAPID_PRIVATE_KEY: z.string().optional(),
+  /** mailto: or https:// contact for push providers. Defaults to mailto:ops@trendmarga.com. */
+  VAPID_SUBJECT: z.string().default('mailto:ops@trendmarga.com'),
 })
 
 export type Env = z.infer<typeof envSchema>

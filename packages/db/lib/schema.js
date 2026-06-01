@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.paymentProviderEnum = exports.payoutMethodEnum = exports.paymentVerificationStatusEnum = exports.deliveryEventTypeEnum = exports.assignmentStatusEnum = exports.courierTypeEnum = exports.productVariantsRelations = exports.productVariants = exports.productImagesRelations = exports.productImages = exports.imageSourceEnum = exports.posHoldsRelations = exports.posShiftsRelations = exports.posRegistersRelations = exports.posHolds = exports.posShifts = exports.posRegisters = exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.posHoldStatusEnum = exports.posShiftStatusEnum = exports.orderSourceEnum = exports.paymentMethodEnum = exports.paymentStatusEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
-exports.paymentEventsRelations = exports.paymentIntentsRelations = exports.paymentEvents = exports.paymentIntents = exports.paymentChannelEnum = exports.paymentIntentStatusEnum = exports.paymentProviderTypeEnum = exports.whatsappAuthState = exports.courierSessionsRelations = exports.courierSessions = exports.courierOtps = exports.paymentVerificationsRelations = exports.payoutsRelations = exports.deliveryEventsRelations = exports.deliveryAssignmentsRelations = exports.couriersRelations = exports.paymentVerifications = exports.payouts = exports.deliveryEvents = exports.deliveryAssignments = exports.couriers = void 0;
+exports.pushSubscriptions = exports.paymentEventsRelations = exports.paymentIntentsRelations = exports.paymentEvents = exports.paymentIntents = exports.paymentChannelEnum = exports.paymentIntentStatusEnum = exports.paymentProviderTypeEnum = exports.whatsappAuthState = exports.courierSessionsRelations = exports.courierSessions = exports.courierOtps = exports.paymentVerificationsRelations = exports.payoutsRelations = exports.deliveryEventsRelations = exports.deliveryAssignmentsRelations = exports.couriersRelations = exports.paymentVerifications = exports.payouts = exports.deliveryEvents = exports.deliveryAssignments = exports.couriers = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 const drizzle_orm_1 = require("drizzle-orm");
 const cuid2_1 = require("@paralleldrive/cuid2");
@@ -518,4 +518,17 @@ exports.paymentEventsRelations = (0, drizzle_orm_1.relations)(exports.paymentEve
     intent: one(exports.paymentIntents, { fields: [exports.paymentEvents.intentId], references: [exports.paymentIntents.id] }),
     order: one(exports.orders, { fields: [exports.paymentEvents.orderId], references: [exports.orders.id] }),
 }));
+// ── Web Push subscriptions (storefront PWA) ──────────────────────────────────
+exports.pushSubscriptions = (0, pg_core_1.pgTable)('push_subscriptions', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    /** Unique push endpoint URL returned by the browser. Acts as natural key. */
+    endpoint: (0, pg_core_1.text)('endpoint').notNull().unique(),
+    p256dh: (0, pg_core_1.text)('p256dh').notNull(),
+    auth: (0, pg_core_1.text)('auth').notNull(),
+    userAgent: (0, pg_core_1.text)('user_agent'),
+    /** Optional link to a logged-in buyer once Customer accounts ship. */
+    customerId: (0, pg_core_1.varchar)('customer_id', { length: 128 }),
+    lastSeenAt: (0, pg_core_1.timestamp)('last_seen_at').notNull().defaultNow(),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+});
 //# sourceMappingURL=schema.js.map

@@ -286,7 +286,7 @@ Each remediation action must be:
 - [x] Reviews — product-page widget + submit flow + moderation queue
 - [x] Inventory — out-of-stock badge on PDP / cart, low-stock warning
 - [x] Search — `/v1/search` endpoint + header search box + results page
-- [ ] PWA — install prompt + push notifications (manifest already shipped)
+- [x] PWA — install prompt + push notifications (manifest already shipped)
 
 ### Customer-facing
 - [ ] Customer accounts (buyer login — likely Clerk org-less or magic link)

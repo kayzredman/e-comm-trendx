@@ -579,3 +579,17 @@ export const paymentEventsRelations = relations(paymentEvents, ({ one }) => ({
   order: one(orders, { fields: [paymentEvents.orderId], references: [orders.id] }),
 }))
 
+// ── Web Push subscriptions (storefront PWA) ──────────────────────────────────
+export const pushSubscriptions = pgTable('push_subscriptions', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  /** Unique push endpoint URL returned by the browser. Acts as natural key. */
+  endpoint: text('endpoint').notNull().unique(),
+  p256dh: text('p256dh').notNull(),
+  auth: text('auth').notNull(),
+  userAgent: text('user_agent'),
+  /** Optional link to a logged-in buyer once Customer accounts ship. */
+  customerId: varchar('customer_id', { length: 128 }),
+  lastSeenAt: timestamp('last_seen_at').notNull().defaultNow(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+

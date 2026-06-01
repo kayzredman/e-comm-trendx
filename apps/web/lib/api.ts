@@ -838,6 +838,23 @@ export const searchApi = {
   },
 }
 
+// ─── Web Push ────────────────────────────────────────────────────────────────
+
+export type VapidKeyInfo = { publicKey: string | null; configured: boolean }
+
+export const pushApi = {
+  getVapidKey: (): Promise<VapidKeyInfo> => apiFetch('/v1/push/vapid-key', { timeoutMs: 4000 }),
+  subscribe: (sub: PushSubscriptionJSON & { userAgent?: string }): Promise<{ id: string; status: 'created' | 'updated' }> =>
+    apiFetch('/v1/push/subscribe', { method: 'POST', body: JSON.stringify(sub) }),
+  unsubscribe: (endpoint: string): Promise<{ ok: boolean }> =>
+    apiFetch('/v1/push/subscribe', { method: 'DELETE', body: JSON.stringify({ endpoint }) }),
+  testBroadcast: (
+    payload: { title: string; body: string; url?: string; tag?: string },
+    token: string,
+  ): Promise<{ sent: number; failed: number; pruned: number }> =>
+    apiFetch('/cms/push/test', { method: 'POST', body: JSON.stringify(payload), token }),
+}
+
 export type PaymentIntentInit = {
   reference: string
   authorizationUrl: string | null
