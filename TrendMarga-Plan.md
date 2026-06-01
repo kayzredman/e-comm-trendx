@@ -275,20 +275,12 @@ Each remediation action must be:
 
 ## Open gaps (tracked checklist — June 2026)
 
-### Prod cutover (highest priority)
-- [ ] Promote `staging` → `main`
-- [ ] Set prod env vars on Railway (`PAYSTACK_SECRET_KEY`, `WEB_APP_URL`, `CLERK_*`, `WHATSAPP_*`, feature flags)
-- [ ] Run prod migrations (`pnpm migrate:prod`)
-- [ ] Purchase `trendmarga.com` and point to prod web
-- [ ] Register prod Paystack webhook URL
-- [ ] ₵1 LIVE smoke on prod (MoMo)
-- [ ] Rotate any keys leaked in chat / commits
+> Order matters: prod cutover is the **last** step — only after every gap below is closed, tested on staging, and signed off.
 
 ### Payments (built, follow-ups)
 - [ ] Refund flow — Paystack `/refund` API, admin button, `REFUNDED` status transition
 - [ ] Dispute / chargeback webhook events (`charge.dispute.create` etc.)
-- [ ] Multi-currency support (currently `GHS` hard-assumption)
-- [ ] Stripe integration (international) — not urgent
+- [ ] Multi-currency support (currently `GHS` hard-assumption — Paystack already covers card / MoMo / bank for GHS, NGN, ZAR, KES; no Stripe needed)
 
 ### Storefront feature-flag UIs (backends exist, UIs missing)
 - [ ] Reviews — product-page widget + submit flow + moderation queue
@@ -323,3 +315,14 @@ Each remediation action must be:
 
 ### Phase 3
 - [ ] React Native mobile app
+
+### Prod cutover (LAST — only after everything above is done & QA-signed-off on staging)
+- [ ] Final staging regression pass (auth, checkout, payments, POS, courier, CMS, analytics)
+- [ ] Rotate any keys leaked in chat / commits
+- [ ] Purchase `trendmarga.com` and point DNS to prod web
+- [ ] Set prod env vars on Railway (`PAYSTACK_SECRET_KEY` live, `WEB_APP_URL`, `CLERK_*`, `WHATSAPP_*`, feature flags)
+- [ ] Run prod migrations (`pnpm migrate:prod`)
+- [ ] Register prod Paystack webhook URL
+- [ ] Promote `staging` → `main`
+- [ ] ₵1 LIVE smoke on prod (MoMo + card)
+- [ ] Enable scheduled reconciler + monitoring alerts
