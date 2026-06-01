@@ -366,9 +366,9 @@ Only **critical** findings trigger alerts. Warnings/info are visible in the UI b
 - [x] Recharts Bar chart for top products (replace inline progress bars)
 
 ### POS (built, feature-thin)
-- [ ] Shift open / close flow
-- [ ] Hold / void / discount UI
-- [ ] Sidebar role-guard verification
+- [x] Shift open / close flow (`OpenShiftModal` + `CloseShiftModal` w/ summary in `PosTerminal.tsx`; api `/pos/shifts/open`, `/pos/shifts/:id/close`)
+- [x] Hold / void / discount UI (holds drawer + `DiscountModal`; api `/pos/holds`, `/pos/holds/:id/resume`, `/pos/holds/:id/void`)
+- [x] Sidebar role-guard verification — API `@Roles(...POS_ROLES)` w/ OWNER/MANAGER/CASHIER + page `POS_ROLES.includes(me.role)` + sidebar `roles: ['OWNER','MANAGER','CASHIER']` all consistent
 
 ### Service Quality (Tier 2 & 3)
 - [x] Tier 2 self-heal buttons (warm-cache, reseed-zones; restart-all already shipped in `bbdb599`)
