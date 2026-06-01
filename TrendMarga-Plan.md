@@ -273,6 +273,62 @@ Each remediation action must be:
 
 ---
 
+## Service Quality — Operator SOP
+
+The `/cms/service-quality` page is the **emergency control panel**. One screen,
+< 60 seconds, OWNER walks away either reassured or with the fix applied.
+It is NOT an APM (no traces), NOT a customer status page, NOT a deploy dashboard.
+
+### Local dev — supervisor required
+- **Always start dev with `pnpm dev:safe`** (not bare `pnpm dev`). The supervisor
+  (`scripts/dev-supervisor.sh`) auto-restarts the stack on crash with backoff and
+  writes `/tmp/trendx-supervisor.json` which the page reads.
+- `pnpm dev:kill` clears stale nodemon / next / tsx zombies and frees :4001 / :4002.
+- Header pill shows **green** "Supervisor · restarts N" when supervised, **yellow**
+  "No supervisor" otherwise. Yellow = you forgot `dev:safe`.
+
+### Daily glance (1× per day, ~10 sec)
+1. Open `/cms/service-quality`.
+2. Overall banner green + supervisor pill green → done.
+
+### Yellow alert (degraded — 30–60 sec to resolve)
+1. Note the amber card and what it reports (eg. event-loop p99, DB roundtrip).
+2. Click **Run Diagnostics** — read the top finding's suggested fix.
+3. Apply the **narrowest** action that matches, in order of escalation:
+   `Recheck` → `Reconnect DB` → `Force GC` → `Restart <that one service>`.
+4. Page auto-refreshes; if green within 30s, done.
+
+### Red alert (down — < 2 min to resolve)
+1. **One service red** → click that card's `Restart` button.
+2. **Multiple cards red or unclear** → click the red **Restart Everything** button
+   in the header (OWNER only). Restarts api + web in parallel, polls until both green.
+3. If web itself was unreachable: the supervisor will already be restarting.
+   Refresh after ~10s; the pill's restart counter will have ticked up.
+4. If still red after restart-all: check Railway logs, then escalate (manual deploy).
+
+### Pre-deploy gate
+- Before any `git push` to `main`: open Service Quality, **Run Diagnostics**,
+  all green = proceed. Anything red = fix first.
+
+### Post-deploy gate
+- Within 2 min of Railway "Deployment successful":
+  open Service Quality, refresh, **Run Diagnostics**.
+- If red: hit Restart on the offending service (uses Railway redeploy API
+  via `RAILWAY_API_TOKEN` in prod).
+
+### Hard rules — what Service Quality must NEVER do
+- Run database migrations (always manual via `pnpm migrate:prod`)
+- Mutate business data (no order edits, no refunds, no product changes)
+- Change env vars / secrets
+- Auto-restart without an OWNER click (Tier 3 cron may *alert*, never *act*)
+
+### Roles
+- OWNER: all actions including Restart, Restart Everything, future Tier 2 self-heal
+- MANAGER: read + Run Diagnostics + Recheck only
+- Everyone else: no access (hidden from sidebar)
+
+---
+
 ## Open gaps (tracked checklist — June 2026)
 
 > Order matters: prod cutover is the **last** step — only after every gap below is closed, tested on staging, and signed off.

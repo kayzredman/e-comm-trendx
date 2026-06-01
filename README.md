@@ -271,6 +271,19 @@ Or with Turborepo from root:
 pnpm dev
 ```
 
+**Recommended for daily dev — auto-restart supervisor:**
+
+```bash
+pnpm dev:safe   # wraps `pnpm dev` with crash auto-restart + port cleanup
+pnpm dev:kill   # nuke any zombie nodemon / next / tsx and free :4001 / :4002
+```
+
+The supervisor writes state to `/tmp/trendx-supervisor.json`. The Service
+Quality page (`/cms/service-quality`) surfaces this as a green "Supervisor"
+pill and turns yellow ("No supervisor") if you forgot to use `dev:safe`.
+See the **Service Quality — Operator SOP** in [TrendMarga-Plan.md](TrendMarga-Plan.md)
+for the full daily / alert / pre-deploy flow.
+
 ---
 
 ## Key Conventions
