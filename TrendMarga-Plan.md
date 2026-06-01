@@ -374,15 +374,17 @@ Only **critical** findings trigger alerts. Warnings/info are visible in the UI b
 - [x] Tier 2 self-heal buttons (warm-cache, reseed-zones; restart-all already shipped in `bbdb599`)
 - [x] Tier 3 scheduled diagnostics + alerting (SMS + email, in-memory cooldown, `SQ_ALERTS_ENABLED` gate)
 
-### Phase 2
-- [ ] `apps/tracking` separate service
-- [ ] DHL / external carrier integration
-- [ ] Customer accounts (overlaps with Customer-facing above)
+### Future features (post-revenue — NOT launch blockers)
 
-### Phase 3
-- [ ] React Native mobile app
+> Reclassified June 2026: every customer-facing v1 feature is shipped. The items
+> below are infrastructure refinements or alternate channels — schedule them
+> only once live revenue + operator feedback proves they're needed.
 
-### Prod cutover (LAST — only after everything above is done & QA-signed-off on staging)
+- [ ] `apps/tracking` separate service — resilience upgrade; current `/orders/[id]` polls DB and works fine. Build if courier-webhook reliability becomes a real issue.
+- [ ] DHL / external carrier integration — only relevant for cross-border. Skip until international orders are on the table.
+- [ ] React Native mobile app — PWA install prompt + push notifications already cover mobile. Reassess after 2 months of install-rate data.
+
+### Prod cutover (next milestone — admin + ops checklist)
 - [ ] Final staging regression pass (auth, checkout, payments, POS, courier, CMS, analytics)
 - [ ] Rotate any keys leaked in chat / commits
 - [ ] Purchase `trendmarga.com` and point DNS to prod web
