@@ -95,6 +95,29 @@ export class PaystackClient {
     }
   }
 
+  /**
+   * Create a refund. `amountKobo` omitted = full refund of remaining amount.
+   * Returns the refund object — `status` is one of pending|processing|processed|failed.
+   * Async settlement is confirmed via the `refund.processed` / `refund.failed` webhook.
+   */
+  async createRefund(args: {
+    transactionReference: string
+    amountKobo?: number
+    currency?: string
+    customerNote?: string
+    merchantNote?: string
+  }): Promise<Record<string, any>> {
+    const body: Record<string, unknown> = { transaction: args.transactionReference }
+    if (args.amountKobo != null) body.amount = args.amountKobo
+    if (args.currency) body.currency = args.currency
+    if (args.customerNote) body.customer_note = args.customerNote
+    if (args.merchantNote) body.merchant_note = args.merchantNote
+    const data = await this.request<{ status: boolean; message: string; data: Record<string, any> }>(
+      'POST', '/refund', body,
+    )
+    return data.data ?? {}
+  }
+
   /** Liveness probe — uses /bank which is cheap and stable. */
   async ping(): Promise<{ ok: true; latencyMs: number }> {
     const t0 = Date.now()

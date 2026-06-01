@@ -106,6 +106,22 @@ export class PaymentsController {
 
   @ApiBearerAuth()
   @UseGuards(ClerkGuard)
+  @Post('cms/payments/intents/:id/refund')
+  async refund(
+    @Param('id') id: string,
+    @Body() body: { amount?: number; reason?: string },
+    @Req() req: FastifyRequest,
+  ) {
+    const actorId = (req as any).user?.id ?? (req as any).auth?.userId ?? null
+    return this.payments.refundIntent(id, {
+      amount: body?.amount,
+      reason: body?.reason,
+      actorId,
+    })
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard)
   @Post('cms/payments/reconcile')
   async reconcile() { return this.payments.reconcileStuck(10) }
 

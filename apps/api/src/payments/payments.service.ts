@@ -222,6 +222,87 @@ export class PaymentsService {
     }
   }
 
+  /**
+   * Issue a refund via Paystack. `amount` is major-units; omit for full refund of the
+   * remaining (non-refunded) balance. Writes a `refund.requested` event row immediately
+   * and the final outcome lands via the `refund.processed` / `refund.failed` webhook.
+   */
+  async refundIntent(
+    intentId: string,
+    opts: { amount?: number; reason?: string; actorId?: string | null } = {},
+  ) {
+    const [intent] = await this.db.client.select().from(paymentIntents).where(eq(paymentIntents.id, intentId))
+    if (!intent) throw new NotFoundException(`Intent ${intentId} not found`)
+    if (intent.status !== 'SUCCEEDED') {
+      throw new BadRequestException(`Cannot refund intent in status ${intent.status}`)
+    }
+    const charged = Number(intent.amount)
+    const alreadyRefunded = Number(intent.refundedAmount ?? 0)
+    const remaining = +(charged - alreadyRefunded).toFixed(2)
+    if (remaining <= 0) throw new BadRequestException('Intent is already fully refunded')
+
+    const amount = opts.amount != null ? Number(opts.amount) : remaining
+    if (amount <= 0) throw new BadRequestException('Refund amount must be > 0')
+    if (amount > remaining) {
+      throw new BadRequestException(`Refund amount ${amount} exceeds remaining ${remaining}`)
+    }
+
+    const refund = await this.paystack.createRefund({
+      transactionReference: intent.providerReference,
+      amountKobo: Math.round(amount * 100),
+      currency: intent.currency,
+      merchantNote: opts.reason ?? `Refund requested${opts.actorId ? ` by ${opts.actorId}` : ''}`,
+      customerNote: opts.reason,
+    })
+
+    await this.recordEvent({
+      eventType: 'refund.requested',
+      reference: intent.providerReference,
+      intentId: intent.id,
+      orderId: intent.orderId,
+      amount,
+      currency: intent.currency,
+      status: 'PENDING',
+      rawPayload: { requested: { amount, reason: opts.reason, actorId: opts.actorId }, paystack: refund },
+      signatureValid: true,
+      source: 'manual-replay',
+    })
+
+    // If Paystack returns processed synchronously (rare for instant test refunds), settle now.
+    if (String(refund?.status ?? '').toLowerCase() === 'processed') {
+      await this.applyRefundOutcome(intent.id, amount, 'processed', refund)
+    }
+
+    return { ok: true, refund }
+  }
+
+  /** Apply refund outcome to intent + order. Idempotent on (intent, amount, status). */
+  private async applyRefundOutcome(
+    intentId: string,
+    amount: number,
+    status: 'processed' | 'failed' | 'pending' | 'processing',
+    raw: unknown,
+  ) {
+    if (status !== 'processed') return
+    const [intent] = await this.db.client.select().from(paymentIntents).where(eq(paymentIntents.id, intentId))
+    if (!intent) return
+    const charged = Number(intent.amount)
+    const already = Number(intent.refundedAmount ?? 0)
+    const next = Math.min(+(already + amount).toFixed(2), charged)
+    await this.db.client.update(paymentIntents).set({
+      refundedAmount: String(next),
+      metadata: { ...(intent.metadata ?? {}), lastRefund: raw },
+      updatedAt: new Date(),
+    }).where(eq(paymentIntents.id, intentId))
+
+    if (next >= charged) {
+      await this.db.client.update(orders).set({
+        paymentStatus: 'REFUNDED',
+        updatedAt: new Date(),
+      }).where(eq(orders.id, intent.orderId))
+    }
+  }
+
   // ──────────────────────────────────────────────────────────────────────────
 
   private async recordEvent(args: RecordEventArgs) {
@@ -249,6 +330,21 @@ export class PaymentsService {
   }
 
   private async applyOutcome(intentId: string, eventType: string, data: any, eventId: string) {
+    // Refund lifecycle events live on a separate path — they don't change intent.status.
+    if (/^refund\./.test(eventType)) {
+      const amountMajor = typeof data?.amount === 'number' ? data.amount / 100 : 0
+      const statusRaw = String(data?.status ?? eventType.replace(/^refund\./, '')).toLowerCase()
+      const status = (['processed', 'failed', 'pending', 'processing'].includes(statusRaw) ? statusRaw : 'pending') as
+        'processed' | 'failed' | 'pending' | 'processing'
+      await this.applyRefundOutcome(intentId, amountMajor, status, data)
+      // Mark pointer regardless so we keep a trace.
+      await this.db.client.update(paymentIntents).set({
+        lastEventId: eventId,
+        updatedAt: new Date(),
+      }).where(eq(paymentIntents.id, intentId))
+      return
+    }
+
     const isSuccess = /\.success$/.test(eventType) || /^verify\.success$/.test(eventType)
     const isFailed = /\.failed$/.test(eventType) || /^verify\.failed$/.test(eventType)
     const isAbandoned = /abandoned/i.test(eventType) || /^verify\.abandoned$/.test(eventType)

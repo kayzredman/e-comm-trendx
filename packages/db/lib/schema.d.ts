@@ -3336,6 +3336,18 @@ export declare const paymentIntents: import("drizzle-orm/pg-core").PgTableWithCo
             enumValues: [string, ...string[]];
             baseColumn: never;
         }, {}, {}>;
+        refundedAmount: import("drizzle-orm/pg-core").PgColumn<{
+            name: "refunded_amount";
+            tableName: "payment_intents";
+            dataType: "string";
+            columnType: "PgNumeric";
+            data: string;
+            driverParam: string;
+            notNull: true;
+            hasDefault: true;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
         lastEventId: import("drizzle-orm/pg-core").PgColumn<{
             name: "last_event_id";
             tableName: "payment_intents";

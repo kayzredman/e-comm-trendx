@@ -11,7 +11,7 @@ import {
 } from '@/lib/api'
 import {
   CreditCard, RefreshCw, AlertCircle, CheckCircle2, Clock, XCircle,
-  ShieldCheck, ShieldAlert, RotateCcw, Wifi, WifiOff, Activity,
+  ShieldCheck, ShieldAlert, RotateCcw, Wifi, WifiOff, Activity, Undo2,
 } from 'lucide-react'
 
 type Tab = 'intents' | 'events'
@@ -37,6 +37,7 @@ export default function PaymentsClient(props: {
   const [refreshing, setRefreshing] = useState(false)
   const [reconciling, setReconciling] = useState(false)
   const [replayingId, setReplayingId] = useState<string | null>(null)
+  const [refundingId, setRefundingId] = useState<string | null>(null)
   const [eventsLoading, setEventsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -113,6 +114,36 @@ export default function PaymentsClient(props: {
     }
   }
 
+  async function handleRefund(intent: PaymentIntentRow) {
+    if (!token) return
+    const charged = Number(intent.amount)
+    const already = Number(intent.refundedAmount ?? 0)
+    const remaining = +(charged - already).toFixed(2)
+    if (remaining <= 0) { setToast('Already fully refunded'); setTimeout(() => setToast(null), 3000); return }
+    const raw = window.prompt(
+      `Refund amount for ${intent.providerReference}\nRemaining: ₵${remaining.toFixed(2)}\n\nEnter amount in GHS (leave blank for full refund):`,
+      remaining.toFixed(2),
+    )
+    if (raw === null) return
+    const amount = raw.trim() === '' ? undefined : Number(raw)
+    if (amount != null && (!Number.isFinite(amount) || amount <= 0)) {
+      setToast('Invalid amount'); setTimeout(() => setToast(null), 3000); return
+    }
+    const reason = window.prompt('Reason (optional):', '') ?? undefined
+    if (!window.confirm(`Refund ₵${(amount ?? remaining).toFixed(2)} from ${intent.providerReference}?`)) return
+    setRefundingId(intent.id)
+    try {
+      await paymentsAdminApi.refund(token, intent.id, { amount, reason })
+      setToast('Refund requested — settles via webhook')
+      await reload()
+    } catch (e) {
+      setToast(e instanceof Error ? e.message : String(e))
+    } finally {
+      setRefundingId(null)
+      setTimeout(() => setToast(null), 4000)
+    }
+  }
+
   return (
     <div
       className="flex-1 p-4 md:p-6 lg:p-8 min-h-screen"
@@ -184,6 +215,8 @@ export default function PaymentsClient(props: {
             statusFilter={statusFilter}
             onStatusChange={setStatusFilter}
             onRefresh={reload}
+            onRefund={handleRefund}
+            refundingId={refundingId}
           />
         )}
         {tab === 'events' && (
@@ -389,12 +422,14 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
 }
 
 function IntentsTab({
-  intents, statusFilter, onStatusChange, onRefresh,
+  intents, statusFilter, onStatusChange, onRefresh, onRefund, refundingId,
 }: {
   intents: PaymentIntentRow[]
   statusFilter: PaymentIntentStatus | 'ALL'
   onStatusChange: (s: PaymentIntentStatus | 'ALL') => void
   onRefresh: () => void
+  onRefund: (intent: PaymentIntentRow) => void
+  refundingId: string | null
 }) {
   return (
     <div className="rounded-2xl border bg-white overflow-hidden" style={{ borderColor: '#E2E8F0' }}>
@@ -422,23 +457,57 @@ function IntentsTab({
               <Th>Status</Th>
               <Th>Channel</Th>
               <Th className="text-right">Amount</Th>
+              <Th className="text-right">Refunded</Th>
               <Th>Created</Th>
+              <Th></Th>
             </tr>
           </thead>
           <tbody>
             {intents.length === 0 && (
-              <tr><td colSpan={6} className="text-center py-12" style={{ color: '#94A3B8' }}>No intents</td></tr>
+              <tr><td colSpan={8} className="text-center py-12" style={{ color: '#94A3B8' }}>No intents</td></tr>
             )}
-            {intents.map((it) => (
-              <tr key={it.id} className="border-t" style={{ borderColor: '#F1F5F9' }}>
-                <Td><span className="font-mono text-xs">{it.providerReference}</span></Td>
-                <Td><span className="font-mono text-xs">{it.orderId}</span></Td>
-                <Td><StatusPill status={it.status} /></Td>
-                <Td>{it.channel ?? '—'}</Td>
-                <Td className="text-right font-mono tabular-nums">₵{Number(it.amount).toFixed(2)}</Td>
-                <Td><span className="text-xs" style={{ color: '#64748B' }}>{fmtDate(it.createdAt)}</span></Td>
-              </tr>
-            ))}
+            {intents.map((it) => {
+              const charged = Number(it.amount)
+              const refunded = Number(it.refundedAmount ?? 0)
+              const remaining = +(charged - refunded).toFixed(2)
+              const canRefund = it.status === 'SUCCEEDED' && remaining > 0
+              return (
+                <tr key={it.id} className="border-t" style={{ borderColor: '#F1F5F9' }}>
+                  <Td><span className="font-mono text-xs">{it.providerReference}</span></Td>
+                  <Td><span className="font-mono text-xs">{it.orderId}</span></Td>
+                  <Td><StatusPill status={it.status} /></Td>
+                  <Td>{it.channel ?? '—'}</Td>
+                  <Td className="text-right font-mono tabular-nums">₵{charged.toFixed(2)}</Td>
+                  <Td className="text-right font-mono tabular-nums">
+                    {refunded > 0 ? (
+                      <span style={{ color: refunded >= charged ? '#B91C1C' : '#B45309' }}>
+                        ₵{refunded.toFixed(2)}
+                        {refunded < charged && (
+                          <span className="text-xs ml-1" style={{ color: '#94A3B8' }}>partial</span>
+                        )}
+                      </span>
+                    ) : (
+                      <span style={{ color: '#CBD5E1' }}>—</span>
+                    )}
+                  </Td>
+                  <Td><span className="text-xs" style={{ color: '#64748B' }}>{fmtDate(it.createdAt)}</span></Td>
+                  <Td>
+                    {canRefund && (
+                      <button
+                        onClick={() => onRefund(it)}
+                        disabled={refundingId === it.id}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border text-xs font-medium hover:bg-rose-50 disabled:opacity-50"
+                        style={{ borderColor: '#FECACA', color: '#B91C1C' }}
+                        title={`Refund up to ₵${remaining.toFixed(2)}`}
+                      >
+                        <Undo2 size={12} className={refundingId === it.id ? 'animate-spin' : ''} />
+                        Refund
+                      </button>
+                    )}
+                  </Td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

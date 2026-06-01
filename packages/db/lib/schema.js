@@ -473,6 +473,8 @@ exports.paymentIntents = (0, pg_core_1.pgTable)('payment_intents', {
     authorizationUrl: (0, pg_core_1.text)('authorization_url'),
     /** Paystack `access_code` — used by inline JS. */
     accessCode: (0, pg_core_1.varchar)('access_code', { length: 120 }),
+    /** Cumulative refunded amount in major units. Equals `amount` once fully refunded. */
+    refundedAmount: (0, pg_core_1.numeric)('refunded_amount', { precision: 12, scale: 2 }).notNull().default('0'),
     /** Pointer to the last event that mutated this intent (for trace). */
     lastEventId: (0, pg_core_1.varchar)('last_event_id', { length: 128 }),
     /** Free-form provider data captured at finalization (channel-specific fields, fees, etc.). */

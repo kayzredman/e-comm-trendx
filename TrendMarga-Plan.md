@@ -278,7 +278,7 @@ Each remediation action must be:
 > Order matters: prod cutover is the **last** step — only after every gap below is closed, tested on staging, and signed off.
 
 ### Payments (built, follow-ups)
-- [ ] Refund flow — Paystack `/refund` API, admin button, `REFUNDED` status transition
+- [x] Refund flow — Paystack `/refund` API, admin button, `REFUNDED` status transition
 - [ ] Dispute / chargeback webhook events (`charge.dispute.create` etc.)
 - [ ] Multi-currency support (currently `GHS` hard-assumption — Paystack already covers card / MoMo / bank for GHS, NGN, ZAR, KES; no Stripe needed)
 

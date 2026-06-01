@@ -23,6 +23,7 @@ plus webhook ingestion, reconciliation and a small in-process circuit breaker.
 | `GET`  | `/cms/payments/events?reference=&intentId=&limit=` | ↑ |
 | `POST` | `/cms/payments/events/:id/replay` | OWNER / MANAGER |
 | `POST` | `/cms/payments/reconcile` | OWNER / MANAGER |
+| `POST` | `/cms/payments/intents/:id/refund` | OWNER / MANAGER |
 
 ## Environment
 
@@ -72,6 +73,26 @@ Use replay when:
 - An event was processed before a deploy that changed the handler.
 - The order side-effects (status, paid_at) need to be re-applied after a manual
   data fix.
+
+## Refunds
+
+Issued via Paystack `/refund`. Full or partial. Settlement is asynchronous —
+Paystack sends `refund.processed` (or `refund.failed`) to the same webhook
+endpoint hours/days later.
+
+| Step | What happens |
+| --- | --- |
+| Admin clicks **Refund** on a `SUCCEEDED` intent | UI prompts for amount (default = remaining) + optional reason |
+| `POST /cms/payments/intents/:id/refund` | Calls Paystack `/refund`; appends a `refund.requested` row to `payment_events` |
+| `refund.processed` webhook arrives | `applyOutcome` bumps `payment_intents.refunded_amount`; when cumulative ≥ charged, flips `orders.payment_status` → `REFUNDED` |
+| `refund.failed` webhook | Logged in events; `refunded_amount` unchanged; admin sees the error in the Events tab |
+
+Constraints:
+
+- Refund button only shows when `intent.status === 'SUCCEEDED'` AND remaining > 0.
+- Partial refunds accumulate — repeated clicks subtract from the remaining balance.
+- Order moves to `REFUNDED` only on **full** refund (sum across all refund events).
+- No automatic stock-restore yet (manual via `/cms/orders` if needed).
 
 ## Storefront UX
 

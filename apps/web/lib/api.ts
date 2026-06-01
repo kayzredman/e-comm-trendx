@@ -862,6 +862,7 @@ export type PaymentIntentRow = {
   providerReference: string
   status: PaymentIntentStatus
   amount: string
+  refundedAmount?: string
   currency: string
   channel: string | null
   customerEmail: string | null
@@ -932,6 +933,16 @@ export const paymentsAdminApi = {
     }),
   reconcile: (token: string): Promise<{ reconciled: number }> =>
     apiFetch('/cms/payments/reconcile', { method: 'POST', token }),
+  refund: (
+    token: string,
+    intentId: string,
+    body: { amount?: number; reason?: string } = {},
+  ): Promise<{ ok: boolean; refund: Record<string, unknown> }> =>
+    apiFetch(`/cms/payments/intents/${encodeURIComponent(intentId)}/refund`, {
+      method: 'POST',
+      token,
+      body: JSON.stringify(body),
+    }),
 }
 
 // ─── POS ──────────────────────────────────────────────────────────────────────
