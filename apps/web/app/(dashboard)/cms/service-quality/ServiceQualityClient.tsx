@@ -42,19 +42,23 @@ const STATUS_CONFIG: Record<ServiceStatus, { label: string; color: string; bg: s
 }
 
 const SERVICE_ICONS: Record<string, typeof Server> = {
-  'PostgreSQL':   Database,
-  'Schema':       Layers,
-  'API Server':   Server,
-  'Web App':      Globe,
-  'Storefront':   ShoppingBag,
-  'Clerk Auth':   Shield,
+  'PostgreSQL':              Database,
+  'Schema':                  Layers,
+  'API Server':              Server,
+  'Web App':                 Globe,
+  'Storefront':              ShoppingBag,
+  'Clerk Auth':              Shield,
+  'Paystack API':            Zap,
+  'Paystack Webhook':        Network,
+  'Payment Reconciliation':  Recycle,
 }
 
 const KIND_META: Record<ServiceKind, { label: string; icon: typeof Server; color: string }> = {
-  self:     { label: 'Application',  icon: Cpu,     color: '#2563EB' },
+  self:     { label: 'Application',  icon: Cpu,      color: '#2563EB' },
   database: { label: 'Data',         icon: Database, color: '#7C3AED' },
-  http:     { label: 'Frontend',     icon: Network, color: '#0EA5E9' },
-  auth:     { label: 'External',     icon: Shield,  color: '#F59E0B' },
+  http:     { label: 'Frontend',     icon: Network,  color: '#0EA5E9' },
+  auth:     { label: 'External',     icon: Shield,   color: '#F59E0B' },
+  payment:  { label: 'Payments',     icon: Zap,      color: '#F97316' },
 }
 
 const RESTART_LABEL: Record<RestartMethod, string> = {
@@ -854,11 +858,55 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
   const [diagOpen, setDiagOpen] = useState(false)
   const [diagError, setDiagError] = useState<string | null>(null)
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null)
+  const [restartFlow, setRestartFlow] = useState<{
+    open: boolean
+    target: RestartTarget | null
+    running: boolean
+    logs: Array<{ ts: number; level: 'info' | 'ok' | 'warn' | 'error'; text: string }>
+    finalStatus: 'success' | 'partial' | 'fail' | null
+  }>({ open: false, target: null, running: false, logs: [], finalStatus: null })
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const countRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Set initial timestamp on the client only to avoid SSR hydration mismatch.
-  useEffect(() => { setLastRefresh(new Date()) }, [])
+  // Also rehydrate any in-flight restart flow (the page may have been reloaded
+  // by next-watch touching next.config.ts) so the modal stays visible.
+  useEffect(() => {
+    setLastRefresh(new Date())
+    try {
+      const raw = sessionStorage.getItem('trendx:restartFlow')
+      if (!raw) return
+      const saved = JSON.parse(raw) as typeof restartFlow & { savedAt?: number }
+      if (!saved || !saved.open) return
+      // If the page reloaded while running, the JS that drives the poll is dead —
+      // mark it as orphaned but keep the logs visible so the admin can read them.
+      if (saved.running) {
+        const extra = {
+          ts: (saved.logs.at(-1)?.ts ?? 0) + 1,
+          level: 'warn' as const,
+          text: 'Page reloaded mid-restart (next-watch). Run another probe from the dashboard once it returns.',
+        }
+        setRestartFlow({ ...saved, running: false, finalStatus: 'partial', logs: [...saved.logs, extra] })
+      } else {
+        setRestartFlow(saved)
+      }
+    } catch {
+      // ignore corrupt cache
+    }
+  }, [])
+
+  // Mirror restart flow into sessionStorage so it survives a Next dev reload.
+  useEffect(() => {
+    try {
+      if (restartFlow.open) {
+        sessionStorage.setItem('trendx:restartFlow', JSON.stringify({ ...restartFlow, savedAt: Date.now() }))
+      } else {
+        sessionStorage.removeItem('trendx:restartFlow')
+      }
+    } catch {
+      // storage full / disabled — non-fatal
+    }
+  }, [restartFlow])
 
   // Track latency history for sparklines (last 20 samples per service)
   useEffect(() => {
@@ -1010,6 +1058,98 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
     }
   }
 
+  // ─── Orchestrated restart-with-verify flow ──────────────────────────────
+  // Triggers a restart of the chosen target and then polls /health/services
+  // until that service comes back healthy (or the timeout elapses), streaming
+  // each step into a log panel so operators can SEE what's happening.
+  const handleRestartFlow = async (target: RestartTarget) => {
+    const serviceName = target === 'web' ? 'Web App' : 'API Server'
+    const label = target === 'web' ? 'Web' : 'API'
+    if (!confirm(`Restart the ${label} service?\n\nIt will briefly go offline. This page will show live logs.`)) return
+
+    const startedAt = Date.now()
+    const logs: Array<{ ts: number; level: 'info' | 'ok' | 'warn' | 'error'; text: string }> = []
+    const push = (level: 'info' | 'ok' | 'warn' | 'error', text: string) => {
+      logs.push({ ts: Date.now() - startedAt, level, text })
+      setRestartFlow(s => ({ ...s, logs: [...logs] }))
+    }
+
+    setRestartFlow({ open: true, target, running: true, logs: [], finalStatus: null })
+    push('info', `Restart requested for ${label} service`)
+
+    try {
+      const t = await freshToken()
+      push('info', `POST /health/services/restart { target: "${target}" }`)
+      const res = await healthApi.restart(t, target)
+      push(res.ok ? 'ok' : 'error', `[${res.method}] ${res.message}`)
+      if (!res.ok) {
+        setRestartFlow(s => ({ ...s, running: false, finalStatus: 'fail', logs: [...logs] }))
+        pushFeedback({ service: serviceName, ok: false, message: `Restart failed: ${res.message}` })
+        return
+      }
+
+      const waitMs = target === 'web' ? 3000 : 4000
+      push('info', `Waiting ${waitMs / 1000}s for ${label} to come back…`)
+      await new Promise(r => setTimeout(r, waitMs))
+
+      // Poll up to 30s, every 2s, recheck-ing the target then refreshing the full report.
+      const maxAttempts = 15
+      let attempt = 0
+      let targetHealthy = false
+      let lastStatus: ServiceStatus = 'down'
+
+      while (attempt < maxAttempts) {
+        attempt++
+        try {
+          push('info', `Probe ${attempt}/${maxAttempts}: re-checking ${serviceName}…`)
+          const recheck = await healthApi.recheck(await freshToken(), serviceName)
+          lastStatus = recheck.status
+          if (recheck.status === 'healthy') {
+            push('ok', `${serviceName} → healthy (${recheck.latencyMs ?? '—'}ms)`)
+            targetHealthy = true
+            break
+          } else {
+            push('warn', `${serviceName} → ${recheck.status} (${recheck.message})`)
+          }
+        } catch (err) {
+          push('warn', `Probe failed: ${errMsg(err, 'unknown')}`)
+        }
+        if (attempt < maxAttempts) await new Promise(r => setTimeout(r, 2000))
+      }
+
+      if (!targetHealthy) {
+        push('error', `${serviceName} did not return to healthy after ${maxAttempts * 2}s (last: ${lastStatus})`)
+        setRestartFlow(s => ({ ...s, running: false, finalStatus: 'fail', logs: [...logs] }))
+        pushFeedback({ service: serviceName, ok: false, message: `Restart timed out` })
+        void refresh()
+        return
+      }
+
+      // Final verification: pull the full report and confirm overall health.
+      push('info', 'Final verification: GET /health/services')
+      const full = await healthApi.services(await freshToken())
+      setReport(full)
+      const down = full.services.filter(s => s.status === 'down')
+      const degraded = full.services.filter(s => s.status === 'degraded')
+
+      if (down.length === 0 && degraded.length === 0) {
+        push('ok', `OK — all ${full.services.length} services up and verified`)
+        setRestartFlow(s => ({ ...s, running: false, finalStatus: 'success', logs: [...logs] }))
+        pushFeedback({ service: serviceName, ok: true, message: 'Restart complete — all systems healthy' })
+      } else {
+        if (down.length > 0) push('warn', `${down.length} service(s) still down: ${down.map(s => s.name).join(', ')}`)
+        if (degraded.length > 0) push('warn', `${degraded.length} service(s) degraded: ${degraded.map(s => s.name).join(', ')}`)
+        push('ok', `${serviceName} is back, but other services are not 100%`)
+        setRestartFlow(s => ({ ...s, running: false, finalStatus: 'partial', logs: [...logs] }))
+        pushFeedback({ service: serviceName, ok: true, message: `${serviceName} restarted (others degraded)` })
+      }
+    } catch (err: unknown) {
+      push('error', errMsg(err, 'Restart flow failed'))
+      setRestartFlow(s => ({ ...s, running: false, finalStatus: 'fail', logs: [...logs] }))
+      pushFeedback({ service: serviceName, ok: false, message: errMsg(err, 'Restart flow failed') })
+    }
+  }
+
   const copyCommand = async (cmd: string) => {
     try {
       await navigator.clipboard.writeText(cmd)
@@ -1027,7 +1167,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
   // Group services by kind for sectioned rendering
   const groupedServices = useMemo(() => {
     if (!report) return [] as Array<{ kind: ServiceKind; services: ServiceCheck[] }>
-    const order: ServiceKind[] = ['self', 'database', 'http', 'auth']
+    const order: ServiceKind[] = ['self', 'database', 'http', 'auth', 'payment']
     const buckets = new Map<ServiceKind, ServiceCheck[]>()
     for (const s of report.services) {
       const list = buckets.get(s.kind) ?? []
@@ -1041,6 +1181,7 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
 
   const healthyCount = report?.services.filter(s => s.status === 'healthy').length ?? 0
   const totalCount = report?.services.length ?? 0
+  const capabilities = report?.capabilities ?? null
 
   return (
     <div className="p-4 md:p-8">
@@ -1056,6 +1197,29 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => handleRestartFlow('web')}
+            disabled={restartFlow.running || !capabilities || capabilities.canRestartWeb === 'unsupported'}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border"
+            style={{
+              background: restartFlow.running ? '#FEF3C7' : '#FFFFFF',
+              borderColor: '#F97316',
+              color: '#9A3412',
+              opacity: (restartFlow.running || !capabilities || capabilities.canRestartWeb === 'unsupported') ? 0.6 : 1,
+              cursor: restartFlow.running ? 'wait' : 'pointer',
+            }}
+            title={
+              !capabilities
+                ? 'Health report not loaded'
+                : capabilities.canRestartWeb === 'unsupported'
+                ? 'Web restart not supported in this environment'
+                : `Restart web (${RESTART_LABEL[capabilities.canRestartWeb]})`
+            }
+          >
+            <Power size={13} className={restartFlow.running && restartFlow.target === 'web' ? 'animate-pulse' : ''} />
+            {restartFlow.running && restartFlow.target === 'web' ? 'Restarting web…' : 'Restart Web'}
+          </button>
           <button
             type="button"
             onClick={handleRunDiagnostics}
@@ -1407,6 +1571,161 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
           </button>
         </div>
       )}
+
+      {restartFlow.open && (
+        <RestartFlowModal
+          state={restartFlow}
+          onClose={() => {
+            if (restartFlow.running) return
+            setRestartFlow({ open: false, target: null, running: false, logs: [], finalStatus: null })
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+// ─── Restart-with-verify modal ───────────────────────────────────────────
+function RestartFlowModal({
+  state,
+  onClose,
+}: {
+  state: {
+    open: boolean
+    target: RestartTarget | null
+    running: boolean
+    logs: Array<{ ts: number; level: 'info' | 'ok' | 'warn' | 'error'; text: string }>
+    finalStatus: 'success' | 'partial' | 'fail' | null
+  }
+  onClose: () => void
+}) {
+  const logRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight
+  }, [state.logs])
+
+  const label = state.target === 'web' ? 'Web' : state.target === 'api' ? 'API' : ''
+  const banner = state.running
+    ? { icon: RefreshCw, text: `Restarting ${label}…`, color: '#2563EB', bg: '#DBEAFE', spin: true }
+    : state.finalStatus === 'success'
+    ? { icon: CheckCircle, text: 'OK — all services up and verified', color: '#16A34A', bg: '#DCFCE7', spin: false }
+    : state.finalStatus === 'partial'
+    ? { icon: AlertTriangle, text: `${label} restarted (other services not 100%)`, color: '#D97706', bg: '#FEF3C7', spin: false }
+    : { icon: XCircle, text: `${label} restart failed`, color: '#DC2626', bg: '#FEE2E2', spin: false }
+  const BannerIcon = banner.icon
+
+  const levelStyles: Record<'info' | 'ok' | 'warn' | 'error', { color: string; prefix: string }> = {
+    info:  { color: '#64748B', prefix: '·' },
+    ok:    { color: '#16A34A', prefix: '✓' },
+    warn:  { color: '#D97706', prefix: '!' },
+    error: { color: '#DC2626', prefix: '✗' },
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: 'fixed', inset: 0, zIndex: 60,
+        background: 'rgba(15, 23, 42, 0.55)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 16,
+      }}
+    >
+      <div
+        style={{
+          background: 'var(--color-surface)', borderRadius: 12,
+          width: '100%', maxWidth: 720, maxHeight: '85vh',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
+        <div
+          style={{
+            padding: '14px 18px',
+            borderBottom: '1px solid var(--color-border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}
+        >
+          <h3 style={{ fontWeight: 700, fontSize: 15, color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Power size={15} style={{ color: '#F97316' }} />
+            Restart {label} — live log
+          </h3>
+          <button
+            onClick={onClose}
+            disabled={state.running}
+            aria-label="Close"
+            style={{
+              padding: 4, borderRadius: 6, border: 'none',
+              background: 'transparent', cursor: state.running ? 'not-allowed' : 'pointer',
+              color: 'var(--color-text-muted)', opacity: state.running ? 0.4 : 1,
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div
+          style={{
+            margin: 18, padding: '12px 14px', borderRadius: 10,
+            background: banner.bg, border: `1px solid ${banner.color}40`,
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}
+        >
+          <BannerIcon size={20} style={{ color: banner.color }} className={banner.spin ? 'animate-spin' : ''} />
+          <span style={{ fontWeight: 600, color: banner.color, fontSize: 14 }}>{banner.text}</span>
+        </div>
+
+        <div
+          ref={logRef}
+          style={{
+            margin: '0 18px 18px', padding: 12, borderRadius: 8,
+            background: '#0F172A', color: '#E2E8F0',
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+            fontSize: 12, lineHeight: 1.55,
+            overflowY: 'auto', flex: 1, minHeight: 200, maxHeight: 380,
+            border: '1px solid #1E293B',
+          }}
+        >
+          {state.logs.length === 0 ? (
+            <div style={{ color: '#64748B' }}>Waiting for output…</div>
+          ) : (
+            state.logs.map((l, i) => {
+              const ls = levelStyles[l.level]
+              const t = (l.ts / 1000).toFixed(1).padStart(5, ' ')
+              return (
+                <div key={i} style={{ display: 'flex', gap: 8, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                  <span style={{ color: '#475569', flexShrink: 0 }}>{t}s</span>
+                  <span style={{ color: ls.color, flexShrink: 0, width: 12 }}>{ls.prefix}</span>
+                  <span style={{ color: ls.color === '#64748B' ? '#CBD5E1' : ls.color }}>{l.text}</span>
+                </div>
+              )
+            })
+          )}
+        </div>
+
+        <div
+          style={{
+            padding: '12px 18px', borderTop: '1px solid var(--color-border)',
+            display: 'flex', justifyContent: 'flex-end', gap: 8,
+          }}
+        >
+          <button
+            onClick={onClose}
+            disabled={state.running}
+            style={{
+              padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+              background: state.running ? 'var(--color-border)' : 'var(--color-primary)',
+              color: state.running ? 'var(--color-text-muted)' : '#fff',
+              border: 'none', cursor: state.running ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {state.running ? 'Working…' : 'Close'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

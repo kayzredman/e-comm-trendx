@@ -49,6 +49,18 @@ const envSchema = z.object({
   WHATSAPP_PHONE_NUMBER: z.string().optional(),
   /** Throttle: minimum gap (ms) between outbound WA messages. */
   WHATSAPP_MIN_GAP_MS: z.coerce.number().default(1000),
+
+  // ── Paystack payments ─────────────────────────────────────────────────────
+  /** Master switch. When false, online payment routes return 503 and storefront falls back to COD. */
+  PAYSTACK_ENABLED: z.coerce.boolean().default(false),
+  /** sk_test_* or sk_live_*. Used for HMAC-SHA512 webhook signature too. */
+  PAYSTACK_SECRET_KEY: z.string().optional(),
+  /** pk_test_* or pk_live_*. Exposed via /storefront/payments/config for inline JS. */
+  PAYSTACK_PUBLIC_KEY: z.string().optional(),
+  /** Override Paystack base URL (testing/mocks). Defaults to https://api.paystack.co */
+  PAYSTACK_API_BASE: z.string().url().default('https://api.paystack.co'),
+  /** Where Paystack redirects after card/MoMo flow finishes. Falls back to WEB_URL + /checkout/return. */
+  PAYSTACK_CALLBACK_URL: z.string().url().optional(),
 })
 
 export type Env = z.infer<typeof envSchema>

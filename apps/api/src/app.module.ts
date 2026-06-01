@@ -21,6 +21,7 @@ import { ImagesModule } from './images/images.module'
 import { StorageModule } from './storage/storage.module'
 import { WhatsappModule } from './whatsapp/whatsapp.module'
 import { SmokeModule } from './smoke/smoke.module'
+import { PaymentsModule } from './payments/payments.module'
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { SmokeModule } from './smoke/smoke.module'
     ImagesModule,
     WhatsappModule,
     SmokeModule,
+    PaymentsModule,
   ],
 })
 export class AppModule {}

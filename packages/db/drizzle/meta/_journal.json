@@ -78,6 +78,13 @@
       "when": 1780617600000,
       "tag": "0010_whatsapp_channel",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1780790400000,
+      "tag": "0011_payments",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.paymentProviderEnum = exports.payoutMethodEnum = exports.paymentVerificationStatusEnum = exports.deliveryEventTypeEnum = exports.assignmentStatusEnum = exports.courierTypeEnum = exports.productVariantsRelations = exports.productVariants = exports.productImagesRelations = exports.productImages = exports.imageSourceEnum = exports.posHoldsRelations = exports.posShiftsRelations = exports.posRegistersRelations = exports.posHolds = exports.posShifts = exports.posRegisters = exports.notificationLog = exports.notificationStatusEnum = exports.notificationChannelEnum = exports.discountCodes = exports.discountTypeEnum = exports.reviewsRelations = exports.reviews = exports.reviewStatusEnum = exports.customersRelations = exports.orderItemsRelations = exports.ordersRelations = exports.productsRelations = exports.categoriesRelations = exports.deliverySettings = exports.deliveryZones = exports.cmsSections = exports.orderItems = exports.orders = exports.customers = exports.products = exports.categories = exports.users = exports.sectionPageEnum = exports.sectionTypeEnum = exports.feeStrategyEnum = exports.posHoldStatusEnum = exports.posShiftStatusEnum = exports.orderSourceEnum = exports.paymentMethodEnum = exports.paymentStatusEnum = exports.orderStatusEnum = exports.productStatusEnum = exports.userRoleEnum = void 0;
-exports.whatsappAuthState = exports.courierSessionsRelations = exports.courierSessions = exports.courierOtps = exports.paymentVerificationsRelations = exports.payoutsRelations = exports.deliveryEventsRelations = exports.deliveryAssignmentsRelations = exports.couriersRelations = exports.paymentVerifications = exports.payouts = exports.deliveryEvents = exports.deliveryAssignments = exports.couriers = void 0;
+exports.paymentEventsRelations = exports.paymentIntentsRelations = exports.paymentEvents = exports.paymentIntents = exports.paymentChannelEnum = exports.paymentIntentStatusEnum = exports.paymentProviderTypeEnum = exports.whatsappAuthState = exports.courierSessionsRelations = exports.courierSessions = exports.courierOtps = exports.paymentVerificationsRelations = exports.payoutsRelations = exports.deliveryEventsRelations = exports.deliveryAssignmentsRelations = exports.couriersRelations = exports.paymentVerifications = exports.payouts = exports.deliveryEvents = exports.deliveryAssignments = exports.couriers = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 const drizzle_orm_1 = require("drizzle-orm");
 const cuid2_1 = require("@paralleldrive/cuid2");
@@ -450,4 +450,66 @@ exports.whatsappAuthState = (0, pg_core_1.pgTable)('whatsapp_auth_state', {
     value: (0, pg_core_1.jsonb)('value').notNull(),
     updatedAt: (0, pg_core_1.timestamp)('updated_at').notNull().defaultNow(),
 });
+// ── Payments (Paystack) ──────────────────────────────────────────────────────
+// State machine per checkout attempt + append-only event log (Stripe-style).
+// Designed so reconciliation can re-derive intent.status from events alone.
+exports.paymentProviderTypeEnum = (0, pg_core_1.pgEnum)('payment_provider_type', ['PAYSTACK']);
+exports.paymentIntentStatusEnum = (0, pg_core_1.pgEnum)('payment_intent_status', [
+    'REQUIRES_AUTH', 'PROCESSING', 'SUCCEEDED', 'FAILED', 'ABANDONED',
+]);
+exports.paymentChannelEnum = (0, pg_core_1.pgEnum)('payment_channel', ['CARD', 'MOBILE_MONEY', 'BANK', 'USSD', 'QR', 'UNKNOWN']);
+exports.paymentIntents = (0, pg_core_1.pgTable)('payment_intents', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    orderId: (0, pg_core_1.varchar)('order_id', { length: 128 }).notNull(),
+    provider: (0, exports.paymentProviderTypeEnum)('provider').notNull().default('PAYSTACK'),
+    /** Paystack `reference` — unique per attempt. Used as idempotency key. */
+    providerReference: (0, pg_core_1.varchar)('provider_reference', { length: 100 }).notNull().unique(),
+    /** Amount in major units (GH₵), mirrors orders.total at init time. */
+    amount: (0, pg_core_1.numeric)('amount', { precision: 12, scale: 2 }).notNull(),
+    currency: (0, pg_core_1.varchar)('currency', { length: 8 }).notNull().default('GHS'),
+    channel: (0, exports.paymentChannelEnum)('channel').notNull().default('UNKNOWN'),
+    status: (0, exports.paymentIntentStatusEnum)('status').notNull().default('REQUIRES_AUTH'),
+    /** Hosted checkout URL returned by Paystack. */
+    authorizationUrl: (0, pg_core_1.text)('authorization_url'),
+    /** Paystack `access_code` — used by inline JS. */
+    accessCode: (0, pg_core_1.varchar)('access_code', { length: 120 }),
+    /** Pointer to the last event that mutated this intent (for trace). */
+    lastEventId: (0, pg_core_1.varchar)('last_event_id', { length: 128 }),
+    /** Free-form provider data captured at finalization (channel-specific fields, fees, etc.). */
+    metadata: (0, pg_core_1.jsonb)('metadata').$type(),
+    createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)('updated_at').notNull().defaultNow(),
+});
+exports.paymentEvents = (0, pg_core_1.pgTable)('payment_events', {
+    id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    provider: (0, exports.paymentProviderTypeEnum)('provider').notNull().default('PAYSTACK'),
+    /** Paystack event type, e.g. 'charge.success', 'charge.failed', 'transfer.success'. */
+    eventType: (0, pg_core_1.varchar)('event_type', { length: 64 }).notNull(),
+    /** Paystack `reference` from event payload (matches paymentIntents.providerReference). */
+    reference: (0, pg_core_1.varchar)('reference', { length: 100 }),
+    intentId: (0, pg_core_1.varchar)('intent_id', { length: 128 }),
+    orderId: (0, pg_core_1.varchar)('order_id', { length: 128 }),
+    amount: (0, pg_core_1.numeric)('amount', { precision: 12, scale: 2 }),
+    currency: (0, pg_core_1.varchar)('currency', { length: 8 }),
+    /** SUCCESS | FAILED | PENDING — normalized snapshot of the event outcome. */
+    status: (0, pg_core_1.varchar)('status', { length: 32 }),
+    /** Raw webhook body, exactly as received. The source of truth for replays. */
+    rawPayload: (0, pg_core_1.jsonb)('raw_payload').notNull(),
+    signatureValid: (0, pg_core_1.boolean)('signature_valid').notNull().default(false),
+    /** Source: 'webhook' | 'verify-api' | 'manual-replay' — disambiguates events that bypass the webhook. */
+    source: (0, pg_core_1.varchar)('source', { length: 32 }).notNull().default('webhook'),
+    /** When provided in headers (Paystack does not send one but our /verify polls reuse `reference` here). */
+    webhookId: (0, pg_core_1.varchar)('webhook_id', { length: 120 }),
+    processingError: (0, pg_core_1.text)('processing_error'),
+    receivedAt: (0, pg_core_1.timestamp)('received_at').notNull().defaultNow(),
+    processedAt: (0, pg_core_1.timestamp)('processed_at'),
+});
+exports.paymentIntentsRelations = (0, drizzle_orm_1.relations)(exports.paymentIntents, ({ one, many }) => ({
+    order: one(exports.orders, { fields: [exports.paymentIntents.orderId], references: [exports.orders.id] }),
+    events: many(exports.paymentEvents),
+}));
+exports.paymentEventsRelations = (0, drizzle_orm_1.relations)(exports.paymentEvents, ({ one }) => ({
+    intent: one(exports.paymentIntents, { fields: [exports.paymentEvents.intentId], references: [exports.paymentIntents.id] }),
+    order: one(exports.orders, { fields: [exports.paymentEvents.orderId], references: [exports.orders.id] }),
+}));
 //# sourceMappingURL=schema.js.map

@@ -24,6 +24,8 @@ type FeatureFlags = {
     discounts: boolean;
     /** PWA installability + push notifications */
     pwa: boolean;
+    /** Paystack online payments (card / MoMo / bank). When off, storefront only offers COD. */
+    payments: boolean;
 };
 /**
  * Server-side feature flags. Read once at module load.

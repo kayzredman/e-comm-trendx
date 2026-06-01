@@ -506,3 +506,70 @@ export const whatsappAuthState = pgTable('whatsapp_auth_state', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
+// ── Payments (Paystack) ──────────────────────────────────────────────────────
+// State machine per checkout attempt + append-only event log (Stripe-style).
+// Designed so reconciliation can re-derive intent.status from events alone.
+export const paymentProviderTypeEnum = pgEnum('payment_provider_type', ['PAYSTACK'])
+export const paymentIntentStatusEnum = pgEnum('payment_intent_status', [
+  'REQUIRES_AUTH', 'PROCESSING', 'SUCCEEDED', 'FAILED', 'ABANDONED',
+])
+export const paymentChannelEnum = pgEnum('payment_channel', ['CARD', 'MOBILE_MONEY', 'BANK', 'USSD', 'QR', 'UNKNOWN'])
+
+export const paymentIntents = pgTable('payment_intents', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  orderId: varchar('order_id', { length: 128 }).notNull(),
+  provider: paymentProviderTypeEnum('provider').notNull().default('PAYSTACK'),
+  /** Paystack `reference` — unique per attempt. Used as idempotency key. */
+  providerReference: varchar('provider_reference', { length: 100 }).notNull().unique(),
+  /** Amount in major units (GH₵), mirrors orders.total at init time. */
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+  currency: varchar('currency', { length: 8 }).notNull().default('GHS'),
+  channel: paymentChannelEnum('channel').notNull().default('UNKNOWN'),
+  status: paymentIntentStatusEnum('status').notNull().default('REQUIRES_AUTH'),
+  /** Hosted checkout URL returned by Paystack. */
+  authorizationUrl: text('authorization_url'),
+  /** Paystack `access_code` — used by inline JS. */
+  accessCode: varchar('access_code', { length: 120 }),
+  /** Pointer to the last event that mutated this intent (for trace). */
+  lastEventId: varchar('last_event_id', { length: 128 }),
+  /** Free-form provider data captured at finalization (channel-specific fields, fees, etc.). */
+  metadata: jsonb('metadata').$type<Record<string, unknown>>(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const paymentEvents = pgTable('payment_events', {
+  id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  provider: paymentProviderTypeEnum('provider').notNull().default('PAYSTACK'),
+  /** Paystack event type, e.g. 'charge.success', 'charge.failed', 'transfer.success'. */
+  eventType: varchar('event_type', { length: 64 }).notNull(),
+  /** Paystack `reference` from event payload (matches paymentIntents.providerReference). */
+  reference: varchar('reference', { length: 100 }),
+  intentId: varchar('intent_id', { length: 128 }),
+  orderId: varchar('order_id', { length: 128 }),
+  amount: numeric('amount', { precision: 12, scale: 2 }),
+  currency: varchar('currency', { length: 8 }),
+  /** SUCCESS | FAILED | PENDING — normalized snapshot of the event outcome. */
+  status: varchar('status', { length: 32 }),
+  /** Raw webhook body, exactly as received. The source of truth for replays. */
+  rawPayload: jsonb('raw_payload').notNull(),
+  signatureValid: boolean('signature_valid').notNull().default(false),
+  /** Source: 'webhook' | 'verify-api' | 'manual-replay' — disambiguates events that bypass the webhook. */
+  source: varchar('source', { length: 32 }).notNull().default('webhook'),
+  /** When provided in headers (Paystack does not send one but our /verify polls reuse `reference` here). */
+  webhookId: varchar('webhook_id', { length: 120 }),
+  processingError: text('processing_error'),
+  receivedAt: timestamp('received_at').notNull().defaultNow(),
+  processedAt: timestamp('processed_at'),
+})
+
+export const paymentIntentsRelations = relations(paymentIntents, ({ one, many }) => ({
+  order: one(orders, { fields: [paymentIntents.orderId], references: [orders.id] }),
+  events: many(paymentEvents),
+}))
+
+export const paymentEventsRelations = relations(paymentEvents, ({ one }) => ({
+  intent: one(paymentIntents, { fields: [paymentEvents.intentId], references: [paymentIntents.id] }),
+  order: one(orders, { fields: [paymentEvents.orderId], references: [orders.id] }),
+}))
+

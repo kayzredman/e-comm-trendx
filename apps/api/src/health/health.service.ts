@@ -1,5 +1,7 @@
 import { Injectable, Logger, BadRequestException, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
 import { DbService } from '../db/db.service'
+import { PaymentsService } from '../payments/payments.service'
+import { PaystackClient } from '../payments/paystack.client'
 import { sql } from 'drizzle-orm'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
@@ -8,7 +10,7 @@ import * as v8 from 'node:v8'
 import { monitorEventLoopDelay, type IntervalHistogram } from 'node:perf_hooks'
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down'
-export type ServiceKind = 'database' | 'self' | 'http' | 'auth'
+export type ServiceKind = 'database' | 'self' | 'http' | 'auth' | 'payment'
 export type RestartTarget = 'api' | 'web'
 export type RestartMethod = 'railway' | 'tsx-watch' | 'next-watch' | 'unsupported'
 
@@ -92,7 +94,11 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
   private loopHistogram: IntervalHistogram | null = null
   private apiVersion = '0.0.0'
 
-  constructor(private readonly db: DbService) {}
+  constructor(
+    private readonly db: DbService,
+    private readonly payments: PaymentsService,
+    private readonly paystack: PaystackClient,
+  ) {}
 
   onModuleInit() {
     this.loopHistogram = monitorEventLoopDelay({ resolution: 20 })
@@ -121,16 +127,19 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
   }
 
   async getReport(): Promise<HealthReport> {
-    const [dbCheck, schemaCheck, apiCheck, webCheck, storefrontCheck, clerkCheck] = await Promise.all([
+    const [dbCheck, schemaCheck, apiCheck, webCheck, storefrontCheck, clerkCheck, paystackApi, paystackWebhook, paystackRecon] = await Promise.all([
       this.checkDatabase(),
       this.checkSchema(),
       this.checkSelf(),
       this.checkHttp('Web App', process.env.WEB_URL),
       this.checkHttp('Storefront', process.env.STOREFRONT_URL),
       this.checkClerk(),
+      this.checkPaystackApi(),
+      this.checkPaystackWebhook(),
+      this.checkPaystackReconciliation(),
     ])
 
-    const services = [dbCheck, schemaCheck, apiCheck, webCheck, storefrontCheck, clerkCheck].filter(Boolean) as ServiceCheck[]
+    const services = [dbCheck, schemaCheck, apiCheck, webCheck, storefrontCheck, clerkCheck, paystackApi, paystackWebhook, paystackRecon].filter(Boolean) as ServiceCheck[]
 
     const overall: ServiceStatus =
       services.some(s => s.status === 'down') ? 'down' :
@@ -513,6 +522,128 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  // ─── Paystack observability ─────────────────────────────────────────────
+
+  private async checkPaystackApi(): Promise<ServiceCheck> {
+    const checkedAt = new Date().toISOString()
+    const mode = this.paystack.mode()
+    const cb = this.paystack.breaker.snapshot()
+    if (mode === 'unconfigured') {
+      return {
+        name: 'Paystack API', kind: 'payment', status: 'degraded', latencyMs: null,
+        message: 'PAYSTACK_SECRET_KEY not configured — online payments disabled',
+        checkedAt, actions: ['recheck'],
+        details: { mode, breaker: cb.state },
+      }
+    }
+    if (cb.state === 'OPEN') {
+      return {
+        name: 'Paystack API', kind: 'payment', status: 'down', latencyMs: null,
+        message: `Circuit breaker OPEN — ${cb.failures} failures, ${Math.round(cb.msUntilHalfOpen / 1000)}s until probe`,
+        checkedAt, actions: ['recheck'],
+        details: { mode, breaker: cb.state, lastError: cb.lastError ?? 'n/a' },
+      }
+    }
+    try {
+      const r = await this.paystack.ping()
+      return {
+        name: 'Paystack API', kind: 'payment',
+        status: r.latencyMs > 2000 ? 'degraded' : 'healthy',
+        latencyMs: r.latencyMs,
+        message: `Reachable in ${r.latencyMs}ms (${mode} mode)`,
+        checkedAt,
+        url: 'https://api.paystack.co/bank',
+        actions: ['recheck'],
+        details: { mode, breaker: cb.state, totalCalls: cb.totalCalls, totalFailures: cb.totalFailures },
+      }
+    } catch (err: any) {
+      return {
+        name: 'Paystack API', kind: 'payment', status: 'down', latencyMs: null,
+        message: err?.message?.slice(0, 200) ?? 'Unreachable',
+        checkedAt, actions: ['recheck'],
+        details: { mode, breaker: cb.state },
+      }
+    }
+  }
+
+  private async checkPaystackWebhook(): Promise<ServiceCheck> {
+    const checkedAt = new Date().toISOString()
+    try {
+      const stats = await this.payments.getStats()
+      const stuck = stats.stuckIntents
+      const errored = stats.eventsWithErrors24h
+      let status: ServiceStatus = 'healthy'
+      let message = `${stats.last24h.succeeded} succeeded / ${stats.last24h.failed} failed in last 24h`
+      if (errored > 0) {
+        status = errored > 5 ? 'down' : 'degraded'
+        message = `${errored} webhook events with processing errors in last 24h`
+      } else if (stuck > 5) {
+        status = 'down'
+        message = `${stuck} intents stuck > 10min — webhook may not be reaching API`
+      } else if (stuck > 0) {
+        status = 'degraded'
+        message = `${stuck} intent(s) pending > 10min`
+      }
+      return {
+        name: 'Paystack Webhook', kind: 'payment',
+        status, latencyMs: null, message, checkedAt,
+        url: '/v1/webhooks/paystack',
+        actions: ['recheck'],
+        details: {
+          succeeded24h: stats.last24h.succeeded,
+          failed24h: stats.last24h.failed,
+          revenue24h: `GH₵${stats.last24h.revenue}`,
+          stuckIntents: stuck,
+          eventsWithErrors24h: errored,
+        },
+      }
+    } catch (err: any) {
+      return {
+        name: 'Paystack Webhook', kind: 'payment', status: 'down', latencyMs: null,
+        message: err?.message?.slice(0, 200) ?? 'Stats unavailable',
+        checkedAt, actions: ['recheck'],
+      }
+    }
+  }
+
+  private async checkPaystackReconciliation(): Promise<ServiceCheck> {
+    const checkedAt = new Date().toISOString()
+    try {
+      const stats = await this.payments.getStats()
+      const oldestMin = Math.round(stats.oldestPendingSeconds / 60)
+      let status: ServiceStatus = 'healthy'
+      let message = 'No pending intents'
+      if (stats.stuckIntents === 0 && stats.oldestPendingSeconds === 0) {
+        message = 'Nothing pending'
+      } else if (oldestMin > 60) {
+        status = 'down'
+        message = `Oldest pending intent is ${oldestMin}min old — reconciler may be stuck`
+      } else if (oldestMin > 15) {
+        status = 'degraded'
+        message = `${stats.stuckIntents} pending, oldest ${oldestMin}min`
+      } else {
+        message = `${stats.stuckIntents} pending, oldest ${oldestMin}min — within window`
+      }
+      return {
+        name: 'Payment Reconciliation', kind: 'payment',
+        status, latencyMs: null, message, checkedAt,
+        actions: ['recheck'],
+        details: {
+          stuckIntents: stats.stuckIntents,
+          oldestPendingMin: oldestMin,
+          sweepIntervalMin: 5,
+          ageThresholdMin: 10,
+        },
+      }
+    } catch (err: any) {
+      return {
+        name: 'Payment Reconciliation', kind: 'payment', status: 'down', latencyMs: null,
+        message: err?.message?.slice(0, 200) ?? 'Stats unavailable',
+        checkedAt, actions: ['recheck'],
+      }
+    }
+  }
+
   // ─── actions ────────────────────────────────────────────────────────────
 
   async reconnectDatabase(): Promise<ServiceCheck> {
@@ -535,6 +666,9 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
       case 'Storefront': return (await this.checkHttp('Storefront', process.env.STOREFRONT_URL))
         ?? { name, kind: 'http', status: 'down', latencyMs: null, message: 'STOREFRONT_URL not configured', checkedAt: new Date().toISOString() }
       case 'Clerk Auth': return this.checkClerk()
+      case 'Paystack API':           return this.checkPaystackApi()
+      case 'Paystack Webhook':       return this.checkPaystackWebhook()
+      case 'Payment Reconciliation': return this.checkPaystackReconciliation()
       default:
         throw new BadRequestException(`Unknown service: ${name}`)
     }

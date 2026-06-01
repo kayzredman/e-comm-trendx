@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useCartStore, selectTotal } from '@/lib/cart-store'
-import { storefrontApi, discountsApi, type DeliveryZone, type DiscountCode } from '@/lib/api'
+import { storefrontApi, discountsApi, paymentsApi, type DeliveryZone, type DiscountCode } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import {
   ShoppingBag,
@@ -123,6 +123,14 @@ export default function CheckoutPage() {
   }, [selectedZoneId, subtotal, zones])
 
   const selectedZone = zones.find((z) => z.id === selectedZoneId)
+  const prepayRequired = selectedZone?.requiresPrepayment === true
+
+  // If the chosen zone requires prepayment, force payment method off COD.
+  useEffect(() => {
+    if (prepayRequired && form.paymentMethod === 'CASH_ON_DELIVERY') {
+      setForm((f) => ({ ...f, paymentMethod: 'MOBILE_MONEY' }))
+    }
+  }, [prepayRequired, form.paymentMethod])
   const discountAmount = appliedPromo?.discount ?? 0
   const total = Math.max(0, subtotal - discountAmount) + deliveryFee
 
@@ -220,8 +228,28 @@ export default function CheckoutPage() {
         discountAmount: appliedPromo?.discount,
         total,
       })
+
+      // Cash on Delivery → straight to the order detail page.
+      if (form.paymentMethod === 'CASH_ON_DELIVERY') {
+        clearCart()
+        router.push(`/orders/${order.id}`)
+        return
+      }
+
+      // Mobile Money → init a Paystack intent and hand the buyer off to
+      // checkout.paystack.com. The /checkout/return page polls back when
+      // Paystack redirects them home.
+      const intent = await paymentsApi.init(order.id, 'MOBILE_MONEY')
+      if (!intent.authorizationUrl) {
+        throw new Error('Could not start Mobile Money checkout. Please try again.')
+      }
+      // Keep the order id around so the return page can route the buyer
+      // even if the reference lookup is briefly slow.
+      try {
+        sessionStorage.setItem('trendx:lastOrderId', order.id)
+      } catch {}
       clearCart()
-      router.push(`/orders/${order.id}`)
+      window.location.href = intent.authorizationUrl
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to place order. Please try again.'
       setError(msg)
@@ -473,6 +501,18 @@ export default function CheckoutPage() {
               <h2 className="font-extrabold mb-5" style={{ color: 'var(--color-text)' }}>
                 Payment Method
               </h2>
+              {prepayRequired && (
+                <div
+                  className="mb-4 rounded-xl border px-4 py-3 text-xs font-semibold flex items-start gap-2"
+                  style={{ borderColor: '#FED7AA', background: '#FFF7ED', color: '#9A3412' }}
+                >
+                  <span aria-hidden>🔒</span>
+                  <span>
+                    Cash on Delivery is only available in Accra. For{' '}
+                    <b>{selectedZone?.name}</b>, please pay with Mobile Money before dispatch.
+                  </span>
+                </div>
+              )}
               <div className="grid sm:grid-cols-2 gap-3">
                 {(
                   [
@@ -481,15 +521,22 @@ export default function CheckoutPage() {
                   ] as const
                 ).map(({ value, label }) => {
                   const active = form.paymentMethod === value
+                  const disabled = value === 'CASH_ON_DELIVERY' && prepayRequired
                   return (
                     <label
                       key={value}
-                      className="flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all"
+                      className="flex items-center gap-3 p-4 rounded-xl border transition-all"
                       style={{
                         borderColor: active ? 'var(--color-primary)' : 'var(--color-border)',
-                        background: active ? 'var(--color-primary-light)' : 'transparent',
+                        background: disabled
+                          ? '#F8F9FA'
+                          : active
+                          ? 'var(--color-primary-light)'
+                          : 'transparent',
                         outline: active ? '2px solid var(--color-primary)' : 'none',
                         outlineOffset: '-2px',
+                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        opacity: disabled ? 0.5 : 1,
                       }}
                     >
                       <input
@@ -498,6 +545,7 @@ export default function CheckoutPage() {
                         value={value}
                         checked={active}
                         onChange={handleChange}
+                        disabled={disabled}
                         className="sr-only"
                       />
                       <div
@@ -511,6 +559,14 @@ export default function CheckoutPage() {
                       </div>
                       <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
                         {label}
+                        {disabled && (
+                          <span
+                            className="ml-2 text-[10px] font-bold uppercase tracking-wide"
+                            style={{ color: '#9A3412' }}
+                          >
+                            Not available
+                          </span>
+                        )}
                       </span>
                     </label>
                   )

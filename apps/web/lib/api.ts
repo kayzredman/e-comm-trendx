@@ -577,7 +577,7 @@ export const analyticsApi = {
 // ─── Health / Service Quality ─────────────────────────────────────────────────
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down'
-export type ServiceKind = 'database' | 'self' | 'http' | 'auth'
+export type ServiceKind = 'database' | 'self' | 'http' | 'auth' | 'payment'
 export type RestartTarget = 'api' | 'web'
 export type RestartMethod = 'railway' | 'tsx-watch' | 'next-watch' | 'unsupported'
 export type ServiceAction = 'reconnect' | 'recheck' | 'restart' | 'gc'
@@ -816,6 +816,35 @@ export const storefrontApi = {
       events?: DeliveryEvent[]
     }
   > => apiFetch(`/v1/orders/${id}`),
+}
+
+export type PaymentIntentInit = {
+  reference: string
+  authorizationUrl: string | null
+  accessCode: string | null
+  status: 'REQUIRES_AUTH' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED' | 'ABANDONED'
+}
+
+export type PaymentLookup =
+  | { found: false }
+  | {
+      found: true
+      reference: string
+      status: 'REQUIRES_AUTH' | 'PROCESSING' | 'SUCCEEDED' | 'FAILED' | 'ABANDONED'
+      orderId: string
+      amount: string
+      currency: string
+      channel: string
+    }
+
+export const paymentsApi = {
+  init: (orderId: string, channel?: 'CARD' | 'MOBILE_MONEY' | 'BANK'): Promise<PaymentIntentInit> =>
+    apiFetch('/v1/payments/init', {
+      method: 'POST',
+      body: JSON.stringify({ orderId, channel }),
+    }),
+  lookup: (reference: string): Promise<PaymentLookup> =>
+    apiFetch(`/v1/payments/${encodeURIComponent(reference)}`),
 }
 
 // ─── POS ──────────────────────────────────────────────────────────────────────

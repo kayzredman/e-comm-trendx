@@ -1,7 +1,8 @@
-import { Body, Controller, ForbiddenException, Post } from '@nestjs/common'
+import { Body, Controller, ForbiddenException, Get, Post } from '@nestjs/common'
 import { Public } from '../auth/public.decorator'
 import { AssignmentsService } from '../delivery/assignments.service'
 import { OrdersService } from '../orders/orders.service'
+import { HealthService } from '../health/health.service'
 
 /**
  * DEV-ONLY smoke endpoints. Bypasses auth. Refuses to run when NODE_ENV=production.
@@ -12,6 +13,7 @@ export class SmokeController {
   constructor(
     private readonly assignments: AssignmentsService,
     private readonly orders: OrdersService,
+    private readonly health: HealthService,
   ) {}
 
   private guard() {
@@ -41,5 +43,12 @@ export class SmokeController {
     this.guard()
     await this.assignments.transition(body.orderId, 'DELIVERED', { name: 'smoke' })
     return this.orders.updateStatus(body.orderId, 'DELIVERED', { name: 'smoke' })
+  }
+
+  @Public()
+  @Get('health')
+  async healthReport() {
+    this.guard()
+    return this.health.getReport()
   }
 }

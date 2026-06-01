@@ -29,6 +29,7 @@ exports.features = {
     reviews: readFlag(process.env.FEATURE_REVIEWS),
     discounts: readFlag(process.env.FEATURE_DISCOUNTS),
     pwa: readFlag(process.env.FEATURE_PWA),
+    payments: readFlag(process.env.PAYSTACK_ENABLED),
 };
 /**
  * Client-safe feature flags — must use NEXT_PUBLIC_* env vars so they
@@ -42,5 +43,6 @@ exports.publicFeatures = {
     reviews: readFlag(process.env.NEXT_PUBLIC_FEATURE_REVIEWS),
     discounts: readFlag(process.env.NEXT_PUBLIC_FEATURE_DISCOUNTS),
     pwa: readFlag(process.env.NEXT_PUBLIC_FEATURE_PWA),
+    payments: readFlag(process.env.NEXT_PUBLIC_PAYSTACK_ENABLED),
 };
 //# sourceMappingURL=features.js.map

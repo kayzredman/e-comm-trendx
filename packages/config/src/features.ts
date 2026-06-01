@@ -30,6 +30,8 @@ type FeatureFlags = {
   discounts: boolean
   /** PWA installability + push notifications */
   pwa: boolean
+  /** Paystack online payments (card / MoMo / bank). When off, storefront only offers COD. */
+  payments: boolean
 }
 
 /**
@@ -44,6 +46,7 @@ export const features: FeatureFlags = {
   reviews:       readFlag(process.env.FEATURE_REVIEWS),
   discounts:     readFlag(process.env.FEATURE_DISCOUNTS),
   pwa:           readFlag(process.env.FEATURE_PWA),
+  payments:      readFlag(process.env.PAYSTACK_ENABLED),
 }
 
 /**
@@ -58,6 +61,7 @@ export const publicFeatures: FeatureFlags = {
   reviews:       readFlag(process.env.NEXT_PUBLIC_FEATURE_REVIEWS),
   discounts:     readFlag(process.env.NEXT_PUBLIC_FEATURE_DISCOUNTS),
   pwa:           readFlag(process.env.NEXT_PUBLIC_FEATURE_PWA),
+  payments:      readFlag(process.env.NEXT_PUBLIC_PAYSTACK_ENABLED),
 }
 
 export type { FeatureFlags }
