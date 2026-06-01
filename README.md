@@ -348,10 +348,13 @@ feature/* ──► dev ──► staging ──► main
 
 ## Phase 2 — Planned (Not Started)
 
-- **Payment service** (`apps/payment`) — Paystack (Ghana) + Stripe. Separate Railway service. Cash-on-delivery fallback keeps checkout alive if payment is down.
 - **POS module** — in-store sales, walk-in orders, receipt generation. Shared `orders` table with `source: ONLINE | POS` field.
 - **Tracking service** (`apps/tracking`) — courier API integration (DHL, local carriers), SSE push to storefront. If down: last-known status shown from DB.
 - **Customer accounts** — login, order history, saved addresses.
 - **React Native app** — mobile storefront. Storefront API is REST from day 1 to support this.
+
+## Shipped (post-Phase 1)
+
+- **Payments** (June 2026) — Paystack live (card / MoMo / bank), webhook receiver with HMAC verification, in-process circuit breaker, 5-min reconciler, admin UI at `/cms/payments`. COD remains the fallback when `payments` feature flag is off or the breaker is OPEN. Runbook: [apps/api/src/payments/README.md](apps/api/src/payments/README.md).
 - **Redis + BullMQ** — background jobs: order notifications, report generation.
 - **Google Maps Distance Matrix** — distance-based delivery fee calculation.

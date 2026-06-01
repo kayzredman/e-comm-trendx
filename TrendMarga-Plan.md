@@ -15,9 +15,8 @@ Single-tenant B2C e-commerce platform. Next.js 15 App Router + NestJS on Fastify
 
 ## Monorepo Structure (Turborepo)
 
-- `apps/web` — Next.js 15 App Router (storefront + dashboard + CMS)
-- `apps/api` — NestJS on Fastify (core monolith)
-- `apps/payment` — NestJS on Fastify (Phase 2 — payment gateway service, isolated)
+- `apps/web` — Next.js 16 App Router (storefront + dashboard + CMS + courier PWA)
+- `apps/api` — NestJS on Fastify — monolith covering products, orders, customers, cms, delivery, storefront, analytics, payments, whatsapp, courier-portal, health
 - `apps/tracking` — NestJS on Fastify (Phase 2 — courier tracking service, isolated)
 - `packages/db` — Drizzle ORM + PostgreSQL schema
 - `packages/types` — shared TypeScript types
@@ -131,15 +130,16 @@ staging → main (PR, reviewed + approved before prod deploy)
 
 **Phase 1 (current):**
 - `web` — Next.js (apps/web)
-- `api` — NestJS monolith (apps/api) — products, orders, customers, cms, delivery, storefront, analytics
+- `api` — NestJS monolith (apps/api) — products, orders, customers, cms, delivery, storefront, analytics, payments, whatsapp, courier-portal
 - `db` — PostgreSQL
 - `redis` — Redis (cache, Phase 2 BullMQ)
 
 **Phase 2 additions (separate Railway services):**
-- `payment` — NestJS service (apps/payment) — Paystack / Stripe webhooks, payment state machine, refunds
 - `tracking` — NestJS service (apps/tracking) — courier API integration, webhook receiver, tracking event log, push to frontend via SSE
 
-Each Phase 2 service gets its own Railway service entry, its own env vars, its own deploy pipeline, and fails independently. If `payment` is down, orders still flow (cash-on-delivery fallback). If `tracking` is down, order status still shows last known state from DB.
+> **Payments** ship inside `apps/api` (module `src/payments/`) rather than a separate service — Paystack live on staging June 2026. Cash-on-delivery remains the fallback when the breaker is OPEN or the `payments` feature flag is off.
+
+Each Phase 2 service gets its own Railway service entry, its own env vars, its own deploy pipeline, and fails independently. If `tracking` is down, order status still shows last known state from DB.
 
 ---
 
@@ -151,11 +151,7 @@ Each Phase 2 service gets its own Railway service entry, its own env vars, its o
 - If `db` is down: API returns 503; web shows fallback UI
 - All API responses use consistent `ApiResponse<T>` envelope — frontend never hard-crashes on failed requests
 
-### Phase 2 — Service isolation for payment + tracking
-- **Payment service** (`apps/payment`) runs independently. If it's down:
-  - Checkout still accepts orders (cash-on-delivery is always available as fallback)
-  - Online payment option is hidden/disabled client-side when health check fails
-  - No cascading failure into `apps/api`
+### Phase 2 — Service isolation for tracking
 - **Tracking service** (`apps/tracking`) runs independently. If it's down:
   - Order status page shows last persisted status from DB (no live updates, not a blank page)
   - SSE connection times out gracefully — UI falls back to polling DB directly via `apps/api`
@@ -213,7 +209,7 @@ Each Phase 2 service gets its own Railway service entry, its own env vars, its o
 - Single-tenant (no multi-tenancy in Phase 1)
 - Railway for all environments — no Vercel
 - Branch strategy: dev (play) → staging (test online) → main (prod)
-- Payment integration = Phase 2 (cash on delivery default in Phase 1)
+- Payments — live on staging June 2026 (Paystack, card+MoMo+bank). COD stays as fallback. Module lives inside `apps/api/src/payments/` (NOT a separate service). Full runbook: `apps/api/src/payments/README.md`.
 - POS = Phase 2
 - Courier tracking API = Phase 2
 - Customer accounts = Phase 2
@@ -227,10 +223,6 @@ Each Phase 2 service gets its own Railway service entry, its own env vars, its o
 
 ## Phase 2 (Deferred)
 
-- **Payment service** (`apps/payment`) — separate Railway service
-  - Paystack (Ghana primary) + Stripe (international)
-  - Webhook receiver, payment state machine, refund flows
-  - If down: cash-on-delivery fallback keeps checkout alive
 - **Tracking service** (`apps/tracking`) — separate Railway service
   - Courier API integration (DHL, local carriers)
   - Webhook receiver, tracking event log
