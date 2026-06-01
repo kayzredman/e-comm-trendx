@@ -78,6 +78,18 @@ const envSchema = z.object({
   VAPID_PRIVATE_KEY: z.string().optional(),
   /** mailto: or https:// contact for push providers. Defaults to mailto:ops@trendmarga.com. */
   VAPID_SUBJECT: z.string().default('mailto:ops@trendmarga.com'),
+
+  // ── Service Quality Tier 3: scheduled diagnostics + alerts ────────────────
+  /** Master switch for the cron + alerting loop. When false, the loop never runs. */
+  SQ_ALERTS_ENABLED: z.coerce.boolean().default(false),
+  /** Interval (minutes) between background diagnostic runs. */
+  SQ_ALERT_INTERVAL_MIN: z.coerce.number().min(1).default(5),
+  /** Per-finding cooldown (minutes) before the same finding can re-alert. */
+  SQ_ALERT_COOLDOWN_MIN: z.coerce.number().min(1).default(60),
+  /** Comma-separated E.164 phone numbers that receive SMS alerts. */
+  SQ_ALERT_PHONES: z.string().optional(),
+  /** Comma-separated email addresses that receive email alerts. */
+  SQ_ALERT_EMAILS: z.string().optional(),
 })
 
 export type Env = z.infer<typeof envSchema>

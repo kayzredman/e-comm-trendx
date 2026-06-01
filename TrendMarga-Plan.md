@@ -327,6 +327,16 @@ It is NOT an APM (no traces), NOT a customer status page, NOT a deploy dashboard
 - MANAGER: read + Run Diagnostics + Recheck only
 - Everyone else: no access (hidden from sidebar)
 
+### Tier 3 alerts — env vars
+Set in the api service env (Railway dashboard or `.env`):
+- `SQ_ALERTS_ENABLED=true` — master switch (default off)
+- `SQ_ALERT_INTERVAL_MIN=5` — diagnostics cron period (min 1)
+- `SQ_ALERT_COOLDOWN_MIN=60` — per-finding-id rate limit
+- `SQ_ALERT_PHONES=+233xx...,+233yy...` — comma-separated E.164
+- `SQ_ALERT_EMAILS=ops@trendmarga.com,owner@...` — comma-separated
+
+Only **critical** findings trigger alerts. Warnings/info are visible in the UI but never paged. SMS uses Hubtel (`HUBTEL_SENDER_ID=TrendMarga`); email uses Resend. State is in-memory — restarting the API resets the per-finding cooldown map (acceptable: same finding may re-page once after a restart).
+
 ---
 
 ## Open gaps (tracked checklist — June 2026)
@@ -362,7 +372,7 @@ It is NOT an APM (no traces), NOT a customer status page, NOT a deploy dashboard
 
 ### Service Quality (Tier 2 & 3)
 - [x] Tier 2 self-heal buttons (warm-cache, reseed-zones; restart-all already shipped in `bbdb599`)
-- [ ] Tier 3 scheduled diagnostics + alerting
+- [x] Tier 3 scheduled diagnostics + alerting (SMS + email, in-memory cooldown, `SQ_ALERTS_ENABLED` gate)
 
 ### Phase 2
 - [ ] `apps/tracking` separate service

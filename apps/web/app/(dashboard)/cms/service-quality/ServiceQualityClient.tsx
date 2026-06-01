@@ -975,6 +975,71 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
     return () => clearInterval(t)
   }, [autoRefresh, refreshSupervisor])
 
+  // Tier 3 alerts state — polled every 60s
+  const [alertsState, setAlertsState] = useState<{
+    enabled: boolean
+    intervalMin: number
+    cooldownMin: number
+    recipients: { phones: number; emails: number }
+    lastRunAt: number | null
+    lastRunFindings: number
+    recent: Array<{ at: number; findingId: string; title: string; channels: string[]; ok: boolean; error?: string }>
+  } | null>(null)
+  const [alertsBusy, setAlertsBusy] = useState<null | 'run' | 'test'>(null)
+  const refreshAlerts = useCallback(async () => {
+    try {
+      const s = await healthApi.alertsState(await freshToken())
+      setAlertsState(s)
+    } catch {
+      setAlertsState(null)
+    }
+  }, [freshToken])
+  useEffect(() => { refreshAlerts() }, [refreshAlerts])
+  useEffect(() => {
+    if (!autoRefresh) return
+    const t = setInterval(refreshAlerts, 60_000)
+    return () => clearInterval(t)
+  }, [autoRefresh, refreshAlerts])
+
+  const handleRunAlertCycle = async () => {
+    setAlertsBusy('run')
+    try {
+      const t = await freshToken()
+      const res = await healthApi.runAlertCycle(t)
+      pushFeedback({
+        service: 'tier3-cycle',
+        ok: true,
+        message: `Cycle ran: ${res.findings} finding(s), ${res.sent} alert(s) sent`,
+      })
+      await refreshAlerts()
+    } catch (err) {
+      pushFeedback({ service: 'tier3-cycle', ok: false, message: errMsg(err, 'Cycle failed') })
+    } finally {
+      setAlertsBusy(null)
+    }
+  }
+
+  const handleTestAlert = async () => {
+    if (!confirm('Send a TEST alert (SMS + email) to all configured Service Quality recipients?')) return
+    setAlertsBusy('test')
+    try {
+      const t = await freshToken()
+      const res = await healthApi.testAlert(t)
+      pushFeedback({
+        service: 'tier3-test',
+        ok: res.ok,
+        message: res.ok
+          ? `Test sent to ${res.channels.length} channel(s)`
+          : (res.error ?? 'Test alert failed'),
+      })
+      await refreshAlerts()
+    } catch (err) {
+      pushFeedback({ service: 'tier3-test', ok: false, message: errMsg(err, 'Test alert failed') })
+    } finally {
+      setAlertsBusy(null)
+    }
+  }
+
   // Auto-refresh every 30s
   useEffect(() => {
     if (!autoRefresh) {
@@ -1521,6 +1586,136 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
           onReconnectDb={(svc) => handleReconnectDb(svc)}
           onForceGc={(svc) => handleGc(svc)}
         />
+      )}
+
+      {/* Tier 3 — scheduled alerts panel */}
+      {alertsState && (
+        <div
+          className="v2-card"
+          style={{
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 12,
+            padding: 16,
+            marginBottom: 24,
+          }}
+        >
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <div
+                style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  background: alertsState.enabled ? '#DCFCE7' : '#F1F5F9',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <AlertTriangle size={16} style={{ color: alertsState.enabled ? '#16A34A' : '#64748B' }} />
+              </div>
+              <div>
+                <div className="font-semibold text-sm" style={{ color: 'var(--color-text)' }}>
+                  Scheduled alerts (Tier 3)
+                </div>
+                <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+                  {alertsState.enabled
+                    ? `Every ${alertsState.intervalMin}min · cooldown ${alertsState.cooldownMin}min · ${alertsState.recipients.phones} SMS + ${alertsState.recipients.emails} email recipient(s)`
+                    : 'Disabled. Set SQ_ALERTS_ENABLED=true + recipients to enable.'}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold"
+                style={{
+                  background: alertsState.enabled ? '#DCFCE7' : '#F1F5F9',
+                  color: alertsState.enabled ? '#166534' : '#475569',
+                  border: `1px solid ${alertsState.enabled ? '#86EFAC' : '#E2E8F0'}`,
+                }}
+              >
+                <span style={{
+                  width: 6, height: 6, borderRadius: '50%',
+                  background: alertsState.enabled ? '#16A34A' : '#94A3B8',
+                }} />
+                {alertsState.enabled ? 'Armed' : 'Off'}
+              </span>
+              {isOwner && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleRunAlertCycle}
+                    disabled={alertsBusy !== null}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border"
+                    style={{
+                      background: alertsBusy === 'run' ? '#FEF3C7' : '#FFFFFF',
+                      borderColor: '#2563EB',
+                      color: '#1E40AF',
+                      opacity: alertsBusy ? 0.6 : 1,
+                      cursor: alertsBusy === 'run' ? 'wait' : 'pointer',
+                    }}
+                    title="Run a diagnostic cycle and dispatch alerts now"
+                  >
+                    <RefreshCw size={11} className={alertsBusy === 'run' ? 'animate-spin' : ''} />
+                    {alertsBusy === 'run' ? 'Running…' : 'Run cycle'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTestAlert}
+                    disabled={alertsBusy !== null}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border"
+                    style={{
+                      background: alertsBusy === 'test' ? '#FEF3C7' : '#FFFFFF',
+                      borderColor: '#F97316',
+                      color: '#9A3412',
+                      opacity: alertsBusy ? 0.6 : 1,
+                      cursor: alertsBusy === 'test' ? 'wait' : 'pointer',
+                    }}
+                    title="Send a test SMS + email to all configured recipients"
+                  >
+                    <Zap size={11} />
+                    {alertsBusy === 'test' ? 'Sending…' : 'Test alert'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+          {alertsState.lastRunAt && (
+            <div className="text-[11px] mb-2" style={{ color: 'var(--color-text-muted)' }}>
+              Last cycle: {new Date(alertsState.lastRunAt).toLocaleString()} · {alertsState.lastRunFindings} finding(s)
+            </div>
+          )}
+          {alertsState.recent.length > 0 ? (
+            <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 8 }}>
+              <div className="text-[10px] font-bold uppercase tracking-wide mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
+                Recent dispatches
+              </div>
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {alertsState.recent.slice(0, 5).map((entry, i) => (
+                  <li
+                    key={`${entry.findingId}-${entry.at}-${i}`}
+                    className="flex items-center justify-between gap-2 text-[11px]"
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: 6,
+                      background: entry.ok ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+                      color: 'var(--color-text)',
+                    }}
+                  >
+                    <span className="truncate flex-1" title={entry.title}>
+                      <span style={{ color: entry.ok ? '#16A34A' : '#DC2626' }}>●</span>{' '}
+                      {entry.title}
+                    </span>
+                    <span style={{ color: 'var(--color-text-muted)' }} className="shrink-0">
+                      {entry.channels.length}ch · {new Date(entry.at).toLocaleTimeString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div className="text-[11px]" style={{ color: 'var(--color-text-muted)' }}>
+              No alerts dispatched yet.
+            </div>
+          )}
+        </div>
       )}
 
       {/* Service cards grouped by kind */}

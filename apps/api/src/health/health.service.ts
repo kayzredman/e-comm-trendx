@@ -8,6 +8,8 @@ import * as path from 'node:path'
 import * as os from 'node:os'
 import * as v8 from 'node:v8'
 import { monitorEventLoopDelay, type IntervalHistogram } from 'node:perf_hooks'
+import { sendSms } from '../notifications/providers/hubtel.provider'
+import { sendEmail } from '../notifications/providers/resend.provider'
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down'
 export type ServiceKind = 'database' | 'self' | 'http' | 'auth' | 'payment'
@@ -94,6 +96,13 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
   private loopHistogram: IntervalHistogram | null = null
   private apiVersion = '0.0.0'
 
+  // ── Tier 3 alerting state (in-memory; resets on restart) ───────────────
+  private alertTimer: NodeJS.Timeout | null = null
+  private alertLastSentAt = new Map<string, number>() // findingId → unix ms
+  private alertLog: Array<{ at: number; findingId: string; title: string; channels: string[]; ok: boolean; error?: string }> = []
+  private alertLastRunAt: number | null = null
+  private alertLastRunFindings = 0
+
   constructor(
     private readonly db: DbService,
     private readonly payments: PaymentsService,
@@ -104,10 +113,12 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
     this.loopHistogram = monitorEventLoopDelay({ resolution: 20 })
     this.loopHistogram.enable()
     void this.loadApiVersion()
+    this.startAlertLoop()
   }
 
   onModuleDestroy() {
     this.loopHistogram?.disable()
+    if (this.alertTimer) clearInterval(this.alertTimer)
   }
 
   private async loadApiVersion(): Promise<void> {
@@ -1103,5 +1114,138 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
     const inserted = result.filter(r => r.action === 'inserted').length
     this.logger.log(`reseedDeliveryZones: ${result.length} zones (${inserted} new, ${result.length - inserted} updated)`)
     return { ok: true, zones: result }
+  }
+
+  // ─── Tier 3: scheduled diagnostics + alerting ───────────────────────────
+
+  private parseRecipients(raw: string | undefined): string[] {
+    if (!raw) return []
+    return raw.split(',').map(s => s.trim()).filter(Boolean)
+  }
+
+  private startAlertLoop(): void {
+    const enabled = String(process.env.SQ_ALERTS_ENABLED ?? '').toLowerCase() === 'true'
+    if (!enabled) {
+      this.logger.log('Tier 3 alerts disabled (set SQ_ALERTS_ENABLED=true to enable)')
+      return
+    }
+    const intervalMin = Number(process.env.SQ_ALERT_INTERVAL_MIN ?? 5)
+    const ms = Math.max(60_000, intervalMin * 60_000)
+    this.logger.log(`Tier 3 alerts enabled — diagnostics every ${intervalMin}min`)
+    // First run 30s after boot so HTTP listeners + DB pool are warm.
+    setTimeout(() => void this.runAlertCycle(), 30_000)
+    this.alertTimer = setInterval(() => void this.runAlertCycle(), ms)
+  }
+
+  private async runAlertCycle(): Promise<void> {
+    try {
+      const report = await this.runDiagnostics()
+      this.alertLastRunAt = Date.now()
+      this.alertLastRunFindings = report.findings.length
+      const criticals = report.findings.filter(f => f.severity === 'critical')
+      if (criticals.length === 0) return
+
+      const cooldownMs = Number(process.env.SQ_ALERT_COOLDOWN_MIN ?? 60) * 60_000
+      const now = Date.now()
+      const eligible = criticals.filter(f => {
+        const last = this.alertLastSentAt.get(f.id) ?? 0
+        return now - last >= cooldownMs
+      })
+      if (eligible.length === 0) return
+
+      for (const finding of eligible) {
+        await this.sendAlert(finding)
+        this.alertLastSentAt.set(finding.id, now)
+      }
+    } catch (err: any) {
+      this.logger.warn(`alert cycle failed: ${err?.message ?? err}`)
+    }
+  }
+
+  private async sendAlert(finding: DiagnosticFinding): Promise<void> {
+    const phones = this.parseRecipients(process.env.SQ_ALERT_PHONES)
+    const emails = this.parseRecipients(process.env.SQ_ALERT_EMAILS)
+    const channels: string[] = []
+    let ok = true
+    let errorMsg: string | undefined
+
+    const smsBody =
+      `[trendMarga] CRITICAL: ${finding.title}\n` +
+      `${finding.message}\n` +
+      `Fix: ${finding.suggestion}`
+    const emailSubject = `[trendMarga] CRITICAL — ${finding.title}`
+    const emailHtml =
+      `<p><strong>${finding.title}</strong></p>` +
+      `<p>${finding.message}</p>` +
+      `<p><em>Suggested fix:</em> ${finding.suggestion}</p>` +
+      (finding.command ? `<pre style="background:#F1F5F9;padding:8px;border-radius:6px"><code>${finding.command}</code></pre>` : '') +
+      `<p style="color:#64748B;font-size:12px">Service: ${finding.service} · Severity: ${finding.severity}</p>`
+
+    for (const to of phones) {
+      try { await sendSms(to, smsBody); channels.push(`sms:${to}`) }
+      catch (e: any) { ok = false; errorMsg = e?.message ?? 'sms failed' }
+    }
+    for (const to of emails) {
+      try { await sendEmail(to, emailSubject, emailHtml); channels.push(`email:${to}`) }
+      catch (e: any) { ok = false; errorMsg = e?.message ?? 'email failed' }
+    }
+
+    this.alertLog.unshift({ at: Date.now(), findingId: finding.id, title: finding.title, channels, ok, error: errorMsg })
+    if (this.alertLog.length > 50) this.alertLog.length = 50
+    this.logger.log(`[SQ alert] ${finding.title} → ${channels.length} recipient(s) ${ok ? 'OK' : 'FAIL: ' + errorMsg}`)
+  }
+
+  /** Trigger one alert cycle on demand — useful from a "Run alert cycle now" button. */
+  async runAlertCycleNow(): Promise<{ ran: boolean; findings: number; sent: number }> {
+    const before = this.alertLog.length
+    await this.runAlertCycle()
+    return {
+      ran: true,
+      findings: this.alertLastRunFindings,
+      sent: this.alertLog.length - before,
+    }
+  }
+
+  /** Fire a single test alert to the configured recipients (does not check diagnostics). */
+  async sendTestAlert(): Promise<{ ok: boolean; channels: string[]; error?: string }> {
+    const fakeFinding: DiagnosticFinding = {
+      id: 'sq-test-alert',
+      service: 'Service Quality',
+      severity: 'critical',
+      title: 'Test alert from Service Quality',
+      message: 'This is a manual test. If you received this, alert delivery is working.',
+      suggestion: 'No action needed.',
+    }
+    const before = this.alertLog.length
+    await this.sendAlert(fakeFinding)
+    const entry = this.alertLog[0]
+    if (!entry || this.alertLog.length === before) {
+      return { ok: false, channels: [], error: 'no recipients configured (SQ_ALERT_PHONES / SQ_ALERT_EMAILS)' }
+    }
+    return { ok: entry.ok, channels: entry.channels, error: entry.error }
+  }
+
+  /** Public snapshot of alert engine state for the Service Quality UI. */
+  getAlertsState(): {
+    enabled: boolean
+    intervalMin: number
+    cooldownMin: number
+    recipients: { phones: number; emails: number }
+    lastRunAt: number | null
+    lastRunFindings: number
+    recent: Array<{ at: number; findingId: string; title: string; channels: string[]; ok: boolean; error?: string }>
+  } {
+    return {
+      enabled: String(process.env.SQ_ALERTS_ENABLED ?? '').toLowerCase() === 'true',
+      intervalMin: Number(process.env.SQ_ALERT_INTERVAL_MIN ?? 5),
+      cooldownMin: Number(process.env.SQ_ALERT_COOLDOWN_MIN ?? 60),
+      recipients: {
+        phones: this.parseRecipients(process.env.SQ_ALERT_PHONES).length,
+        emails: this.parseRecipients(process.env.SQ_ALERT_EMAILS).length,
+      },
+      lastRunAt: this.alertLastRunAt,
+      lastRunFindings: this.alertLastRunFindings,
+      recent: this.alertLog.slice(0, 20),
+    }
   }
 }

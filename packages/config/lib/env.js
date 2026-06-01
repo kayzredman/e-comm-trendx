@@ -62,6 +62,25 @@ const envSchema = zod_1.z.object({
     /** BCP-47 locale for Intl.NumberFormat. Defaults match STORE_CURRENCY country.
      *  Override only when you want a different number-grouping/locale convention. */
     STORE_LOCALE: zod_1.z.string().optional(),
+    // ── Web Push (PWA notifications) ──────────────────────────────────────────
+    /** Public VAPID key (base64url). Exposed via /v1/push/vapid-key for browsers. */
+    VAPID_PUBLIC_KEY: zod_1.z.string().optional(),
+    /** Private VAPID key (base64url). When missing, push send is disabled but
+     *  subscribe/unsubscribe still work so the FE can warm up. */
+    VAPID_PRIVATE_KEY: zod_1.z.string().optional(),
+    /** mailto: or https:// contact for push providers. Defaults to mailto:ops@trendmarga.com. */
+    VAPID_SUBJECT: zod_1.z.string().default('mailto:ops@trendmarga.com'),
+    // ── Service Quality Tier 3: scheduled diagnostics + alerts ────────────────
+    /** Master switch for the cron + alerting loop. When false, the loop never runs. */
+    SQ_ALERTS_ENABLED: zod_1.z.coerce.boolean().default(false),
+    /** Interval (minutes) between background diagnostic runs. */
+    SQ_ALERT_INTERVAL_MIN: zod_1.z.coerce.number().min(1).default(5),
+    /** Per-finding cooldown (minutes) before the same finding can re-alert. */
+    SQ_ALERT_COOLDOWN_MIN: zod_1.z.coerce.number().min(1).default(60),
+    /** Comma-separated E.164 phone numbers that receive SMS alerts. */
+    SQ_ALERT_PHONES: zod_1.z.string().optional(),
+    /** Comma-separated email addresses that receive email alerts. */
+    SQ_ALERT_EMAILS: zod_1.z.string().optional(),
 });
 exports.envSchema = envSchema;
 function validateEnv() {

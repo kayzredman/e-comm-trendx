@@ -110,4 +110,31 @@ export class HealthController {
   reseedZones() {
     return this.healthService.reseedDeliveryZones()
   }
+
+  // ── Tier 3: alerts state (OWNER/MANAGER read-only) ──────────────────────
+  @Get('services/alerts')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER', 'MANAGER')
+  alertsState() {
+    return this.healthService.getAlertsState()
+  }
+
+  // ── Tier 3: run a cycle on demand ───────────────────────────────────────
+  @Post('services/alerts/run')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER')
+  runAlertCycle() {
+    return this.healthService.runAlertCycleNow()
+  }
+
+  // ── Tier 3: send a single test alert to the configured recipients ───────
+  @Post('services/alerts/test')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER')
+  testAlert() {
+    return this.healthService.sendTestAlert()
+  }
 }

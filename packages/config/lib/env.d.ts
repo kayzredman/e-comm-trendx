@@ -45,6 +45,23 @@ declare const envSchema: z.ZodObject<{
     /** BCP-47 locale for Intl.NumberFormat. Defaults match STORE_CURRENCY country.
      *  Override only when you want a different number-grouping/locale convention. */
     STORE_LOCALE: z.ZodOptional<z.ZodString>;
+    /** Public VAPID key (base64url). Exposed via /v1/push/vapid-key for browsers. */
+    VAPID_PUBLIC_KEY: z.ZodOptional<z.ZodString>;
+    /** Private VAPID key (base64url). When missing, push send is disabled but
+     *  subscribe/unsubscribe still work so the FE can warm up. */
+    VAPID_PRIVATE_KEY: z.ZodOptional<z.ZodString>;
+    /** mailto: or https:// contact for push providers. Defaults to mailto:ops@trendmarga.com. */
+    VAPID_SUBJECT: z.ZodDefault<z.ZodString>;
+    /** Master switch for the cron + alerting loop. When false, the loop never runs. */
+    SQ_ALERTS_ENABLED: z.ZodDefault<z.ZodBoolean>;
+    /** Interval (minutes) between background diagnostic runs. */
+    SQ_ALERT_INTERVAL_MIN: z.ZodDefault<z.ZodNumber>;
+    /** Per-finding cooldown (minutes) before the same finding can re-alert. */
+    SQ_ALERT_COOLDOWN_MIN: z.ZodDefault<z.ZodNumber>;
+    /** Comma-separated E.164 phone numbers that receive SMS alerts. */
+    SQ_ALERT_PHONES: z.ZodOptional<z.ZodString>;
+    /** Comma-separated email addresses that receive email alerts. */
+    SQ_ALERT_EMAILS: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     DATABASE_URL: string;
     CLERK_SECRET_KEY: string;
@@ -56,6 +73,10 @@ declare const envSchema: z.ZodObject<{
     PAYSTACK_ENABLED: boolean;
     PAYSTACK_API_BASE: string;
     STORE_CURRENCY: "GHS" | "NGN" | "ZAR" | "KES" | "USD";
+    VAPID_SUBJECT: string;
+    SQ_ALERTS_ENABLED: boolean;
+    SQ_ALERT_INTERVAL_MIN: number;
+    SQ_ALERT_COOLDOWN_MIN: number;
     CLERK_WEBHOOK_SECRET?: string | undefined;
     WEB_URL?: string | undefined;
     STOREFRONT_URL?: string | undefined;
@@ -76,6 +97,10 @@ declare const envSchema: z.ZodObject<{
     PAYSTACK_PUBLIC_KEY?: string | undefined;
     PAYSTACK_CALLBACK_URL?: string | undefined;
     STORE_LOCALE?: string | undefined;
+    VAPID_PUBLIC_KEY?: string | undefined;
+    VAPID_PRIVATE_KEY?: string | undefined;
+    SQ_ALERT_PHONES?: string | undefined;
+    SQ_ALERT_EMAILS?: string | undefined;
 }, {
     DATABASE_URL: string;
     CLERK_SECRET_KEY: string;
@@ -107,6 +132,14 @@ declare const envSchema: z.ZodObject<{
     PAYSTACK_CALLBACK_URL?: string | undefined;
     STORE_CURRENCY?: "GHS" | "NGN" | "ZAR" | "KES" | "USD" | undefined;
     STORE_LOCALE?: string | undefined;
+    VAPID_PUBLIC_KEY?: string | undefined;
+    VAPID_PRIVATE_KEY?: string | undefined;
+    VAPID_SUBJECT?: string | undefined;
+    SQ_ALERTS_ENABLED?: boolean | undefined;
+    SQ_ALERT_INTERVAL_MIN?: number | undefined;
+    SQ_ALERT_COOLDOWN_MIN?: number | undefined;
+    SQ_ALERT_PHONES?: string | undefined;
+    SQ_ALERT_EMAILS?: string | undefined;
 }>;
 export type Env = z.infer<typeof envSchema>;
 export declare function validateEnv(): Env;

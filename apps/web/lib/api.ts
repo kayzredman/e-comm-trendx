@@ -666,6 +666,20 @@ export const healthApi = {
     zones: Array<{ id: string; name: string; action: 'inserted' | 'updated' }>
   }> =>
     apiFetch('/health/services/reseed-zones', { method: 'POST', body: '{}', token }),
+  alertsState: (token: string): Promise<{
+    enabled: boolean
+    intervalMin: number
+    cooldownMin: number
+    recipients: { phones: number; emails: number }
+    lastRunAt: number | null
+    lastRunFindings: number
+    recent: Array<{ at: number; findingId: string; title: string; channels: string[]; ok: boolean; error?: string }>
+  }> =>
+    apiFetch('/health/services/alerts', { token }),
+  runAlertCycle: (token: string): Promise<{ ran: boolean; findings: number; sent: number }> =>
+    apiFetch('/health/services/alerts/run', { method: 'POST', body: '{}', token }),
+  testAlert: (token: string): Promise<{ ok: boolean; channels: string[]; error?: string }> =>
+    apiFetch('/health/services/alerts/test', { method: 'POST', body: '{}', token }),
   diagnostics: (token: string): Promise<DiagnosticsReport> =>
     apiFetch('/health/diagnostics', { method: 'POST', body: '{}', token }),
 }
