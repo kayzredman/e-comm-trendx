@@ -47,7 +47,7 @@ Single-tenant B2C e-commerce platform. Next.js 15 App Router + NestJS on Fastify
 4. CustomersModule — CRUD, order history
 5. AnalyticsModule — dashboard stats, revenue time series, top products
 6. CmsModule — all site sections CRUD
-7. StorefrontModule — public REST endpoints (browse products, place order) — REST not tRPC so React Native can consume in Phase 2
+7. StorefrontModule — public REST endpoints (browse products, place order) — REST not tRPC so React Native can consume in Phase 3
 8. DeliveryModule — zones config, fee calculation (flat, distance via Google Maps, free threshold, combined)
 
 ---
@@ -104,7 +104,7 @@ One interface manages everything: products, categories, orders, customers, site 
 - Tailwind CSS + ShadCN/UI
 - Tremor charts for dashboard analytics
 - Mobile-first, fully responsive storefront (PWA-ready)
-- Phase 2: React Native mobile storefront app — REST API designed to support this from day 1
+- Phase 3: React Native mobile storefront app — REST API designed to support this from day 1
 
 ---
 
@@ -210,10 +210,11 @@ Each Phase 2 service gets its own Railway service entry, its own env vars, its o
 - Railway for all environments — no Vercel
 - Branch strategy: dev (play) → staging (test online) → main (prod)
 - Payments — live on staging June 2026 (Paystack, card+MoMo+bank). COD stays as fallback. Module lives inside `apps/api/src/payments/` (NOT a separate service). Full runbook: `apps/api/src/payments/README.md`.
-- POS = Phase 2
+- POS — built in Phase 1 (`apps/api/src/pos/` + `/pos` web route, shared `orders` table with `source: ONLINE | POS`)
+- Reviews, Discounts — backend built (feature-flagged off until storefront widgets ship)
 - Courier tracking API = Phase 2
 - Customer accounts = Phase 2
-- React Native mobile app = Phase 2
+- React Native mobile app = Phase 3 (after Phase 2 closes)
 - Storefront API = REST (not tRPC) to support React Native later
 - tRPC = dashboard/CMS internal use only
 - Delivery fees: all strategies configurable (flat, distance, free threshold, combined)
@@ -228,9 +229,11 @@ Each Phase 2 service gets its own Railway service entry, its own env vars, its o
   - Webhook receiver, tracking event log
   - SSE push to storefront order status page
   - If down: last-known status shown from DB, no crash
-- POS module
-- Customer accounts / login
-- React Native mobile storefront app
+- Customer accounts / login (buyer-side; staff already on Clerk)
+
+## Phase 3 (After Phase 2)
+
+- React Native mobile storefront app — REST API designed to support this from day 1
 
 ---
 
@@ -259,9 +262,64 @@ self-heal actions invokable from a finding:
 
 Each remediation action must be:
 - OWNER-only
-- Audit-- Audit-- Audit-- Audit-- Audit-- Audit-- e to click twice)
-- Behind a confirm- Behind a confirm- — Scheduled diagnostics + alerting (deferred)
+- Audit-logged
+- Behind a confirm dialog (require a deliberate second click)
+
+### Tier 3 — Scheduled diagnostics + alerting (deferred)
 
 - Cron the diagnostics every N minutes
 - Persist last N runs to Postgres
 - Alert (email/Slack) on first occurrence of a new critical finding
+
+---
+
+## Open gaps (tracked checklist — June 2026)
+
+### Prod cutover (highest priority)
+- [ ] Promote `staging` → `main`
+- [ ] Set prod env vars on Railway (`PAYSTACK_SECRET_KEY`, `WEB_APP_URL`, `CLERK_*`, `WHATSAPP_*`, feature flags)
+- [ ] Run prod migrations (`pnpm migrate:prod`)
+- [ ] Purchase `trendmarga.com` and point to prod web
+- [ ] Register prod Paystack webhook URL
+- [ ] ₵1 LIVE smoke on prod (MoMo)
+- [ ] Rotate any keys leaked in chat / commits
+
+### Payments (built, follow-ups)
+- [ ] Refund flow — Paystack `/refund` API, admin button, `REFUNDED` status transition
+- [ ] Dispute / chargeback webhook events (`charge.dispute.create` etc.)
+- [ ] Multi-currency support (currently `GHS` hard-assumption)
+- [ ] Stripe integration (international) — not urgent
+
+### Storefront feature-flag UIs (backends exist, UIs missing)
+- [ ] Reviews — product-page widget + submit flow + moderation queue
+- [ ] Inventory — out-of-stock badge on PDP / cart, low-stock warning
+- [ ] Search — `/v1/search` endpoint + header search box + results page
+- [ ] PWA — install prompt + push notifications (manifest already shipped)
+
+### Customer-facing
+- [ ] Customer accounts (buyer login — likely Clerk org-less or magic link)
+- [ ] "My orders" list page (currently only direct-link `/orders/[id]`)
+- [ ] Saved addresses
+
+### Analytics polish
+- [ ] Wire `PeriodSelector` 24h / 7d / 90d / all (only 30d functional)
+- [ ] Count-up animation on KPI numbers
+- [ ] Skeleton loaders for charts
+- [ ] Recharts Bar chart for top products (replace inline progress bars)
+
+### POS (built, feature-thin)
+- [ ] Shift open / close flow
+- [ ] Hold / void / discount UI
+- [ ] Sidebar role-guard verification
+
+### Service Quality (Tier 2 & 3)
+- [ ] Tier 2 self-heal buttons (clear-cache, restart-worker, reseed-routing, warm-cache)
+- [ ] Tier 3 scheduled diagnostics + alerting
+
+### Phase 2
+- [ ] `apps/tracking` separate service
+- [ ] DHL / external carrier integration
+- [ ] Customer accounts (overlaps with Customer-facing above)
+
+### Phase 3
+- [ ] React Native mobile app

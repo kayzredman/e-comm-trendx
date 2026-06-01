@@ -1,6 +1,6 @@
 # trendMarga
 
-Single-tenant B2C e-commerce platform built for the Ghanaian market. Mobile-first storefront, unified CMS back-office, analytics dashboard, and real-time service health monitoring. Built to scale into Phase 2 with payments, POS, courier tracking, and a React Native mobile app.
+Single-tenant B2C e-commerce platform built for the Ghanaian market. Mobile-first storefront, unified CMS back-office, analytics dashboard, POS terminal, courier PWA, WhatsApp + Paystack, and real-time service health monitoring. Phase 3 will add a React Native buyer app.
 
 ---
 
@@ -117,7 +117,7 @@ trendX/
 │           ├── analytics/          # Dashboard stats, revenue series, top products
 │           ├── cms/                # Site sections CRUD
 │           ├── delivery/           # Delivery zones + fee calculation
-│           ├── storefront/         # Public REST (no auth) — Phase 2 React Native ready
+│           ├── storefront/         # Public REST (no auth) — React Native ready (Phase 3)
 │           ├── health/             # Service health checks + proactive reconnect
 │           ├── pos/                # POS module (orders, shifts, holds, registers)
 │           └── users/              # Admin user management, Clerk webhook sync
@@ -183,7 +183,7 @@ PENDING → CONFIRMED → PROCESSING → OUT_FOR_DELIVERY → DELIVERED
 | Analytics | `/analytics` | ClerkGuard + RolesGuard | Dashboard stats, revenue series, top products |
 | CMS | `/cms` | ClerkGuard + RolesGuard | Site sections CRUD |
 | Delivery | `/delivery` | ClerkGuard + RolesGuard | Zones + fee calculator |
-| Storefront | `/v1` | **Public** | Guest browse + place order (REST for Phase 2 RN) |
+| Storefront | `/v1` | **Public** | Guest browse + place order (REST for Phase 3 RN) |
 | Health | `/health` | Public ping / OWNER+MANAGER for services | Service health checks |
 | POS | `/pos` | ClerkGuard + RolesGuard (OWNER/MANAGER/CASHIER) | In-store orders, shifts, holds, registers |
 
@@ -277,8 +277,8 @@ pnpm dev
 
 - **Mobile-first CSS**: base styles = 375px. Use `sm:` / `md:` / `lg:` for wider screens.
 - **CSS custom properties**: `var(--color-primary)`, `var(--color-surface)`, `var(--color-text)`, `var(--color-text-muted)`, `var(--color-border)`, `var(--color-page)` — defined in `apps/web/app/globals.css`.
-- **Storefront API is REST** (not tRPC) — designed from day 1 to support React Native in Phase 2. All storefront endpoints live under `/v1/`.
-- **tRPC = CMS/dashboard internal only** (if introduced in Phase 2).
+- **Storefront API is REST** (not tRPC) — designed from day 1 to support React Native in Phase 3. All storefront endpoints live under `/v1/`.
+- **tRPC = CMS/dashboard internal only**.
 - **No multi-tenancy** in Phase 1. Single store, single owner.
 - **Guest checkout** — customers don't need accounts. Order tracking via order ID.
 - **API response envelope**: `{ data, error, message }` — frontend never hard-crashes on failed requests.
@@ -339,18 +339,22 @@ feature/* ──► dev ──► staging ──► main
 | S4 | Dashboard analytics (charts, revenue, order stats) | ✅ Done |
 | S5 | CMS content module (homepage sections, hero carousel) | ✅ Done |
 | S6 | Storefront (product listing, cart, checkout, order tracking) | ✅ Done |
-| S7 | Service Quality, RBAC, health API, enhancements | 🔄 In progress |
-| — | PWA manifest | ⬜ Pending |
-| — | Delivery fee calculator (all strategies) | ⬜ Pending |
+| S7 | Service Quality, RBAC, health API, enhancements | ✅ Done |
+| — | PWA manifest | ✅ Done |
+| — | Delivery fee calculator (all strategies) | ✅ Done |
 | — | Railway prod deploy | ⬜ Pending |
+
+For the full open-gap checklist see [TrendMarga-Plan.md → Open gaps](TrendMarga-Plan.md#open-gaps-tracked-checklist--june-2026).
 
 ---
 
 ## Phase 2 — Planned (Not Started)
 
-- **POS module** — in-store sales, walk-in orders, receipt generation. Shared `orders` table with `source: ONLINE | POS` field.
 - **Tracking service** (`apps/tracking`) — courier API integration (DHL, local carriers), SSE push to storefront. If down: last-known status shown from DB.
-- **Customer accounts** — login, order history, saved addresses.
+- **Customer accounts** — buyer login, order history, saved addresses.
+
+## Phase 3 — Mobile (after Phase 2)
+
 - **React Native app** — mobile storefront. Storefront API is REST from day 1 to support this.
 
 ## Shipped (post-Phase 1)
