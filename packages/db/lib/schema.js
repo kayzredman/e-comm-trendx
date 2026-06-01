@@ -54,13 +54,15 @@ exports.products = (0, pg_core_1.pgTable)('products', {
     createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
     updatedAt: (0, pg_core_1.timestamp)('updated_at').notNull().defaultNow(),
 });
-// ── Customers (guest — no auth) ───────────────────────────────────────────────
+// ── Customers (guest or Clerk-linked buyer) ──────────────────────────────────
 exports.customers = (0, pg_core_1.pgTable)('customers', {
     id: (0, pg_core_1.varchar)('id', { length: 128 }).$defaultFn(() => (0, cuid2_1.createId)()).primaryKey(),
+    clerkUserId: (0, pg_core_1.varchar)('clerk_user_id', { length: 128 }),
     name: (0, pg_core_1.varchar)('name', { length: 255 }).notNull(),
     email: (0, pg_core_1.varchar)('email', { length: 255 }),
     phone: (0, pg_core_1.varchar)('phone', { length: 30 }).notNull(),
     address: (0, pg_core_1.jsonb)('address').$type().notNull(),
+    savedAddresses: (0, pg_core_1.jsonb)('saved_addresses').$type(),
     createdAt: (0, pg_core_1.timestamp)('created_at').notNull().defaultNow(),
 });
 // ── Orders ────────────────────────────────────────────────────────────────────

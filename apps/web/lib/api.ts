@@ -1133,3 +1133,64 @@ export const reviewsAdminApi = {
   remove: (id: string, token: string): Promise<void> =>
     apiFetch(`/cms/reviews/${encodeURIComponent(id)}`, { method: 'DELETE', token }),
 }
+
+// ─── Account (Clerk-linked customer) ─────────────────────────────────────────
+
+export type SavedAddress = {
+  id: string
+  label: string
+  street: string
+  city: string
+  region: string
+  country: string
+  zip: string | null
+  isDefault?: boolean
+}
+
+export type AccountCustomer = {
+  id: string
+  clerkUserId: string | null
+  name: string
+  email: string | null
+  phone: string
+  address: { street: string; city: string; region: string; country: string; zip: string | null }
+  savedAddresses: SavedAddress[] | null
+  createdAt: string
+}
+
+export type AccountOrder = {
+  id: string
+  status: string
+  source: string
+  subtotal: string
+  deliveryFee: string
+  discountAmount: string
+  total: string
+  paymentMethod: string
+  paymentStatus: string
+  createdAt: string
+  items: Array<{ id: string; productName: string; quantity: number; unitPrice: string; variantLabel: string | null }>
+}
+
+export const accountApi = {
+  me: (token: string): Promise<AccountCustomer | null> =>
+    apiFetch('/v1/account/me', { token }),
+  bootstrap: (
+    data: { name: string; email?: string | null; phone: string },
+    token: string,
+  ): Promise<AccountCustomer> =>
+    apiFetch('/v1/account/bootstrap', { method: 'POST', body: JSON.stringify(data), token }),
+  updateProfile: (
+    patch: { name?: string; email?: string | null; phone?: string },
+    token: string,
+  ): Promise<AccountCustomer> =>
+    apiFetch('/v1/account/me', { method: 'PATCH', body: JSON.stringify(patch), token }),
+  orders: (token: string): Promise<AccountOrder[]> => apiFetch('/v1/account/orders', { token }),
+  listAddresses: (token: string): Promise<SavedAddress[]> => apiFetch('/v1/account/addresses', { token }),
+  addAddress: (addr: Omit<SavedAddress, 'id'>, token: string): Promise<SavedAddress[]> =>
+    apiFetch('/v1/account/addresses', { method: 'POST', body: JSON.stringify(addr), token }),
+  updateAddress: (id: string, patch: Partial<Omit<SavedAddress, 'id'>>, token: string): Promise<SavedAddress[]> =>
+    apiFetch(`/v1/account/addresses/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(patch), token }),
+  removeAddress: (id: string, token: string): Promise<SavedAddress[]> =>
+    apiFetch(`/v1/account/addresses/${encodeURIComponent(id)}`, { method: 'DELETE', token }),
+}

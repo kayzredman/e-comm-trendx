@@ -358,6 +358,18 @@ export declare const customers: import("drizzle-orm/pg-core").PgTableWithColumns
             enumValues: [string, ...string[]];
             baseColumn: never;
         }, {}, {}>;
+        clerkUserId: import("drizzle-orm/pg-core").PgColumn<{
+            name: "clerk_user_id";
+            tableName: "customers";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
         name: import("drizzle-orm/pg-core").PgColumn<{
             name: "name";
             tableName: "customers";
@@ -408,6 +420,27 @@ export declare const customers: import("drizzle-orm/pg-core").PgTableWithColumns
             };
             driverParam: unknown;
             notNull: true;
+            hasDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
+        savedAddresses: import("drizzle-orm/pg-core").PgColumn<{
+            name: "saved_addresses";
+            tableName: "customers";
+            dataType: "json";
+            columnType: "PgJsonb";
+            data: {
+                id: string;
+                label: string;
+                street: string;
+                city: string;
+                region: string;
+                country: string;
+                zip: string | null;
+                isDefault?: boolean;
+            }[];
+            driverParam: unknown;
+            notNull: false;
             hasDefault: false;
             enumValues: undefined;
             baseColumn: never;

@@ -55,9 +55,10 @@ export const products = pgTable('products', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
-// ── Customers (guest — no auth) ───────────────────────────────────────────────
+// ── Customers (guest or Clerk-linked buyer) ──────────────────────────────────
 export const customers = pgTable('customers', {
   id: varchar('id', { length: 128 }).$defaultFn(() => createId()).primaryKey(),
+  clerkUserId: varchar('clerk_user_id', { length: 128 }),
   name: varchar('name', { length: 255 }).notNull(),
   email: varchar('email', { length: 255 }),
   phone: varchar('phone', { length: 30 }).notNull(),
@@ -68,6 +69,16 @@ export const customers = pgTable('customers', {
     country: string
     zip: string | null
   }>().notNull(),
+  savedAddresses: jsonb('saved_addresses').$type<Array<{
+    id: string
+    label: string
+    street: string
+    city: string
+    region: string
+    country: string
+    zip: string | null
+    isDefault?: boolean
+  }>>(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 

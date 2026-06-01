@@ -289,9 +289,9 @@ Each remediation action must be:
 - [x] PWA — install prompt + push notifications (manifest already shipped)
 
 ### Customer-facing
-- [ ] Customer accounts (buyer login — likely Clerk org-less or magic link)
-- [ ] "My orders" list page (currently only direct-link `/orders/[id]`)
-- [ ] Saved addresses
+- [x] Customer accounts (buyer login — likely Clerk org-less or magic link)
+- [x] "My orders" list page (currently only direct-link `/orders/[id]`)
+- [x] Saved addresses
 
 ### Analytics polish
 - [ ] Wire `PeriodSelector` 24h / 7d / 90d / all (only 30d functional)

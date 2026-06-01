@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
 import { ShoppingBag, Menu, X, Search, ChevronDown, Truck, Sparkles, Tag, User, LayoutGrid } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import type { Category, SearchSuggestion } from '@/lib/api'
 import { searchApi } from '@/lib/api'
 import { useCartStore, selectItemCount } from '@/lib/cart-store'
@@ -245,19 +246,37 @@ export default function StorefrontHeader({ categories }: Props) {
 
         {/* Right icons */}
         <div className="flex items-center gap-2 ml-auto md:ml-0">
-          <Link
-            href="/dashboard"
-            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
-            style={{
-              background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
-              color: '#fff',
-              boxShadow: '0 2px 8px rgba(37,99,235,0.28)',
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '.9'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.transform = 'none'; }}
-          >
-            <User size={15} /> Sign In
-          </Link>
+          <SignedOut>
+            <Link
+              href="/sign-in"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all"
+              style={{
+                background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
+                color: '#fff',
+                boxShadow: '0 2px 8px rgba(37,99,235,0.28)',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '.9'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.transform = 'none'; }}
+            >
+              <User size={15} /> Sign In
+            </Link>
+          </SignedOut>
+          <SignedIn>
+            <Link
+              href="/account"
+              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all"
+              style={{
+                background: '#FFFFFF',
+                color: 'var(--color-text)',
+                border: '1px solid var(--color-border)',
+              }}
+            >
+              <User size={15} /> Account
+            </Link>
+            <div className="hidden sm:flex items-center">
+              <UserButton afterSignOutUrl="/" appearance={{ elements: { avatarBox: 'h-8 w-8' } }} />
+            </div>
+          </SignedIn>
           <Link href="/cart" className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors relative sm:hidden" style={{ color: 'var(--color-text-muted)' }}>
             <div className="relative">
               <ShoppingBag size={20} />
