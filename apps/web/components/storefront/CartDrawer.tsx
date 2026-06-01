@@ -6,7 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, ShoppingBag, Minus, Plus, Trash2, ArrowRight } from 'lucide-react'
 import { useCartStore, selectItemCount, selectTotal } from '@/lib/cart-store'
 import { formatPrice } from '@/lib/utils'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
+import { useLiveStock } from '@/lib/use-live-stock'
+import StockBadge from './StockBadge'
 
 export default function CartDrawer() {
   const open = useCartStore((s) => s.drawerOpen)
@@ -16,6 +18,9 @@ export default function CartDrawer() {
   const removeItem = useCartStore((s) => s.removeItem)
   const count = useCartStore(selectItemCount)
   const subtotal = useCartStore(selectTotal)
+
+  const productIds = useMemo(() => Array.from(new Set(items.map((i) => i.id))), [items])
+  const stockMap = useLiveStock(productIds)
 
   const deliveryFree = subtotal >= 200
   const delivery = deliveryFree || subtotal === 0 ? 0 : 25
@@ -163,6 +168,7 @@ export default function CartDrawer() {
                               {item.variantLabel}
                             </p>
                           )}
+                          <StockBadge qty={stockMap.get(item.id)} size="sm" className="self-start mb-1" />
                           <div className="mt-auto flex items-center justify-between">
                             <div className="font-bold text-sm" style={{ color: 'var(--color-text)' }}>
                               {formatPrice(item.price)}

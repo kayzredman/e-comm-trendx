@@ -14,6 +14,8 @@ import {
 import { formatPrice } from '@/lib/utils'
 import AddToCartButton from '@/components/storefront/AddToCartButton'
 import type { Product, ProductVariant } from '@/lib/api'
+import { publicFeatures } from '@trendmarga/config'
+import { LOW_STOCK_THRESHOLD } from '@/lib/use-live-stock'
 
 type Props = { product: Product }
 
@@ -115,7 +117,7 @@ export default function ProductDetailsPanel({ product }: Props) {
   const productOutOfStock = hasVariants ? totalVariantStock === 0 : product.inventory === 0
   const needsSelection = hasVariants && !selectedVariant
   const selectedOutOfStock = !!selectedVariant && selectedVariant.inventory === 0
-  const lowStock = displayStock > 0 && displayStock < 10
+  const lowStock = displayStock > 0 && displayStock <= LOW_STOCK_THRESHOLD
 
   const atcDisabled = productOutOfStock || needsSelection || selectedOutOfStock
 
@@ -319,7 +321,7 @@ export default function ProductDetailsPanel({ product }: Props) {
               />
             </span>
             <span style={{ color: 'var(--color-success)', fontWeight: 700 }}>In Stock</span>
-            {lowStock && (
+            {publicFeatures.inventory && lowStock && (
               <span style={{ color: 'var(--color-text-muted)' }}>
                 — Only {displayStock} left!
               </span>

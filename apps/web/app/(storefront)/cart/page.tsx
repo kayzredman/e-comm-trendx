@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useCartStore, selectTotal, selectItemCount } from '@/lib/cart-store'
 import { formatPrice } from '@/lib/utils'
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react'
+import { useLiveStock } from '@/lib/use-live-stock'
+import StockBadge from '@/components/storefront/StockBadge'
 
 export default function CartPage() {
   const [mounted, setMounted] = useState(false)
@@ -16,6 +18,9 @@ export default function CartPage() {
   const clearCart = useCartStore((s) => s.clearCart)
   const total = useCartStore(selectTotal)
   const itemCount = useCartStore(selectItemCount)
+
+  const productIds = useMemo(() => Array.from(new Set(items.map((i) => i.id))), [items])
+  const stockMap = useLiveStock(productIds)
 
   if (!mounted) {
     return (
@@ -106,6 +111,9 @@ export default function CartPage() {
                 <p className="text-base font-bold mt-1" style={{ color: 'var(--color-primary)' }}>
                   {formatPrice(item.price)}
                 </p>
+                <div className="mt-1.5">
+                  <StockBadge qty={stockMap.get(item.id)} size="md" />
+                </div>
 
                 <div className="flex items-center gap-3 mt-3">
                   {/* Qty stepper */}
