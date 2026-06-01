@@ -847,6 +847,93 @@ export const paymentsApi = {
     apiFetch(`/v1/payments/${encodeURIComponent(reference)}`),
 }
 
+// ─── Payments admin (CMS) ─────────────────────────────────────────────────────
+
+export type PaymentIntentStatus =
+  | 'REQUIRES_AUTH'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | 'ABANDONED'
+
+export type PaymentIntentRow = {
+  id: string
+  orderId: string
+  providerReference: string
+  status: PaymentIntentStatus
+  amount: string
+  currency: string
+  channel: string | null
+  customerEmail: string | null
+  authorizationUrl: string | null
+  failureReason: string | null
+  paidAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type PaymentEventRow = {
+  id: string
+  intentId: string | null
+  orderId: string | null
+  reference: string | null
+  eventType: string
+  status: string | null
+  amount: string | null
+  currency: string | null
+  signatureValid: boolean | null
+  source: string | null
+  processed: boolean
+  processingError: string | null
+  receivedAt: string
+}
+
+export type PaymentStats = {
+  last24h: { succeeded: number; failed: number; open: number; revenue: string }
+  stuckIntents: number
+  eventsWithErrors24h: number
+  oldestPendingSeconds: number
+  circuitBreaker: { state: string; failures: number; openedAt: string | null }
+  mode: 'live' | 'test' | 'disabled'
+}
+
+export type PaymentConfig = {
+  mode: 'live' | 'test' | 'disabled'
+  publicKey: string | null
+  enabled: boolean
+  callbackUrl: string | null
+  webhookUrl: string
+  circuitBreaker: { state: string; failures: number; openedAt: string | null }
+}
+
+export const paymentsAdminApi = {
+  stats: (token: string): Promise<PaymentStats> => apiFetch('/cms/payments/stats', { token }),
+  config: (token: string): Promise<PaymentConfig> => apiFetch('/cms/payments/config', { token }),
+  intents: (token: string, status?: PaymentIntentStatus, limit = 50): Promise<PaymentIntentRow[]> => {
+    const qs = new URLSearchParams()
+    if (status) qs.set('status', status)
+    qs.set('limit', String(limit))
+    return apiFetch(`/cms/payments/intents?${qs.toString()}`, { token })
+  },
+  events: (
+    token: string,
+    opts: { reference?: string; intentId?: string; limit?: number } = {},
+  ): Promise<PaymentEventRow[]> => {
+    const qs = new URLSearchParams()
+    if (opts.reference) qs.set('reference', opts.reference)
+    if (opts.intentId) qs.set('intentId', opts.intentId)
+    qs.set('limit', String(opts.limit ?? 100))
+    return apiFetch(`/cms/payments/events?${qs.toString()}`, { token })
+  },
+  replay: (token: string, eventId: string): Promise<{ ok: boolean; error?: string }> =>
+    apiFetch(`/cms/payments/events/${encodeURIComponent(eventId)}/replay`, {
+      method: 'POST',
+      token,
+    }),
+  reconcile: (token: string): Promise<{ reconciled: number }> =>
+    apiFetch('/cms/payments/reconcile', { method: 'POST', token }),
+}
+
 // ─── POS ──────────────────────────────────────────────────────────────────────
 
 export type PosRegister = {
