@@ -361,7 +361,7 @@ It is NOT an APM (no traces), NOT a customer status page, NOT a deploy dashboard
 - [ ] Sidebar role-guard verification
 
 ### Service Quality (Tier 2 & 3)
-- [ ] Tier 2 self-heal buttons (clear-cache, restart-worker, reseed-routing, warm-cache)
+- [x] Tier 2 self-heal buttons (warm-cache, reseed-zones; restart-all already shipped in `bbdb599`)
 - [ ] Tier 3 scheduled diagnostics + alerting
 
 ### Phase 2

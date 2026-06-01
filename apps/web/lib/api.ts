@@ -655,6 +655,17 @@ export const healthApi = {
     error?: string
   }> =>
     apiFetch('/health/services/supervisor', { token }),
+  warmCache: (token: string): Promise<{
+    ok: boolean
+    totalMs: number
+    routes: Array<{ path: string; status: number | null; latencyMs: number | null; error?: string }>
+  }> =>
+    apiFetch('/health/services/warm-cache', { method: 'POST', body: '{}', token }),
+  reseedZones: (token: string): Promise<{
+    ok: boolean
+    zones: Array<{ id: string; name: string; action: 'inserted' | 'updated' }>
+  }> =>
+    apiFetch('/health/services/reseed-zones', { method: 'POST', body: '{}', token }),
   diagnostics: (token: string): Promise<DiagnosticsReport> =>
     apiFetch('/health/diagnostics', { method: 'POST', body: '{}', token }),
 }

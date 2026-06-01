@@ -92,4 +92,22 @@ export class HealthController {
   supervisor() {
     return this.healthService.getSupervisorState()
   }
+
+  // ── Tier 2: warm storefront read endpoints (idempotent, read-only) ──────
+  @Post('services/warm-cache')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER')
+  warmCache() {
+    return this.healthService.warmStorefrontCache()
+  }
+
+  // ── Tier 2: reseed default delivery zones (idempotent UPSERT) ───────────
+  @Post('services/reseed-zones')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER')
+  reseedZones() {
+    return this.healthService.reseedDeliveryZones()
+  }
 }

@@ -20,6 +20,7 @@ import {
   Server, Shield, Globe, Zap, Clock, Activity, MemoryStick,
   Power, Recycle, WifiOff, Cpu, Info, ChevronDown, ChevronUp,
   Layers, Network, ShoppingBag, Stethoscope, ClipboardCopy, X,
+  Flame, MapPin,
 } from 'lucide-react'
 
 interface Props {
@@ -1224,6 +1225,48 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
     }
   }
 
+  const [tier2Running, setTier2Running] = useState<null | 'warm' | 'reseed'>(null)
+
+  const handleWarmCache = async () => {
+    setTier2Running('warm')
+    try {
+      const t = await freshToken()
+      const res = await healthApi.warmCache(t)
+      const okCount = res.routes.filter(r => r.status !== null && r.status < 500).length
+      pushFeedback({
+        service: 'warm-cache',
+        ok: res.ok,
+        message: res.ok
+          ? `Warmed ${okCount}/${res.routes.length} routes in ${res.totalMs}ms`
+          : `Warmed ${okCount}/${res.routes.length} — ${res.routes.filter(r => r.error).map(r => `${r.path}: ${r.error}`).join('; ') || 'see logs'}`,
+      })
+    } catch (err) {
+      pushFeedback({ service: 'warm-cache', ok: false, message: errMsg(err, 'Warm cache failed') })
+    } finally {
+      setTier2Running(null)
+    }
+  }
+
+  const handleReseedZones = async () => {
+    if (!confirm('Reseed default delivery zones? Idempotent UPSERT — overwrites any custom edits to the 6 default zones (zone_accra, zone_accra2, zone_kumasi, zone_tema, zone_takoradi, zone_tamale). New zones you added are untouched.')) return
+    setTier2Running('reseed')
+    try {
+      const t = await freshToken()
+      const res = await healthApi.reseedZones(t)
+      const inserted = res.zones.filter(z => z.action === 'inserted').length
+      const updated = res.zones.filter(z => z.action === 'updated').length
+      pushFeedback({
+        service: 'reseed-zones',
+        ok: res.ok,
+        message: `Zones: ${inserted} inserted, ${updated} updated`,
+      })
+    } catch (err) {
+      pushFeedback({ service: 'reseed-zones', ok: false, message: errMsg(err, 'Reseed zones failed') })
+    } finally {
+      setTier2Running(null)
+    }
+  }
+
   const copyCommand = async (cmd: string) => {
     try {
       await navigator.clipboard.writeText(cmd)
@@ -1310,6 +1353,40 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
           >
             <Power size={13} className={restartFlow.running ? 'animate-pulse' : ''} />
             {restartFlow.running ? 'Restarting stack…' : 'Restart Everything'}
+          </button>
+          <button
+            type="button"
+            onClick={handleWarmCache}
+            disabled={tier2Running !== null || restartFlow.running || !isOwner}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border"
+            style={{
+              background: tier2Running === 'warm' ? '#FEF3C7' : '#FFFFFF',
+              borderColor: '#2563EB',
+              color: '#1E40AF',
+              opacity: (tier2Running !== null || !isOwner) ? 0.6 : 1,
+              cursor: tier2Running === 'warm' ? 'wait' : 'pointer',
+            }}
+            title={!isOwner ? 'OWNER role required' : 'GET storefront read endpoints to warm caches (safe, read-only)'}
+          >
+            <Flame size={13} className={tier2Running === 'warm' ? 'animate-pulse' : ''} />
+            {tier2Running === 'warm' ? 'Warming…' : 'Warm cache'}
+          </button>
+          <button
+            type="button"
+            onClick={handleReseedZones}
+            disabled={tier2Running !== null || restartFlow.running || !isOwner}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border"
+            style={{
+              background: tier2Running === 'reseed' ? '#FEF3C7' : '#FFFFFF',
+              borderColor: '#10B981',
+              color: '#065F46',
+              opacity: (tier2Running !== null || !isOwner) ? 0.6 : 1,
+              cursor: tier2Running === 'reseed' ? 'wait' : 'pointer',
+            }}
+            title={!isOwner ? 'OWNER role required' : 'Idempotent UPSERT of the 6 default Ghana delivery zones'}
+          >
+            <MapPin size={13} className={tier2Running === 'reseed' ? 'animate-pulse' : ''} />
+            {tier2Running === 'reseed' ? 'Reseeding…' : 'Reseed zones'}
           </button>
           <button
             type="button"

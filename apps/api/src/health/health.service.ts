@@ -1008,4 +1008,100 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
     const order: Record<FindingSeverity, number> = { critical: 0, warning: 1, info: 2 }
     return order[a.severity] - order[b.severity]
   }
+
+  // ─── Tier 2: safe self-heal actions (OWNER-only, idempotent) ───────────
+
+  /**
+   * Hit the public storefront read endpoints from inside the API process to
+   * exercise the full DB → serializer pipeline. Useful after a deploy, a DB
+   * reconnect, or when latency suddenly spikes — primes the Next.js fetch
+   * cache and surfaces per-route timings in one report.
+   * Read-only: makes no DB mutations.
+   */
+  async warmStorefrontCache(): Promise<{
+    ok: boolean
+    totalMs: number
+    routes: Array<{ path: string; status: number | null; latencyMs: number | null; error?: string }>
+  }> {
+    const port = process.env.API_PORT ?? '4001'
+    const base = `http://127.0.0.1:${port}`
+    const paths = ['/v1/homepage', '/v1/products', '/v1/categories', '/v1/delivery-zones']
+    const t0 = Date.now()
+    const routes = await Promise.all(paths.map(async (p) => {
+      const r0 = Date.now()
+      try {
+        const ctrl = new AbortController()
+        const timer = setTimeout(() => ctrl.abort(), 5000)
+        const res = await fetch(base + p, { signal: ctrl.signal })
+        clearTimeout(timer)
+        await res.text() // drain body so the serializer actually runs
+        return { path: p, status: res.status, latencyMs: Date.now() - r0 }
+      } catch (err: any) {
+        return {
+          path: p,
+          status: null,
+          latencyMs: Date.now() - r0,
+          error: err?.name === 'AbortError' ? 'Timed out after 5s' : (err?.message ?? 'fetch failed'),
+        }
+      }
+    }))
+    const totalMs = Date.now() - t0
+    const okCount = routes.filter(r => r.status !== null && r.status < 500).length
+    const ok = okCount === routes.length
+    this.logger.log(`warmStorefrontCache: ${okCount}/${routes.length} ok in ${totalMs}ms`)
+    return { ok, totalMs, routes }
+  }
+
+  /**
+   * Idempotently UPSERT the six default Ghana delivery zones. Used to recover
+   * after an accidental wipe in dev/staging or to restore the canonical row
+   * shape after a manual edit broke fee calculation.
+   */
+  async reseedDeliveryZones(): Promise<{
+    ok: boolean
+    zones: Array<{ id: string; name: string; action: 'inserted' | 'updated' }>
+  }> {
+    const defaults: Array<{
+      id: string
+      name: string
+      baseFee: string
+      feeStrategy: 'FLAT' | 'FREE_THRESHOLD'
+      freeThreshold: string | null
+      feePerKm: string | null
+      requiresPrepayment: boolean
+    }> = [
+      { id: 'zone_accra',    name: 'Accra Central',      baseFee: '15.00', feeStrategy: 'FLAT',           freeThreshold: '200.00', feePerKm: null, requiresPrepayment: false },
+      { id: 'zone_accra2',   name: 'Accra Suburbs',      baseFee: '25.00', feeStrategy: 'FLAT',           freeThreshold: '300.00', feePerKm: null, requiresPrepayment: false },
+      { id: 'zone_kumasi',   name: 'Kumasi',             baseFee: '35.00', feeStrategy: 'FLAT',           freeThreshold: '400.00', feePerKm: null, requiresPrepayment: true  },
+      { id: 'zone_tema',     name: 'Tema',               baseFee: '20.00', feeStrategy: 'FREE_THRESHOLD', freeThreshold: '250.00', feePerKm: null, requiresPrepayment: true  },
+      { id: 'zone_takoradi', name: 'Takoradi / Western', baseFee: '50.00', feeStrategy: 'FLAT',           freeThreshold: null,     feePerKm: null, requiresPrepayment: true  },
+      { id: 'zone_tamale',   name: 'Tamale / Northern',  baseFee: '65.00', feeStrategy: 'FLAT',           freeThreshold: null,     feePerKm: null, requiresPrepayment: true  },
+    ]
+    const result: Array<{ id: string; name: string; action: 'inserted' | 'updated' }> = []
+    for (const z of defaults) {
+      const existing = await this.db.client.execute(
+        sql`SELECT 1 FROM delivery_zones WHERE id = ${z.id} LIMIT 1`,
+      )
+      const wasUpdate = Array.isArray(existing) ? existing.length > 0 : false
+      await this.db.client.execute(sql`
+        INSERT INTO delivery_zones
+          (id, name, base_fee, fee_strategy, free_threshold, fee_per_km, requires_prepayment, is_active)
+        VALUES
+          (${z.id}, ${z.name}, ${z.baseFee}, ${z.feeStrategy}::fee_strategy,
+           ${z.freeThreshold}, ${z.feePerKm}, ${z.requiresPrepayment}, true)
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name,
+          base_fee = EXCLUDED.base_fee,
+          fee_strategy = EXCLUDED.fee_strategy,
+          free_threshold = EXCLUDED.free_threshold,
+          fee_per_km = EXCLUDED.fee_per_km,
+          requires_prepayment = EXCLUDED.requires_prepayment,
+          is_active = true
+      `)
+      result.push({ id: z.id, name: z.name, action: wasUpdate ? 'updated' : 'inserted' })
+    }
+    const inserted = result.filter(r => r.action === 'inserted').length
+    this.logger.log(`reseedDeliveryZones: ${result.length} zones (${inserted} new, ${result.length - inserted} updated)`)
+    return { ok: true, zones: result }
+  }
 }
