@@ -70,4 +70,26 @@ export class HealthController {
   restart(@Body() body: { target: RestartTarget }) {
     return this.healthService.restart(body?.target)
   }
+
+  // ── Restart everything (api + web). Dev: touch both files. Prod: Railway redeploy both. ──
+  @Post('services/restart-all')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER')
+  async restartAll() {
+    const [api, web] = await Promise.all([
+      this.healthService.restart('api'),
+      this.healthService.restart('web'),
+    ])
+    return { api, web }
+  }
+
+  // ── Supervisor state (dev only, reads /tmp/trendx-supervisor.json) ──────
+  @Get('services/supervisor')
+  @ApiBearerAuth()
+  @UseGuards(ClerkGuard, RolesGuard)
+  @Roles('OWNER', 'MANAGER')
+  supervisor() {
+    return this.healthService.getSupervisorState()
+  }
 }

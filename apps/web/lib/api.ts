@@ -639,6 +639,22 @@ export const healthApi = {
     apiFetch('/health/services/gc', { method: 'POST', body: '{}', token }),
   restart: (token: string, target: RestartTarget): Promise<{ ok: boolean; method: RestartMethod; message: string }> =>
     apiFetch('/health/services/restart', { method: 'POST', body: JSON.stringify({ target }), token }),
+  restartAll: (token: string): Promise<{
+    api: { ok: boolean; method: RestartMethod; message: string }
+    web: { ok: boolean; method: RestartMethod; message: string }
+  }> =>
+    apiFetch('/health/services/restart-all', { method: 'POST', body: '{}', token }),
+  supervisor: (token: string): Promise<{
+    present: boolean
+    pid?: number
+    status?: string
+    restarts?: number
+    lastStartUnix?: number
+    lastEventUnix?: number
+    lastExitCode?: number
+    error?: string
+  }> =>
+    apiFetch('/health/services/supervisor', { token }),
   diagnostics: (token: string): Promise<DiagnosticsReport> =>
     apiFetch('/health/diagnostics', { method: 'POST', body: '{}', token }),
 }

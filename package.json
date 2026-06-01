@@ -4,6 +4,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:safe": "bash scripts/dev-supervisor.sh",
+    "dev:kill": "pkill -9 -f 'trendx/apps.*(nodemon|next dev|tsx watch|nest start|dev-supervisor)' 2>/dev/null; lsof -i :4001 -i :4002 -sTCP:LISTEN -t 2>/dev/null | xargs -r kill -9 2>/dev/null; echo done",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "db:generate": "turbo run db:generate --filter=@trendmarga/db",

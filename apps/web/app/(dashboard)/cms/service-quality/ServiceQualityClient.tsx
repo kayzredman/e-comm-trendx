@@ -951,6 +951,29 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
     }
   }, [freshToken])
 
+  // Supervisor state — written by scripts/dev-supervisor.sh (pnpm dev:safe)
+  const [supervisor, setSupervisor] = useState<{
+    present: boolean
+    status?: string
+    restarts?: number
+    lastEventUnix?: number
+    lastExitCode?: number
+  } | null>(null)
+  const refreshSupervisor = useCallback(async () => {
+    try {
+      const s = await healthApi.supervisor(await freshToken())
+      setSupervisor(s)
+    } catch {
+      setSupervisor(null)
+    }
+  }, [freshToken])
+  useEffect(() => { refreshSupervisor() }, [refreshSupervisor])
+  useEffect(() => {
+    if (!autoRefresh) return
+    const t = setInterval(refreshSupervisor, 15_000)
+    return () => clearInterval(t)
+  }, [autoRefresh, refreshSupervisor])
+
   // Auto-refresh every 30s
   useEffect(() => {
     if (!autoRefresh) {
@@ -1150,6 +1173,57 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
     }
   }
 
+  const handleRestartAll = async () => {
+    const startedAt = Date.now()
+    const logs: Array<{ ts: number; level: 'info' | 'ok' | 'warn' | 'error'; text: string }> = []
+    const push = (level: 'info' | 'ok' | 'warn' | 'error', text: string) => {
+      logs.push({ ts: Date.now() - startedAt, level, text })
+      setRestartFlow(s => ({ ...s, logs: [...logs] }))
+    }
+    setRestartFlow({ open: true, target: 'web', running: true, logs: [], finalStatus: null })
+    push('info', 'Restart EVERYTHING (api + web) requested')
+    try {
+      const t = await freshToken()
+      push('info', 'POST /health/services/restart-all')
+      const res = await healthApi.restartAll(t)
+      push(res.api.ok ? 'ok' : 'error', `api: [${res.api.method}] ${res.api.message}`)
+      push(res.web.ok ? 'ok' : 'error', `web: [${res.web.method}] ${res.web.message}`)
+      if (!res.api.ok && !res.web.ok) {
+        setRestartFlow(s => ({ ...s, running: false, finalStatus: 'fail', logs: [...logs] }))
+        pushFeedback({ service: 'stack', ok: false, message: 'Restart-all failed for both api & web' })
+        return
+      }
+      push('info', 'Waiting 5s for stack to come back…')
+      await new Promise(r => setTimeout(r, 5000))
+      let attempt = 0
+      while (attempt < 15) {
+        attempt++
+        try {
+          push('info', `Probe ${attempt}/15: GET /health/services`)
+          const full = await healthApi.services(await freshToken())
+          setReport(full)
+          const down = full.services.filter(s => s.status === 'down')
+          if (down.length === 0) {
+            push('ok', `Stack back up — ${full.services.length}/${full.services.length} services healthy`)
+            setRestartFlow(s => ({ ...s, running: false, finalStatus: 'success', logs: [...logs] }))
+            pushFeedback({ service: 'stack', ok: true, message: 'Restart-all complete' })
+            await refreshSupervisor()
+            return
+          }
+          push('warn', `Still down: ${down.map(s => s.name).join(', ')}`)
+        } catch (err) {
+          push('warn', `Probe failed: ${errMsg(err, 'unknown')}`)
+        }
+        await new Promise(r => setTimeout(r, 2000))
+      }
+      push('error', 'Stack did not return within 35s')
+      setRestartFlow(s => ({ ...s, running: false, finalStatus: 'partial', logs: [...logs] }))
+    } catch (err: unknown) {
+      push('error', errMsg(err, 'Restart-all flow failed'))
+      setRestartFlow(s => ({ ...s, running: false, finalStatus: 'fail', logs: [...logs] }))
+    }
+  }
+
   const copyCommand = async (cmd: string) => {
     try {
       await navigator.clipboard.writeText(cmd)
@@ -1197,6 +1271,46 @@ export default function ServiceQualityClient({ initialReport, token, currentRole
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          {supervisor && (
+            <span
+              title={
+                supervisor.present
+                  ? `Supervisor ${supervisor.status ?? '?'} · restarts=${supervisor.restarts ?? 0}${supervisor.lastExitCode ? ` · last exit ${supervisor.lastExitCode}` : ''}`
+                  : 'Supervisor not running. Use `pnpm dev:safe` for auto-restart.'
+              }
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold"
+              style={{
+                background: supervisor.present ? '#DCFCE7' : '#FEF3C7',
+                color:      supervisor.present ? '#166534' : '#92400E',
+                border:     `1px solid ${supervisor.present ? '#86EFAC' : '#FDE68A'}`,
+              }}
+            >
+              <span style={{
+                width: 6, height: 6, borderRadius: '50%',
+                background: supervisor.present ? '#16A34A' : '#D97706',
+              }} />
+              {supervisor.present
+                ? `Supervisor · restarts ${supervisor.restarts ?? 0}`
+                : 'No supervisor (pnpm dev:safe)'}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleRestartAll}
+            disabled={restartFlow.running || !isOwner || !capabilities || (capabilities.canRestartApi === 'unsupported' && capabilities.canRestartWeb === 'unsupported')}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border"
+            style={{
+              background: restartFlow.running ? '#FEE2E2' : '#DC2626',
+              borderColor: '#B91C1C',
+              color: restartFlow.running ? '#991B1B' : 'white',
+              opacity: (restartFlow.running || !isOwner) ? 0.7 : 1,
+              cursor: restartFlow.running ? 'wait' : 'pointer',
+            }}
+            title={!isOwner ? 'OWNER role required' : 'Restart api + web together'}
+          >
+            <Power size={13} className={restartFlow.running ? 'animate-pulse' : ''} />
+            {restartFlow.running ? 'Restarting stack…' : 'Restart Everything'}
+          </button>
           <button
             type="button"
             onClick={() => handleRestartFlow('web')}

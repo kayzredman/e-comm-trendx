@@ -770,6 +770,33 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
     return 'unsupported'
   }
 
+  /**
+   * Read /tmp/trendx-supervisor.json written by scripts/dev-supervisor.sh.
+   * Dev-only signal: lets the Service Quality page know whether `pnpm dev:safe`
+   * is supervising the stack and surface restart counts / last crash time.
+   */
+  async getSupervisorState(): Promise<{
+    present: boolean
+    pid?: number
+    status?: string
+    restarts?: number
+    lastStartUnix?: number
+    lastEventUnix?: number
+    lastExitCode?: number
+    error?: string
+  }> {
+    try {
+      const raw = await fs.readFile('/tmp/trendx-supervisor.json', 'utf8')
+      const parsed = JSON.parse(raw)
+      return { present: true, ...parsed }
+    } catch (err: any) {
+      if (err?.code === 'ENOENT') {
+        return { present: false }
+      }
+      return { present: false, error: err?.message ?? 'read failed' }
+    }
+  }
+
   private resolveRepoPath(rel: string): string {
     // apps/api/src/health/health.service.ts → repo root is 4 levels up
     return path.resolve(__dirname, '../../../..', rel)
