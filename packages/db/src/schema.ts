@@ -532,6 +532,10 @@ export const paymentIntents = pgTable('payment_intents', {
   accessCode: varchar('access_code', { length: 120 }),
   /** Cumulative refunded amount in major units. Equals `amount` once fully refunded. */
   refundedAmount: numeric('refunded_amount', { precision: 12, scale: 2 }).notNull().default('0'),
+  /** Latest Paystack dispute status: null | 'pending' | 'awaiting-merchant-feedback' | 'resolved' | 'declined'. */
+  disputeStatus: varchar('dispute_status', { length: 48 }),
+  /** Timestamp of the most recent dispute lifecycle event. */
+  disputeUpdatedAt: timestamp('dispute_updated_at'),
   /** Pointer to the last event that mutated this intent (for trace). */
   lastEventId: varchar('last_event_id', { length: 128 }),
   /** Free-form provider data captured at finalization (channel-specific fields, fees, etc.). */

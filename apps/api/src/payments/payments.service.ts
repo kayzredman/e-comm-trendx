@@ -330,6 +330,33 @@ export class PaymentsService {
   }
 
   private async applyOutcome(intentId: string, eventType: string, data: any, eventId: string) {
+    // Dispute lifecycle: charge.dispute.create | charge.dispute.remind | charge.dispute.resolve
+    if (/^charge\.dispute\./.test(eventType)) {
+      const phase = eventType.split('.').pop() as 'create' | 'remind' | 'resolve'
+      const rawStatus = String(data?.status ?? '').toLowerCase()
+      const disputeStatus =
+        phase === 'resolve' ? (rawStatus || 'resolved') :
+        phase === 'create'  ? (rawStatus || 'pending') :
+        (rawStatus || 'awaiting-merchant-feedback')
+
+      const [intent] = await this.db.client.select().from(paymentIntents).where(eq(paymentIntents.id, intentId))
+      const merged = { ...(intent?.metadata ?? {}), lastDispute: { phase, ...data } }
+      await this.db.client.update(paymentIntents).set({
+        disputeStatus,
+        disputeUpdatedAt: new Date(),
+        metadata: merged,
+        lastEventId: eventId,
+        updatedAt: new Date(),
+      }).where(eq(paymentIntents.id, intentId))
+
+      // If resolved with a refund, surface the refund amount too (Paystack includes it on `data.refund_amount`).
+      const refundAmountKobo = Number(data?.refund_amount ?? 0)
+      if (phase === 'resolve' && refundAmountKobo > 0) {
+        await this.applyRefundOutcome(intentId, refundAmountKobo / 100, 'processed', data)
+      }
+      return
+    }
+
     // Refund lifecycle events live on a separate path — they don't change intent.status.
     if (/^refund\./.test(eventType)) {
       const amountMajor = typeof data?.amount === 'number' ? data.amount / 100 : 0
@@ -429,7 +456,7 @@ export class PaymentsService {
 
   /** Stats for /cms/payments dashboard + health check. */
   async getStats() {
-    const [last24h, pending, failed24h, oldestPending] = await Promise.all([
+    const [last24h, pending, failed24h, oldestPending, openDisputes] = await Promise.all([
       this.db.client.execute(sql`
         SELECT
           COUNT(*) FILTER (WHERE status = 'SUCCEEDED')::int AS succeeded,
@@ -450,11 +477,16 @@ export class PaymentsService {
         SELECT EXTRACT(EPOCH FROM (now() - MIN(updated_at)))::int AS seconds_old
         FROM payment_intents WHERE status IN ('REQUIRES_AUTH', 'PROCESSING')
       `),
+      this.db.client.execute(sql`
+        SELECT COUNT(*)::int AS n FROM payment_intents
+        WHERE dispute_status IS NOT NULL AND dispute_status NOT IN ('resolved', 'declined')
+      `),
     ])
     const a = (last24h as any)[0] ?? {}
     const stuck = Number(((pending as any)[0] ?? {}).n ?? 0)
     const errored = Number(((failed24h as any)[0] ?? {}).n ?? 0)
     const oldestSec = Number(((oldestPending as any)[0] ?? {}).seconds_old ?? 0)
+    const disputes = Number(((openDisputes as any)[0] ?? {}).n ?? 0)
     return {
       last24h: {
         succeeded: Number(a.succeeded ?? 0),
@@ -465,6 +497,7 @@ export class PaymentsService {
       stuckIntents: stuck,
       eventsWithErrors24h: errored,
       oldestPendingSeconds: oldestSec,
+      openDisputes: disputes,
       circuitBreaker: this.paystack.breaker.snapshot(),
       mode: this.paystack.mode(),
     }

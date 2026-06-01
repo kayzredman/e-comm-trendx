@@ -863,6 +863,8 @@ export type PaymentIntentRow = {
   status: PaymentIntentStatus
   amount: string
   refundedAmount?: string
+  disputeStatus?: string | null
+  disputeUpdatedAt?: string | null
   currency: string
   channel: string | null
   customerEmail: string | null
@@ -894,6 +896,7 @@ export type PaymentStats = {
   stuckIntents: number
   eventsWithErrors24h: number
   oldestPendingSeconds: number
+  openDisputes?: number
   circuitBreaker: { state: string; failures: number; openedAt: string | null }
   mode: 'live' | 'test' | 'disabled'
 }

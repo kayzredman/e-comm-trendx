@@ -11,7 +11,7 @@ import {
 } from '@/lib/api'
 import {
   CreditCard, RefreshCw, AlertCircle, CheckCircle2, Clock, XCircle,
-  ShieldCheck, ShieldAlert, RotateCcw, Wifi, WifiOff, Activity, Undo2,
+  ShieldCheck, ShieldAlert, RotateCcw, Wifi, WifiOff, Activity, Undo2, Gavel,
 } from 'lucide-react'
 
 type Tab = 'intents' | 'events'
@@ -343,8 +343,9 @@ function HealthStrip({
   const cbHealthy = cbState === 'closed'
   const stuck = stats?.stuckIntents ?? 0
   const errs = stats?.eventsWithErrors24h ?? 0
+  const disputes = stats?.openDisputes ?? 0
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
       <InfoTile
         icon={cbHealthy ? ShieldCheck : ShieldAlert}
         tone={cbHealthy ? 'ok' : 'warn'}
@@ -366,6 +367,13 @@ function HealthStrip({
         title="Event errors (24h)"
         value={String(errs)}
         sub={errs > 0 ? 'see Webhook events tab' : 'no errors'}
+      />
+      <InfoTile
+        icon={Gavel}
+        tone={disputes > 0 ? 'warn' : 'ok'}
+        title="Open disputes"
+        value={String(disputes)}
+        sub={disputes > 0 ? 'respond in Paystack dashboard' : 'none'}
       />
     </div>
   )
@@ -475,7 +483,12 @@ function IntentsTab({
                 <tr key={it.id} className="border-t" style={{ borderColor: '#F1F5F9' }}>
                   <Td><span className="font-mono text-xs">{it.providerReference}</span></Td>
                   <Td><span className="font-mono text-xs">{it.orderId}</span></Td>
-                  <Td><StatusPill status={it.status} /></Td>
+                  <Td>
+                    <div className="flex items-center gap-1.5">
+                      <StatusPill status={it.status} />
+                      {it.disputeStatus && <DisputePill status={it.disputeStatus} />}
+                    </div>
+                  </Td>
                   <Td>{it.channel ?? '—'}</Td>
                   <Td className="text-right font-mono tabular-nums">₵{charged.toFixed(2)}</Td>
                   <Td className="text-right font-mono tabular-nums">
@@ -625,6 +638,21 @@ function StatusPill({ status }: { status: PaymentIntentStatus }) {
       style={{ background: c.bg, color: c.fg }}
     >
       {status.replace('_', ' ')}
+    </span>
+  )
+}
+
+function DisputePill({ status }: { status: string }) {
+  const open = !['resolved', 'declined'].includes(status.toLowerCase())
+  const c = open ? { bg: '#FEF3C7', fg: '#92400E' } : { bg: '#E5E7EB', fg: '#4B5563' }
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide"
+      style={{ background: c.bg, color: c.fg }}
+      title={`Dispute: ${status}`}
+    >
+      <Gavel size={10} />
+      {status.replace(/-/g, ' ')}
     </span>
   )
 }

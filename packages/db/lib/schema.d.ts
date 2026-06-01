@@ -3348,6 +3348,30 @@ export declare const paymentIntents: import("drizzle-orm/pg-core").PgTableWithCo
             enumValues: undefined;
             baseColumn: never;
         }, {}, {}>;
+        disputeStatus: import("drizzle-orm/pg-core").PgColumn<{
+            name: "dispute_status";
+            tableName: "payment_intents";
+            dataType: "string";
+            columnType: "PgVarchar";
+            data: string;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: [string, ...string[]];
+            baseColumn: never;
+        }, {}, {}>;
+        disputeUpdatedAt: import("drizzle-orm/pg-core").PgColumn<{
+            name: "dispute_updated_at";
+            tableName: "payment_intents";
+            dataType: "date";
+            columnType: "PgTimestamp";
+            data: Date;
+            driverParam: string;
+            notNull: false;
+            hasDefault: false;
+            enumValues: undefined;
+            baseColumn: never;
+        }, {}, {}>;
         lastEventId: import("drizzle-orm/pg-core").PgColumn<{
             name: "last_event_id";
             tableName: "payment_intents";

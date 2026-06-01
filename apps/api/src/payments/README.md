@@ -94,6 +94,22 @@ Constraints:
 - Order moves to `REFUNDED` only on **full** refund (sum across all refund events).
 - No automatic stock-restore yet (manual via `/cms/orders` if needed).
 
+## Disputes & chargebacks
+
+Paystack notifies via `charge.dispute.create`, `charge.dispute.remind`, `charge.dispute.resolve`.
+We never respond to disputes from our API — merchants reply in the Paystack
+dashboard. Our role is just to surface and log them.
+
+| Event | Effect on intent |
+| --- | --- |
+| `charge.dispute.create` | `dispute_status` ← `pending` (or `data.status`); `dispute_updated_at` = now |
+| `charge.dispute.remind` | `dispute_status` ← `awaiting-merchant-feedback` |
+| `charge.dispute.resolve` | `dispute_status` ← `resolved` / `declined`; if `data.refund_amount > 0` runs `applyRefundOutcome` to keep `refunded_amount` + order status consistent |
+
+Open disputes (status ≠ `resolved|declined`) are counted in
+`GET /cms/payments/stats.openDisputes` and shown as a tile + per-row badge on
+`/cms/payments`. To respond, click through to the Paystack dashboard.
+
 ## Storefront UX
 
 | Path | Behavior |
