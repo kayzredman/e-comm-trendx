@@ -12,6 +12,7 @@ const FLAG_LABELS: Record<keyof typeof publicFeatures, { name: string; desc: str
   reviews:       { name: 'Product reviews',       desc: 'Star ratings and customer reviews on product pages.' },
   discounts:     { name: 'Discount codes',        desc: 'Promo codes at checkout, managed in CMS.' },
   pwa:           { name: 'PWA',                   desc: 'Install-to-home-screen + push notifications.' },
+  payments:      { name: 'Online payments',       desc: 'Paystack card / MoMo / bank at checkout. When off, storefront only offers cash on delivery.' },
 }
 
 export default function FeatureFlagsPage() {
