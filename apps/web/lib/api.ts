@@ -818,6 +818,26 @@ export const storefrontApi = {
   > => apiFetch(`/v1/orders/${id}`),
 }
 
+export type SearchSuggestion = {
+  query: string
+  products: Array<{
+    id: string
+    name: string
+    slug: string
+    price: string
+    image: string | null
+    categoryName: string | null
+  }>
+  categories: Array<{ id: string; name: string; slug: string; imageUrl: string | null }>
+}
+
+export const searchApi = {
+  suggest: (q: string, limit = 6): Promise<SearchSuggestion> => {
+    const params = new URLSearchParams({ q, limit: String(limit) })
+    return apiFetch(`/v1/search?${params}`, { timeoutMs: 4000 })
+  },
+}
+
 export type PaymentIntentInit = {
   reference: string
   authorizationUrl: string | null

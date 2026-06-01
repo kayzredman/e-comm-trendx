@@ -285,7 +285,7 @@ Each remediation action must be:
 ### Storefront feature-flag UIs (backends exist, UIs missing)
 - [x] Reviews — product-page widget + submit flow + moderation queue
 - [x] Inventory — out-of-stock badge on PDP / cart, low-stock warning
-- [ ] Search — `/v1/search` endpoint + header search box + results page
+- [x] Search — `/v1/search` endpoint + header search box + results page
 - [ ] PWA — install prompt + push notifications (manifest already shipped)
 
 ### Customer-facing

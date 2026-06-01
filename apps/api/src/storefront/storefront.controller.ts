@@ -18,6 +18,12 @@ export class StorefrontController {
     return this.storefrontService.getProducts({ categoryId, search })
   }
 
+  @Get('search')
+  search(@Query('q') q?: string, @Query('limit') limit?: string) {
+    const n = limit ? Math.min(Math.max(parseInt(limit, 10) || 6, 1), 12) : 6
+    return this.storefrontService.getSearchSuggestions(q ?? '', n)
+  }
+
   @Get('products/:slug')
   getProduct(@Param('slug') slug: string) {
     return this.storefrontService.getProductBySlug(slug)
