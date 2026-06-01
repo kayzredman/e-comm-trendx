@@ -560,7 +560,7 @@ function StatusPill({ status }: { status: PaymentIntentStatus }) {
   )
 }
 
-function Th({ children, className }: { children: React.ReactNode; className?: string }) {
+function Th({ children, className }: { children?: React.ReactNode; className?: string }) {
   return (
     <th
       className={`px-3 py-2 text-left text-xs font-bold uppercase tracking-wide ${className ?? ''}`}
