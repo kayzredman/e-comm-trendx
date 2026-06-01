@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server'
-import { analyticsApi, type DashboardStats } from '@/lib/api'
+import { analyticsApi, type DashboardStats, type DashboardPeriod } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -9,7 +9,10 @@ import {
 } from 'lucide-react'
 import RevenueChart from '../../dashboard/RevenueChart'
 import OrdersDonut from '../../dashboard/OrdersDonut'
+import TopProductsBar from '../../dashboard/TopProductsBar'
 import PeriodSelector from '@/components/cms/PeriodSelector'
+import CountUp from '@/components/cms/CountUp'
+import { ChartSkeleton, KpiSkeleton, ListSkeleton } from '@/components/cms/Skeletons'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,14 +27,25 @@ const STATUS_STYLE: Record<string, { label: string; bg: string; color: string }>
 
 const STATUS_ORDER = ['PENDING', 'CONFIRMED', 'PROCESSING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED']
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({ searchParams }: { searchParams?: Promise<{ period?: string }> }) {
   const { getToken } = await auth()
   const token = await getToken()
+  const sp = (await searchParams) ?? {}
+  const VALID: DashboardPeriod[] = ['24h', '7d', '30d', '90d', 'all']
+  const period: DashboardPeriod = (VALID as string[]).includes(sp.period ?? '') ? (sp.period as DashboardPeriod) : '30d'
+  const PERIOD_LABEL: Record<DashboardPeriod, string> = {
+    '24h': 'last 24h',
+    '7d':  'last 7 days',
+    '30d': 'last 30 days',
+    '90d': 'last 90 days',
+    'all': 'all time',
+  }
+  const periodLabel = PERIOD_LABEL[period]
 
   let stats: DashboardStats | null = null
   let error: string | null = null
   try {
-    if (token) stats = await analyticsApi.dashboard(token)
+    if (token) stats = await analyticsApi.dashboard(token, period)
     else error = 'Not signed in'
   } catch (e) {
     error = e instanceof Error ? e.message : 'Failed to load analytics'
@@ -63,7 +77,7 @@ export default async function AnalyticsPage() {
           </p>
         </div>
         </div>
-        <PeriodSelector active="30d" />
+        <PeriodSelector active={period} />
       </div>
 
       {error && (
@@ -75,10 +89,19 @@ export default async function AnalyticsPage() {
 
       {/* KPI row — focused on rates & values */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 2xl:gap-6 mb-6">
+        {!stats && !error ? (
+          <>
+            <KpiSkeleton /><KpiSkeleton /><KpiSkeleton /><KpiSkeleton />
+          </>
+        ) : (
+          <>
         <KpiCard
           icon={<Wallet size={16} />}
-          label="Revenue · 30 days"
-          value={stats ? formatPrice(stats.revenue30d) : '—'}
+          label={`Revenue · ${periodLabel}`}
+          value={stats ? formatPrice(stats.revenuePeriod ?? stats.revenue30d) : '—'}
+          numericValue={stats ? Number(stats.revenuePeriod ?? stats.revenue30d) : undefined}
+          prefix="GH₵ "
+          decimals={2}
           sub={stats ? `All time: ${formatPrice(stats.revenueAll)}` : ''}
           tint="#2563EB"
           bg="#DBEAFE"
@@ -88,6 +111,9 @@ export default async function AnalyticsPage() {
           icon={<TrendingUp size={16} />}
           label="Avg order value"
           value={stats ? formatPrice(stats.avgOrderValue) : '—'}
+          numericValue={stats ? Number(stats.avgOrderValue) : undefined}
+          prefix="GH₵ "
+          decimals={2}
           sub={stats ? `${totalOrders} orders total` : ''}
           tint="#F97316"
           bg="#FFEDD5"
@@ -97,6 +123,8 @@ export default async function AnalyticsPage() {
           icon={<CheckCircle2 size={16} />}
           label="Completion rate"
           value={stats ? `${stats.completionRate}%` : '—'}
+          numericValue={stats ? Number(stats.completionRate) : undefined}
+          suffix="%"
           sub="Delivered ÷ all orders"
           tint="#16A34A"
           bg="#DCFCE7"
@@ -106,11 +134,14 @@ export default async function AnalyticsPage() {
           icon={<Users size={16} />}
           label="Customers"
           value={stats?.totalCustomers ?? '—'}
+          numericValue={stats?.totalCustomers}
           sub={stats ? `${stats.totalProducts} active products` : ''}
           tint="#2563EB"
           bg="#DBEAFE"
           index={3}
         />
+          </>
+        )}
       </div>
 
       {/* Revenue + status donut */}
@@ -123,12 +154,12 @@ export default async function AnalyticsPage() {
             </div>
             <TrendingUp size={18} style={{ color: 'var(--color-primary)', marginTop: 2 }} />
           </div>
-          <RevenueChart data={stats?.revenueByDay ?? []} height={280} showBrush />
+          {!stats && !error ? <ChartSkeleton height={280} /> : <RevenueChart data={stats?.revenueByDay ?? []} height={280} showBrush />}
         </div>
 
         <div className="rounded-2xl p-4" style={{ background: 'var(--color-surface)', border: '1.5px solid var(--color-border)' }}>
           <h2 className="font-extrabold mb-4" style={{ color: 'var(--color-text)', fontSize: '15px' }}>Orders by status</h2>
-          <OrdersDonut data={stats?.ordersByStatus ?? {}} />
+          {!stats && !error ? <ChartSkeleton height={240} /> : <OrdersDonut data={stats?.ordersByStatus ?? {}} />}
         </div>
       </div>
 
@@ -175,58 +206,13 @@ export default async function AnalyticsPage() {
             </h2>
             <Link href="/cms/products" className="text-xs font-semibold" style={{ color: 'var(--color-primary)' }}>All →</Link>
           </div>
-          {!stats?.topProducts?.length ? (
-            <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--color-text-muted)' }}>No sales data yet</p>
-          ) : (() => {
-            const maxRev = Math.max(...stats.topProducts.map(p => Number(p.totalRevenue) || 0), 1)
-            return (
-            <div>
-              {stats.topProducts.map((p, i) => {
-                const rev = Number(p.totalRevenue) || 0
-                const pct = Math.max(4, Math.round((rev / maxRev) * 100))
-                return (
-                <div
-                  key={p.productId}
-                  className="px-5 py-3 hover:bg-blue-50/40 transition-colors"
-                  style={{ borderBottom: i === stats.topProducts.length - 1 ? 'none' : '1px solid var(--color-border)' }}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 font-mono"
-                        style={{
-                          background: i === 0 ? '#FFEDD5' : 'var(--color-surface-muted)',
-                          color: i === 0 ? '#9A3412' : 'var(--color-text-muted)',
-                        }}
-                      >
-                        {i + 1}
-                      </div>
-                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>{p.productName}</p>
-                    </div>
-                    <div className="text-right shrink-0 ml-4">
-                      <p className="text-sm font-bold font-mono tabular-nums" style={{ color: 'var(--color-text)' }}>
-                        {formatPrice(p.totalRevenue)}
-                      </p>
-                      <p className="text-xs font-mono tabular-nums" style={{ color: 'var(--color-text-muted)' }}>{p.unitsSold} sold</p>
-                    </div>
-                  </div>
-                  <div className="mt-2 ml-10 h-1.5 rounded-full overflow-hidden" style={{ background: '#EFF6FF' }}>
-                    <div
-                      className="h-full rounded-full transition-all"
-                      style={{
-                        width: `${pct}%`,
-                        background: i === 0
-                          ? 'linear-gradient(90deg, #F97316, #FB923C)'
-                          : 'linear-gradient(90deg, #2563EB, #3B82F6)',
-                      }}
-                    />
-                  </div>
-                </div>
-                )
-              })}
-            </div>
-            )
-          })()}
+          <div className="px-3 py-4">
+            {!stats && !error ? (
+              <ListSkeleton rows={5} />
+            ) : (
+              <TopProductsBar data={stats?.topProducts ?? []} height={Math.max(220, (stats?.topProducts?.length ?? 0) * 38)} />
+            )}
+          </div>
         </div>
       </div>
 
@@ -283,7 +269,7 @@ export default async function AnalyticsPage() {
 }
 
 function KpiCard({
-  icon, label, value, sub, tint, bg, index = 0,
+  icon, label, value, sub, tint, bg, index = 0, numericValue, prefix, suffix, decimals,
 }: {
   icon: React.ReactNode
   label: string
@@ -292,6 +278,10 @@ function KpiCard({
   tint: string
   bg: string
   index?: number
+  numericValue?: number
+  prefix?: string
+  suffix?: string
+  decimals?: number
 }) {
   return (
     <div
@@ -313,7 +303,13 @@ function KpiCard({
           {icon}
         </div>
       </div>
-      <p className="text-2xl 2xl:text-3xl font-extrabold tracking-tight font-mono tabular-nums" style={{ color: 'var(--color-text)' }}>{value}</p>
+      <p className="text-2xl 2xl:text-3xl font-extrabold tracking-tight font-mono tabular-nums" style={{ color: 'var(--color-text)' }}>
+        {typeof numericValue === 'number' ? (
+          <CountUp value={numericValue} prefix={prefix} suffix={suffix} decimals={decimals ?? 0} />
+        ) : (
+          value
+        )}
+      </p>
       {sub && <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>{sub}</p>}
     </div>
   )

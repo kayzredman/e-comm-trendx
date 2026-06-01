@@ -1,5 +1,5 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
-import { analyticsApi, type DashboardStats } from '@/lib/api'
+import { analyticsApi, type DashboardStats, type DashboardPeriod } from '@/lib/api'
 import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -13,24 +13,31 @@ import ActiveDeliveries from '@/components/cms/ActiveDeliveries'
 
 export const dynamic = 'force-dynamic'
 
-export default async function DashboardHome() {
+export default async function DashboardHome({ searchParams }: { searchParams?: Promise<{ period?: string }> }) {
   const { getToken } = await auth()
   const token = await getToken()
   const user = await currentUser()
   const firstName = user?.firstName ?? 'there'
+  const sp = (await searchParams) ?? {}
+  const VALID: DashboardPeriod[] = ['24h', '7d', '30d', '90d', 'all']
+  const period: DashboardPeriod = (VALID as string[]).includes(sp.period ?? '') ? (sp.period as DashboardPeriod) : '30d'
+  const periodLabel = period === '24h' ? '24 hours' : period === '7d' ? '7 days' : period === '30d' ? '30 days' : period === '90d' ? '90 days' : 'all time'
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
 
   let stats: DashboardStats | null = null
   try {
-    if (token) stats = await analyticsApi.dashboard(token)
+    if (token) stats = await analyticsApi.dashboard(token, period)
   } catch { /* API not running */ }
 
-  const statCards: Array<{ label: string; value: string | number; icon: StatIcon; href: string; accent: StatAccent }> = [
+  const statCards: Array<{ label: string; value: string | number; numericValue?: number; prefix?: string; suffix?: string; decimals?: number; icon: StatIcon; href: string; accent: StatAccent }> = [
     {
-      label: 'Revenue (30 days)',
-      value: stats ? `GH₵ ${Number(stats.revenue30d).toFixed(2)}` : '—',
+      label: `Revenue (${periodLabel})`,
+      value: stats ? `GH₵ ${Number(stats.revenuePeriod ?? stats.revenue30d).toFixed(2)}` : '—',
+      numericValue: stats ? Number(stats.revenuePeriod ?? stats.revenue30d) : undefined,
+      prefix: 'GH₵ ',
+      decimals: 2,
       icon: 'revenue',
       href: '/cms/orders',
       accent: 'blue',
@@ -38,6 +45,7 @@ export default async function DashboardHome() {
     {
       label: 'Total orders',
       value: stats?.totalOrders ?? '—',
+      numericValue: stats?.totalOrders,
       icon: 'orders',
       href: '/cms/orders',
       accent: 'green',
@@ -45,6 +53,7 @@ export default async function DashboardHome() {
     {
       label: 'Customers',
       value: stats?.totalCustomers ?? '—',
+      numericValue: stats?.totalCustomers,
       icon: 'customers',
       href: '/cms/customers',
       accent: 'purple',
@@ -52,6 +61,7 @@ export default async function DashboardHome() {
     {
       label: 'Active products',
       value: stats?.totalProducts ?? '—',
+      numericValue: stats?.totalProducts,
       icon: 'products',
       href: '/cms/products',
       accent: 'amber',
@@ -70,16 +80,20 @@ export default async function DashboardHome() {
             Here&apos;s what&apos;s happening with your store today.
           </p>
         </div>
-        <PeriodSelector active="30d" />
+        <PeriodSelector active={period} />
       </div>
 
       {/* Stat cards (V2 hero row — 4 across) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {statCards.map(({ label, value, icon, href, accent }, i) => (
+        {statCards.map(({ label, value, numericValue, prefix, suffix, decimals, icon, href, accent }, i) => (
           <AnimatedStatCard
             key={label}
             label={label}
             value={value}
+            numericValue={numericValue}
+            prefix={prefix}
+            suffix={suffix}
+            decimals={decimals}
             icon={icon}
             href={href}
             accent={accent}

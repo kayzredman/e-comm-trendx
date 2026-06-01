@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { useTransition } from 'react'
 
 const PERIODS = [
   { id: '24h', label: '24h' },
@@ -10,30 +11,45 @@ const PERIODS = [
   { id: 'all', label: 'All time' },
 ] as const
 
-type PeriodId = typeof PERIODS[number]['id']
+export type PeriodId = typeof PERIODS[number]['id']
 
-export default function PeriodSelector({ active = '30d' }: { active?: PeriodId }) {
-  const [selected, setSelected] = useState<PeriodId>(active)
+export default function PeriodSelector({ active = '30d', paramName = 'period' }: { active?: PeriodId; paramName?: string }) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [pending, startTransition] = useTransition()
+
+  const current = (searchParams.get(paramName) as PeriodId | null) ?? active
+
+  function pick(p: PeriodId) {
+    if (p === current) return
+    const params = new URLSearchParams(searchParams.toString())
+    if (p === '30d') params.delete(paramName)
+    else params.set(paramName, p)
+    const qs = params.toString()
+    startTransition(() => {
+      router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false })
+    })
+  }
 
   return (
     <div
       className="inline-flex items-center rounded-xl p-1 gap-0.5"
-      style={{ background: '#FFFFFF', border: '1.5px solid rgba(226,232,240,0.8)' }}
+      style={{ background: '#FFFFFF', border: '1.5px solid rgba(226,232,240,0.8)', opacity: pending ? 0.7 : 1 }}
       role="tablist"
       aria-label="Time period"
     >
       {PERIODS.map(p => {
-        const isActive = p.id === selected
+        const isActive = p.id === current
         return (
           <button
             key={p.id}
             type="button"
             role="tab"
             aria-selected={isActive}
-            onClick={() => setSelected(p.id)}
-            disabled={p.id !== '30d'}
-            title={p.id !== '30d' ? 'Coming soon' : undefined}
-            className="cursor-pointer transition-all duration-150 font-semibold rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => pick(p.id)}
+            disabled={pending}
+            className="cursor-pointer transition-all duration-150 font-semibold rounded-lg disabled:cursor-wait"
             style={{
               fontSize: '12px',
               padding: '6px 12px',

@@ -294,10 +294,10 @@ Each remediation action must be:
 - [x] Saved addresses
 
 ### Analytics polish
-- [ ] Wire `PeriodSelector` 24h / 7d / 90d / all (only 30d functional)
-- [ ] Count-up animation on KPI numbers
-- [ ] Skeleton loaders for charts
-- [ ] Recharts Bar chart for top products (replace inline progress bars)
+- [x] Wire `PeriodSelector` 24h / 7d / 90d / all (only 30d functional)
+- [x] Count-up animation on KPI numbers
+- [x] Skeleton loaders for charts
+- [x] Recharts Bar chart for top products (replace inline progress bars)
 
 ### POS (built, feature-thin)
 - [ ] Shift open / close flow

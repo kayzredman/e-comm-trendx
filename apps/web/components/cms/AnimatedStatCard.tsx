@@ -7,6 +7,7 @@ import {
   TrendingUp, TrendingDown, Package, ShoppingCart, Users, BarChart2,
   CheckCircle, AlertTriangle, Truck, Tag, Activity,
 } from 'lucide-react'
+import CountUp from './CountUp'
 
 export type StatAccent = 'blue' | 'green' | 'amber' | 'purple' | 'rose' | 'cyan'
 
@@ -39,6 +40,11 @@ const ACCENT: Record<StatAccent, { orb: string; iconBg: string; iconColor: strin
 interface Props {
   label: string
   value: string | number
+  /** When set, animates a count-up from 0; overrides `value` for display. */
+  numericValue?: number
+  prefix?: string
+  suffix?: string
+  decimals?: number
   icon: StatIcon
   href: string
   accent?: StatAccent
@@ -48,7 +54,8 @@ interface Props {
 }
 
 export default function AnimatedStatCard({
-  label, value, icon, href, accent = 'blue', change, index = 0,
+  label, value, numericValue, prefix, suffix, decimals,
+  icon, href, accent = 'blue', change, index = 0,
 }: Props) {
   const a = ACCENT[accent]
   const Icon = ICONS[icon]
@@ -89,7 +96,11 @@ export default function AnimatedStatCard({
             className="font-black leading-none font-mono tabular-nums"
             style={{ color: '#0F172A', fontSize: '28px', letterSpacing: '-1px' }}
           >
-            {value}
+            {typeof numericValue === 'number' ? (
+              <CountUp value={numericValue} prefix={prefix} suffix={suffix} decimals={decimals ?? 0} />
+            ) : (
+              value
+            )}
           </p>
           <p className="mt-1.5 font-medium" style={{ color: '#64748B', fontSize: '12.5px' }}>
             {label}

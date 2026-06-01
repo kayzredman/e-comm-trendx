@@ -1,18 +1,36 @@
 import { Injectable } from '@nestjs/common'
 import { DbService } from '../db/db.service'
 import { orders, orderItems, customers, products } from '@trendmarga/db'
-import { sql, eq, lte, gte, desc, asc, count, sum, ne, avg, inArray, and } from 'drizzle-orm'
+import { sql, eq, lte, gte, desc, asc, count, sum, ne, avg, inArray, and, type SQL } from 'drizzle-orm'
+
+export type DashboardPeriod = '24h' | '7d' | '30d' | '90d' | 'all'
+
+function periodSinceMs(period: DashboardPeriod): number | null {
+  const day = 24 * 60 * 60 * 1000
+  switch (period) {
+    case '24h': return day
+    case '7d':  return 7 * day
+    case '30d': return 30 * day
+    case '90d': return 90 * day
+    case 'all': return null
+  }
+}
 
 @Injectable()
 export class AnalyticsService {
   constructor(private readonly db: DbService) {}
 
-  async getDashboardStats() {
+  async getDashboardStats(period: DashboardPeriod = '30d') {
     const db = this.db.client
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+    const sinceMs = periodSinceMs(period)
+    const periodStart = sinceMs ? new Date(Date.now() - sinceMs) : null
+    // Chart window: clip to period; for 'all' show last 90 days; for '24h' still show today bucket
+    const chartWindowDays = period === '24h' ? 2 : period === '7d' ? 7 : period === '30d' ? 14 : period === '90d' ? 90 : 90
+    const chartStart = new Date(Date.now() - chartWindowDays * 24 * 60 * 60 * 1000)
     const startOfToday = new Date()
     startOfToday.setHours(0, 0, 0, 0)
+
+    const periodFilter: SQL | undefined = periodStart ? gte(orders.createdAt, periodStart) : undefined
 
     const [
       [totalOrders],
@@ -36,7 +54,7 @@ export class AnalyticsService {
       db.select({ count: count() }).from(orders),
       db.select({ count: count() }).from(customers),
       db.select({ count: count() }).from(products).where(eq(products.status, 'ACTIVE')),
-      db.select({ total: sum(orders.total) }).from(orders).where(gte(orders.createdAt, thirtyDaysAgo)),
+      db.select({ total: sum(orders.total) }).from(orders).where(periodFilter ?? sql`true`),
       db.select({ total: sum(orders.total) }).from(orders).where(ne(orders.status, 'CANCELLED')),
       db.query.orders.findMany({
         with: { customer: true, items: true },
@@ -56,7 +74,7 @@ export class AnalyticsService {
           revenue: sql<string>`COALESCE(SUM(${orders.total}::numeric), 0)::text`,
         })
         .from(orders)
-        .where(gte(orders.createdAt, fourteenDaysAgo))
+        .where(gte(orders.createdAt, chartStart))
         .groupBy(sql`DATE(${orders.createdAt})`)
         .orderBy(sql`DATE(${orders.createdAt})`),
       db.select({ avg: avg(orders.total) }).from(orders).where(ne(orders.status, 'CANCELLED')),
@@ -69,7 +87,7 @@ export class AnalyticsService {
         })
         .from(orderItems)
         .innerJoin(orders, eq(orders.id, orderItems.orderId))
-        .where(ne(orders.status, 'CANCELLED'))
+        .where(periodFilter ? and(ne(orders.status, 'CANCELLED'), periodFilter) : ne(orders.status, 'CANCELLED'))
         .groupBy(orderItems.productId, orderItems.productName)
         .orderBy(sql`SUM(${orderItems.unitPrice}::numeric * ${orderItems.quantity}) DESC`)
         .limit(6),
@@ -116,7 +134,9 @@ export class AnalyticsService {
       totalOrders: totalOrders.count,
       totalCustomers: totalCustomers.count,
       totalProducts: totalProducts.count,
+      period,
       revenue30d: revenue30d.total ?? '0',
+      revenuePeriod: revenue30d.total ?? '0',
       revenueAll: revenueAll.total ?? '0',
       avgOrderValue: avgOrderValueRow.avg ?? '0',
       completionRate,

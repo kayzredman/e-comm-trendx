@@ -114,6 +114,12 @@ body {
   100% { box-shadow: 0 0 0 0    rgba(16,185,129,0);    transform: scale(1); }
 }
 
+/* Skeleton shimmer for loading placeholders */
+@keyframes tm-skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* ── Utility helpers ───────────────────────────────────────── */
 .animate-fade-up   { animation: fadeInUp  .5s ease both; }
 .animate-fade-in   { animation: fadeIn    .4s ease both; }

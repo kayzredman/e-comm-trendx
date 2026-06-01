@@ -539,11 +539,15 @@ export const deliveryApi = {
 
 // ─── Analytics ────────────────────────────────────────────────────────────────
 
+export type DashboardPeriod = '24h' | '7d' | '30d' | '90d' | 'all'
+
 export type DashboardStats = {
   totalOrders: number
   totalCustomers: number
   totalProducts: number
+  period?: DashboardPeriod
   revenue30d: string
+  revenuePeriod?: string
   revenueAll: string
   avgOrderValue: string
   completionRate: number
@@ -571,7 +575,8 @@ export type DashboardStats = {
 }
 
 export const analyticsApi = {
-  dashboard: (token: string): Promise<DashboardStats> => apiFetch('/analytics/dashboard', { token }),
+  dashboard: (token: string, period?: DashboardPeriod): Promise<DashboardStats> =>
+    apiFetch(`/analytics/dashboard${period ? `?period=${encodeURIComponent(period)}` : ''}`, { token }),
 }
 
 // ─── Health / Service Quality ─────────────────────────────────────────────────
