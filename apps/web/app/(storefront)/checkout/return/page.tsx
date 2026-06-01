@@ -110,9 +110,14 @@ function CheckoutReturnInner() {
             <h1 className="text-xl font-extrabold mb-2" style={{ color: 'var(--color-text)' }}>
               Payment received
             </h1>
-            <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-sm mb-2" style={{ color: 'var(--color-text-muted)' }}>
               Thanks! Taking you to your order…
             </p>
+            {info && (
+              <p className="text-xs mb-4 font-mono" style={{ color: 'var(--color-text-muted)' }}>
+                ₵{info.amount} · {info.reference}
+              </p>
+            )}
             <Link
               href={orderHref}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white"
@@ -131,9 +136,15 @@ function CheckoutReturnInner() {
             <h1 className="text-xl font-extrabold mb-2" style={{ color: 'var(--color-text)' }}>
               Payment didn&apos;t go through
             </h1>
-            <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-sm mb-2" style={{ color: 'var(--color-text-muted)' }}>
               No charge was made. You can try again from your order page.
             </p>
+            {info && (
+              <p className="text-xs mb-6 font-mono" style={{ color: 'var(--color-text-muted)' }}>
+                Ref: {info.reference}
+              </p>
+            )}
+            {!info && <div className="mb-6" />}
             <Link
               href={orderHref}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white"
@@ -152,9 +163,15 @@ function CheckoutReturnInner() {
             <h1 className="text-xl font-extrabold mb-2" style={{ color: 'var(--color-text)' }}>
               Still confirming…
             </h1>
-            <p className="text-sm mb-6" style={{ color: 'var(--color-text-muted)' }}>
+            <p className="text-sm mb-2" style={{ color: 'var(--color-text-muted)' }}>
               Paystack is taking longer than usual. Your order is safe — refresh in a minute or check the order page.
             </p>
+            {reference && (
+              <p className="text-xs mb-6 font-mono" style={{ color: 'var(--color-text-muted)' }}>
+                Ref: {reference}
+              </p>
+            )}
+            {!reference && <div className="mb-6" />}
             <Link
               href={orderHref}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white"

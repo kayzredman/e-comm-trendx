@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { CheckCircle2, Clock, Package, Truck, Home, ShoppingBag, Phone, MessageCircle, Bike } from 'lucide-react'
 import type { Metadata } from 'next'
 import OrderStatusPoller from './OrderStatusPoller'
+import PaymentRetryBanner from './PaymentRetryBanner'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -129,6 +130,16 @@ export default async function OrderTrackingPage({ params }: Props) {
           </>
         )}
       </div>
+
+      {/* ── Online payment retry / pending banner ── */}
+      {!isCancelled && (
+        <PaymentRetryBanner
+          orderId={order.id}
+          paymentMethod={order.paymentMethod}
+          paymentStatus={order.paymentStatus}
+          total={order.total}
+        />
+      )}
 
       {/* ── Progress tracker ── */}
       {!isCancelled && (
