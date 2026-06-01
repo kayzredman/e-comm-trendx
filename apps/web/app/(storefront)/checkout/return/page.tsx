@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle2, XCircle, Loader2, AlertCircle } from 'lucide-react'
@@ -9,6 +9,14 @@ import { paymentsApi, type PaymentLookup } from '@/lib/api'
 type Phase = 'verifying' | 'success' | 'failed' | 'pending' | 'missing'
 
 export default function CheckoutReturnPage() {
+  return (
+    <Suspense fallback={null}>
+      <CheckoutReturnInner />
+    </Suspense>
+  )
+}
+
+function CheckoutReturnInner() {
   const router = useRouter()
   const params = useSearchParams()
   const reference = params.get('reference') ?? params.get('trxref')
