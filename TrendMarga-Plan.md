@@ -385,6 +385,10 @@ Only **critical** findings trigger alerts. Warnings/info are visible in the UI b
 - [ ] React Native mobile app — PWA install prompt + push notifications already cover mobile. Reassess after 2 months of install-rate data.
 
 ### Prod cutover (next milestone — admin + ops checklist)
+
+> **Parent-org context:** TrendMarga ships under **NotsGate Ltd** holding company.
+> Full multi-product domain + infra strategy lives in [NotsGate-Infra-Plan.md](NotsGate-Infra-Plan.md).
+> Domains, Cloudflare org, Railway team, GitHub org, Clerk org, Paystack merchant all owned by NotsGate.
 - [ ] Final staging regression pass (auth, checkout, payments, POS, courier, CMS, analytics)
 - [ ] Rotate any keys leaked in chat / commits
 - [ ] Purchase `trendmarga.com` and point DNS to prod web
